@@ -6,15 +6,17 @@
   <title>Olta — Av Bölgeleri</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+
     :root {
-      --blue-dark:  #0A1628;
-      --blue-mid:   #1A3A5C;
+      --blue-dark: #0A1628;
+      --blue-mid: #1A3A5C;
       --blue-light: #2E86AB;
-      --accent:     #F4A261;
-      --white:      #FFFFFF;
-      --gray:       #6B7280;
-      --red:        #DC2626;
+      --accent: #F4A261;
+      --white: #FFFFFF;
+      --gray: #6B7280;
+      --red: #DC2626;
     }
+
     body {
       font-family: 'Segoe UI', system-ui, sans-serif;
       background: var(--blue-dark);
@@ -23,6 +25,7 @@
       display: flex;
       flex-direction: column;
     }
+
     .banner {
       background: var(--blue-dark);
       display: flex;
@@ -34,86 +37,279 @@
       z-index: 100;
       border-bottom: 1px solid rgba(255,255,255,0.08);
     }
+
     .hamburger {
-      background: none; border: none; color: var(--white);
-      cursor: pointer; padding: 8px; display: flex; flex-direction: column; gap: 5px;
+      background: none;
+      border: none;
+      color: var(--white);
+      cursor: pointer;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
     }
-    .hamburger span { display: block; width: 22px; height: 2px; background: var(--white); border-radius: 2px; }
-    .banner-title { flex: 1; text-align: center; font-size: 20px; font-weight: 900; letter-spacing: 6px; }
+
+    .hamburger span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--white);
+      border-radius: 2px;
+    }
+
+    .banner-title {
+      flex: 1;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 6px;
+    }
+
     .banner-placeholder { width: 38px; }
 
     /* SIDEBAR */
-    .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: none; opacity: 0; transition: opacity 0.3s; }
-    .sidebar-overlay.open { display: block; opacity: 1; }
-    .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: var(--blue-dark); border-right: 1px solid rgba(255,255,255,0.08); z-index: 300; transition: left 0.3s ease; display: flex; flex-direction: column; }
+    .sidebar-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 200;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .sidebar-overlay.open {
+      display: block;
+      opacity: 1;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: -280px;
+      width: 280px;
+      height: 100%;
+      background: var(--blue-dark);
+      border-right: 1px solid rgba(255,255,255,0.08);
+      z-index: 300;
+      transition: left 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
     .sidebar.open { left: 0; }
-    .sidebar-header { padding: 56px 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); }
-    .sidebar-header .logo { font-size: 22px; font-weight: 900; letter-spacing: 4px; }
-    .sidebar-header .tagline { font-size: 11px; color: var(--blue-light); letter-spacing: 1px; margin-top: 4px; }
-    .sidebar-user { display: flex; align-items: center; gap: 12px; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
-    .sidebar-user img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: var(--blue-mid); }
-    .sidebar-user .name { font-size: 14px; font-weight: 600; }
-    .sidebar-user .email { font-size: 11px; color: var(--gray); margin-top: 2px; }
-    .sidebar-menu { flex: 1; padding: 12px 0; }
-    .sidebar-item { display: flex; align-items: center; padding: 14px 20px; cursor: pointer; font-size: 15px; transition: background 0.15s; border: none; background: none; color: var(--white); width: 100%; text-align: left; }
+
+    .sidebar-header {
+      padding: 56px 20px 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .sidebar-header .logo {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 4px;
+    }
+
+    .sidebar-header .tagline {
+      font-size: 11px;
+      color: var(--blue-light);
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+
+    .sidebar-user {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .sidebar-user img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: var(--blue-mid);
+    }
+
+    .sidebar-user .name {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .sidebar-user .email {
+      font-size: 11px;
+      color: var(--gray);
+      margin-top: 2px;
+    }
+
+    .sidebar-menu {
+      flex: 1;
+      padding: 12px 0;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      padding: 14px 20px;
+      cursor: pointer;
+      font-size: 15px;
+      transition: background 0.15s;
+      border: none;
+      background: none;
+      color: var(--white);
+      width: 100%;
+      text-align: left;
+    }
+
     .sidebar-item:hover { background: rgba(255,255,255,0.06); }
     .sidebar-item.active { color: var(--blue-light); font-weight: 700; }
-    .sidebar-bottom { padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.08); }
+
+    .sidebar-bottom {
+      padding: 12px 0;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
     .sidebar-item.logout { color: #F87171; }
 
     /* İÇERİK VE BÖLGE KARTLARI */
-    .content { flex: 1; padding: 16px; padding-bottom: 80px; display: flex; flex-direction: column; gap: 12px; }
-    .loading { text-align: center; padding: 40px; color: var(--gray); }
-    
+    .content {
+      flex: 1;
+      padding: 16px;
+      padding-bottom: 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--gray);
+    }
+
     .region-card {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 12px;
       padding: 16px;
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
-    .region-header { display: flex; justify-content: space-between; align-items: center; }
-    .region-name { font-size: 18px; font-weight: 700; color: var(--white); }
-    .region-group { font-size: 11px; font-weight: 700; background: var(--blue-mid); color: var(--blue-light); padding: 4px 8px; border-radius: 6px; }
-    .region-ban { font-size: 14px; color: var(--accent); display: flex; align-items: center; gap: 6px; }
-    .region-species { font-size: 13px; color: #9CA3AF; line-height: 1.4; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px; }
+
+    .region-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .region-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--white);
+    }
+
+    .region-group {
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--blue-mid);
+      color: var(--blue-light);
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .region-ban {
+      font-size: 14px;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .region-species {
+      font-size: 13px;
+      color: #9CA3AF;
+      line-height: 1.4;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      padding-top: 8px;
+    }
 
     /* BOTTOMBAR */
-    .bottombar { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: var(--blue-dark); border-top: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; z-index: 100; }
-    .bottom-btn { background: none; border: none; color: var(--white); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 8px; }
+    .bottombar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: var(--blue-dark);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      z-index: 100;
+    }
+
+    .bottom-btn {
+      background: none;
+      border: none;
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 8px;
+    }
+
     .bottom-btn svg { width: 26px; height: 26px; }
-    .profile-btn img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid var(--blue-light); background: var(--blue-mid); }
+
+    .profile-btn img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--blue-light);
+      background: var(--blue-mid);
+    }
   </style>
 </head>
-<body>
 
-  <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+<body>
+  <div class="sidebar-overlay" id="overlay"></div>
+
   <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <div class="logo">OLTA</div>
       <div class="tagline">BALIKÇININ REHBERİ</div>
     </div>
+
     <div class="sidebar-user">
-      <img id="user-photo" src="data:image/svg+xml;utf8,<svg xmlns='http://w3.org' fill='%236B7280' viewBox='0 0 24 24'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5-4-8-4z'/></svg>" alt="" />
+      <img
+        id="user-photo"
+        src="data:image/svg+xml;utf8,<svg xmlns='http://w3.org' fill='%236B7280' viewBox='0 0 24 24'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5-4-8-4z'/></svg>"
+        alt=""
+      />
       <div>
         <div class="name" id="user-name">Yükleniyor...</div>
         <div class="email" id="user-email">...</div>
       </div>
     </div>
+
     <div class="sidebar-menu">
-      <button class="sidebar-item" onclick="window.location.href='species.html'">Balık Türleri</button>
-      <button class="sidebar-item active" onclick="closeSidebar()">Bölgeler</button>
-      <button class="sidebar-item">Ayarlar</button>
+      <button class="sidebar-item" id="species-btn">Balık Türleri</button>
+      <button class="sidebar-item active" id="regions-btn">Bölgeler</button>
+      <button class="sidebar-item" id="settings-btn">Ayarlar</button>
     </div>
+
     <div class="sidebar-bottom">
       <button class="sidebar-item logout" id="logout-btn">Çıkış Yap</button>
     </div>
   </div>
 
   <div class="banner">
-    <button class="hamburger" onclick="openSidebar()">
+    <button class="hamburger" id="hamburger-btn" type="button" aria-label="Menüyü aç">
       <span></span><span></span><span></span>
     </button>
     <div class="banner-title">OLTA</div>
@@ -125,14 +321,19 @@
   </div>
 
   <div class="bottombar">
-    <button class="bottom-btn" onclick="window.location.href='home.html'">
+    <button class="bottom-btn" id="home-btn" type="button" aria-label="Ana sayfa">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
         <polyline points="9 22 9 12 15 12 15 22"/>
       </svg>
     </button>
-    <button class="bottom-btn profile-btn" onclick="window.location.href='profile.html'">
-      <img id="bottom-photo" src="data:image/svg+xml;utf8,<svg xmlns='http://w3.org' fill='%232E86AB' viewBox='0 0 24 24'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5-4-8-4z'/></svg>" alt="" />
+
+    <button class="bottom-btn profile-btn" id="profile-btn" type="button" aria-label="Profil">
+      <img
+        id="bottom-photo"
+        src="data:image/svg+xml;utf8,<svg xmlns='http://w3.org' fill='%232E86AB' viewBox='0 0 24 24'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5-4-8-4z'/></svg>"
+        alt=""
+      />
     </button>
   </div>
 
@@ -150,31 +351,61 @@
       appId: "1:142251428527:web:dee8776ee6cde14656225a"
     };
 
-    const app  = initializeApp(firebaseConfig);
+    const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db   = getFirestore(app);
+    const db = getFirestore(app);
 
-    // 1. Kullanıcı Kontrolü
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const hamburger = document.getElementById('hamburger-btn');
+
+    function openSidebar() {
+      sidebar.classList.add('open');
+      overlay.classList.add('open');
+    }
+
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+    }
+
+    hamburger.addEventListener('click', openSidebar);
+    overlay.addEventListener('click', closeSidebar);
+
+    document.getElementById('regions-btn').addEventListener('click', closeSidebar);
+    document.getElementById('species-btn').addEventListener('click', () => {
+      window.location.href = 'species.html';
+    });
+    document.getElementById('home-btn').addEventListener('click', () => {
+      window.location.href = 'home.html';
+    });
+    document.getElementById('profile-btn').addEventListener('click', () => {
+      window.location.href = 'profile.html';
+    });
+
     onAuthStateChanged(auth, async (user) => {
-      if (!user) { window.location.href = 'index.html'; return; }
-      
-      document.getElementById('user-name').textContent  = user.displayName || "Balıkçı";
-      document.getElementById('user-email').textContent = user.email;
+      if (!user) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      document.getElementById('user-name').textContent = user.displayName || "Balıkçı";
+      document.getElementById('user-email').textContent = user.email || "";
+
       if (user.photoURL) {
-        document.getElementById('user-photo').src   = user.photoURL;
+        document.getElementById('user-photo').src = user.photoURL;
         document.getElementById('bottom-photo').src = user.photoURL;
       }
 
-      // Kullanıcı doğrulanınca bölgeleri yükle
       bolgeleriGetir();
     });
 
-    // 2. Firestore'dan Bölgeleri Çekme
     async function bolgeleriGetir() {
       const contentDiv = document.getElementById('content');
+
       try {
         const querySnapshot = await getDocs(collection(db, 'regions'));
-        contentDiv.innerHTML = ''; // Yükleniyor yazısını temizle
+        contentDiv.innerHTML = '';
 
         querySnapshot.forEach((doc) => {
           const bolge = doc.data();
@@ -193,16 +424,23 @@
               <strong>Kısıtlanan Türler:</strong> ${bolge.species ? bolge.species.join(', ') : ''}
             </div>
           `;
+
           contentDiv.appendChild(kart);
         });
-
       } catch (error) {
         console.error("Bölgeler yüklenirken hata oluştu:", error);
         contentDiv.innerHTML = '<div class="loading">Veriler veritabanından çekilemedi.</div>';
       }
     }
 
-    // Çıkış Yap ve Menü Tetikleyicileri
-    document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
-    window.openSidebar = () => { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('open'); };
-window.closeSidebar = () => { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); };
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+        window.location.href = 'index.html';
+      } catch (error) {
+        console.error('Çıkış yapılamadı:', error);
+      }
+    });
+  </script>
+</body>
+</html>
