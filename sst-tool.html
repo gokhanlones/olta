@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>OLTA — SST Toplayıcı</title>
+<style>
+  :root {
+    --bg:      #0A1628;
+    --panel:   #1A3A5C;
+    --accent:  #F4A261;
+    --blue:    #2E86AB;
+    --text:    #E8F4FD;
+    --muted:   #7A9BB5;
+    --ok:      #34D399;
+    --warn:    #FCD34D;
+    --err:     #F87171;
+    --loading: #60A5FA;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  *, *::before, *::after { box-sizing: inherit; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding: 20px 16px 32px;
+    min-height: 100vh;
+  }
+  header { margin-bottom: 24px; }
+  header h1 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -0.3px;
+  }
+  header p {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  #startBtn {
+    width: 100%;
+    background: var(--accent);
+    color: #0A1628;
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: opacity .2s;
+  }
+  #startBtn:disabled { opacity: .45; cursor: not-allowed; }
+  .progress-wrap { margin-bottom: 6px; display: none; }
+  .progress-track {
+    background: var(--panel);
+    border-radius: 99px;
+    height: 6px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    background: var(--accent);
+    height: 100%;
+    width: 0%;
+    border-radius: 99px;
+    transition: width .35s ease;
+  }
+  #progressLabel {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 6px;
+    margin-bottom: 14px;
+    min-height: 18px;
+  }
+  .section-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: .6px;
+    margin-bottom: 8px;
+  }
+  .fish-row {
+    background: var(--panel);
+    border-radius: 10px;
+    padding: 11px 14px;
+    margin-bottom: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .fish-left { flex: 1; min-width: 0; }
+  .fish-name { font-size: 0.9rem; font-weight: 600; }
+  .fish-data {
+    font-size: 0.75rem;
+    color: var(--accent);
+    margin-top: 3px;
+    min-height: 16px;
+  }
+  .fish-status {
+    font-size: 0.72rem;
+    white-space: nowrap;
+    color: var(--muted);
+  }
+  .s-ok      { color: var(--ok); }
+  .s-load    { color: var(--loading); }
+  .s-warn    { color: var(--warn); }
+  .s-err     { color: var(--err); }
+
+  #output {
+    background: var(--panel);
+    border-radius: 10px;
+    padding: 14px;
+    font-family: 'SF Mono', 'Fira Mono', monospace;
+    font-size: 0.7rem;
+    color: #A7D4F5;
+    white-space: pre;
+    overflow-x: auto;
+    margin-top: 20px;
+    display: none;
+    max-height: 260px;
+    overflow-y: auto;
+  }
+  #copyBtn {
+    width: 100%;
+    background: var(--blue);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 13px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    display: none;
+  }
+  #copyBtn:active { opacity: .75; }
+  #doneMsg {
+    text-align: center;
+    color: var(--ok);
+    font-size: 0.85rem;
+    margin-top: 12px;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎣 OLTA — SST Toplayıcı</h1>
+  <p>34 tür için OBIS'ten otomatik sıcaklık verisi</p>
+</header>
+
+<button id="startBtn" onclick="start()">Başlat</button>
+
+<div class="progress-wrap" id="progressWrap">
+  <div class="progress-track"><div class="progress-fill" id="fill"></div></div>
+</div>
+<div id="progressLabel"></div>
+
+<div class="section-label">TÜRLER</div>
+<div id="list"></div>
+
+<pre id="output"></pre>
+<button id="copyBtn" onclick="copyOut()">📋 JSON'u Kopyala</button>
+<div id="doneMsg">✓ Tamamlandı — JSON'u kopyalayıp bana yapıştır</div>
+
+<script>
+const FISH = [
+  { name:'Çipura',              id:151523 },
+  { name:'Palamut',             id:127021 },
+  { name:'Uskumru',             id:127023 },
+  { name:'İstavrit',            id:126822 },
+  { name:'Barbunya',            id:126985 },
+  { name:'Tekir',               id:126986 },
+  { name:'Karagöz',             id:127054 },
+  { name:'Mercan',              id:127060 },
+  { name:'Kefal',               id:126983 },
+  { name:'Kolyoz',              id:127022 },
+  { name:'Sinagrit',            id:127053 },
+  { name:'Kalkan',              id:127141 },
+  { name:'Dil',                 id:127160 },
+  { name:'Pisi',                id:127140 },
+  { name:'Mezgit',              id:126439 },
+  { name:'Akya',                id:126815 },
+  { name:'Sarıkuyruk',         id:126819 },
+  { name:'Lambuka',             id:126848 },
+  { name:'Lagos',               id:127031 },
+  { name:'Eşkina',             id:127011 },
+  { name:'Minekop',             id:127012 },
+  { name:'Sargos',              id:127052 },
+  { name:'Sarıağız',           id:127007 },
+  { name:'Ahtapot',             id:140605 },
+  { name:'Kılıç',              id:126971 },
+  { name:'Sazan',               id:154438 },
+  { name:'Yayın',              id:154652 },
+  { name:'Turna',               id:154261 },
+  { name:'Sudak',               id:154564 },
+  { name:'Doğal Alabalık',     id:119515 },
+  { name:'Gökkuşağı Alabalığı',id:127183 },
+  { name:'Tatlısu Levreği',    id:154546 },
+  { name:'Kadife',              id:154448 },
+  { name:'Kerevit',             id:118534 },
+];
+
+const results = {};
+
+function r1(n) { return Math.round(n * 10) / 10; }
+
+function stats(arr) {
+  if (!arr.length) return null;
+  const s = [...arr].sort((a,b)=>a-b);
+  const sum = s.reduce((a,b)=>a+b,0);
+  const mid = Math.floor(s.length/2);
+  return {
+    sstMin:    r1(s[0]),
+    sstMax:    r1(s[s.length-1]),
+    sstAvg:    r1(sum/s.length),
+    sstMedian: r1(s.length%2 ? s[mid] : (s[mid-1]+s[mid])/2),
+    sstCount:  s.length
+  };
+}
+
+function render() {
+  const wrap = document.getElementById('list');
+  wrap.innerHTML = '';
+  FISH.forEach((f,i) => {
+    wrap.insertAdjacentHTML('beforeend', `
+      <div class="fish-row" id="row${i}">
+        <div class="fish-left">
+          <div class="fish-name">${f.name}</div>
+          <div class="fish-data" id="data${i}"></div>
+        </div>
+        <div class="fish-status" id="st${i}">bekliyor</div>
+      </div>`);
+  });
+}
+
+function setSt(i, txt, cls) {
+  const el = document.getElementById(`st${i}`);
+  el.textContent = txt;
+  el.className = `fish-status ${cls}`;
+}
+function setData(i, txt) {
+  document.getElementById(`data${i}`).textContent = txt;
+}
+
+async function fetchOne(f, i) {
+  setSt(i, 'çekiyor…', 's-load');
+  try {
+    const res = await fetch(
+      `https://api.obis.org/v3/occurrence?taxonid=${f.id}&size=100`
+    );
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const ssts = (data.results||[])
+      .map(r=>r.sst)
+      .filter(v=>v!=null && !isNaN(v));
+
+    if (!ssts.length) {
+      setSt(i,'veri yok','s-warn');
+      setData(i,'SST bulunamadı');
+      results[f.name] = { sstMin:null, sstMax:null, sstAvg:null, sstCount:0 };
+      return;
+    }
+    const s = stats(ssts);
+    results[f.name] = s;
+    setSt(i,'✓','s-ok');
+    setData(i,`${s.sstMin}–${s.sstMax}°C  ort:${s.sstAvg}°C  (${s.sstCount})`);
+  } catch(e) {
+    setSt(i,'hata','s-err');
+    setData(i, e.message);
+    results[f.name] = null;
+  }
+}
+
+async function start() {
+  document.getElementById('startBtn').disabled = true;
+  document.getElementById('progressWrap').style.display = 'block';
+  const fill  = document.getElementById('fill');
+  const label = document.getElementById('progressLabel');
+
+  for (let i = 0; i < FISH.length; i++) {
+    label.textContent = `${i+1} / ${FISH.length}  —  ${FISH[i].name}`;
+    fill.style.width = `${((i+1)/FISH.length)*100}%`;
+    await fetchOne(FISH[i], i);
+    if (i < FISH.length-1) await new Promise(r=>setTimeout(r,350));
+  }
+
+  label.textContent = '✓ Tamamlandı';
+  const json = JSON.stringify(results, null, 2);
+  const out = document.getElementById('output');
+  out.textContent = json;
+  out.style.display = 'block';
+  document.getElementById('copyBtn').style.display = 'block';
+  document.getElementById('doneMsg').style.display = 'block';
+}
+
+function copyOut() {
+  const txt = document.getElementById('output').textContent;
+  const btn = document.getElementById('copyBtn');
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(txt).then(()=>{
+      btn.textContent = '✓ Kopyalandı!';
+      setTimeout(()=>{ btn.textContent = '📋 JSON\'u Kopyala'; }, 2000);
+    });
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = txt;
+    document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = '✓ Kopyalandı!';
+    setTimeout(()=>{ btn.textContent = '📋 JSON\'u Kopyala'; }, 2000);
+  }
+}
+
+render();
+</script>
+</body>
+</html>
