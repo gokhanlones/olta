@@ -295,14 +295,14 @@
     </button>
   </div>
 
-    <script type="module">
-    import { initializeApp } from "https://gstatic.com";
-    import { getAuth, onAuthStateChanged, signOut } from "https://gstatic.com";
-    import { getFirestore, collection, getDocs } from "https://gstatic.com";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCkq0NU1Ao8LMZw6WfPvQUO4F_r4-An9-c",
-      authDomain: "://firebaseapp.com",
+      authDomain: "olta-810ae.firebaseapp.com",
       projectId: "olta-810ae",
       storageBucket: "olta-810ae.firebasestorage.app",
       messagingSenderId: "142251428527",
@@ -312,72 +312,121 @@
     const app  = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db   = getFirestore(app);
-    let tumBaliklar = [];
 
-    // 1. Kullanıcı Giriş Kontrolü & Profil Bilgileri
+    let allFish = [];
+    let currentFilter = 'all';
+
     onAuthStateChanged(auth, async (user) => {
       if (!user) { window.location.href = 'index.html'; return; }
-      
-      document.getElementById('user-name').textContent  = user.displayName || "Balıkçı";
+      document.getElementById('user-name').textContent  = user.displayName;
       document.getElementById('user-email').textContent = user.email;
-      if (user.photoURL) {
-        document.getElementById('user-photo').src   = user.photoURL;
-        document.getElementById('bottom-photo').src = user.photoURL;
-      }
-
-      // Kullanıcı doğrulanınca Firestore'dan verileri çek
-      const querySnapshot = await getDocs(collection(db, 'fishes'));
-      tumBaliklar = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      baliklariListele(tumBaliklar);
+      document.getElementById('user-photo').src         = user.photoURL;
+      document.getElementById('bottom-photo').src       = user.photoURL;
+      await loadFish();
     });
 
-    // 2. Balıkları Ekrana Basma Fonksiyonu
-    function baliklariListele(liste) {
-      const contentDiv = document.getElementById('content');
-      contentDiv.innerHTML = ''; 
+    async function loadFish() {
+      const content = document.getElementById('content');
+      try {
+        const q = query(collection(db, 'fish'), orderBy('order'));
+        const snap = await getDocs(q);
+        allFish = [];
+        snap.forEach(doc => allFish.push(doc.data()));
+        renderFish();
+      } catch(e) {
+        content.innerHTML = `<div class="loading">Hata: ${e.message}</div>`;
+      }
+    }
 
-      liste.forEach((balik) => {
-        const kart = document.createElement('div');
-        kart.className = 'fish-card';
-        kart.onclick = () => window.location.href = `fish-detail.html?id=${balik.id}`;
+    function isBanned(f) {
+      if (!f.banStart) return false;
+      const now = new Date();
+      const year = now.getFullYear();
+      const months = {
+        'Ocak':1,'Şubat':2,'Mart':3,'Nisan':4,'Mayıs':5,'Haziran':6,
+        'Temmuz':7,'Ağustos':8,'Eylül':9,'Ekim':10,'Kasım':11,'Aralık':12
+      };
+      try {
+        const [sd, sm] = f.banStart.split(' ');
+        const [ed, em] = f.banEnd.split(' ');
+        const start = new Date(year, months[sm]-1, parseInt(sd));
+        const end   = new Date(year, months[em]-1, parseInt(ed));
+        if (end < start) {
+          return now >= start || now <= end;
+        }
+        return now >= start && now <= end;
+      } catch { return false; }
+    }
 
-        kart.innerHTML = `
-          <img src="${balik.imageURL || 'images/default-fish.png'}" />
-          <div class="badge">
-            <div class="badge-label ${balik.isBanned ? 'yasak' : 'serbest'}">
-              ${balik.isBanned ? 'AV YASAĞI' : 'AV SERBEST'}
-            </div>
-            <div class="badge-detail">${balik.isBanned ? 'Dönemsel' : (balik.sizeLimit ? balik.sizeLimit + ' cm' : 'Limit Yok')}</div>
-          </div>
+    function renderFish() {
+      const content = document.getElementById('content');
+      content.innerHTML = '';
+      const list = currentFilter === 'all'
+        ? allFish
+        : allFish.filter(f => f.type === currentFilter);
+
+      list.forEach(f => {
+        const banned = isBanned(f);
+        const card = document.createElement('div');
+        card.className = 'fish-card';
+
+        const minLabel = f.minSize
+          ? `Min: ${f.minSize} ${f.minSizeUnit}`
+          : 'Boy yok';
+        const maxLabel = f.maxKeep || '-';
+
+        const badge = banned
+          ? `<div class="badge">
+               <div class="badge-label yasak">YASAK</div>
+               <div class="badge-detail">${f.banStart}</div>
+               <div class="badge-detail dim">${f.banEnd}</div>
+             </div>`
+          : `<div class="badge">
+               <div class="badge-label serbest">SERBEST</div>
+               <div class="badge-detail">${minLabel}</div>
+               <div class="badge-detail dim">${maxLabel}</div>
+             </div>`;
+
+        const seasonText = f.banStart
+          ? `${f.banStart} - ${f.banEnd}`
+          : 'Tüm sezon';
+        const seasonClass = banned ? 'card-ban' : 'card-season';
+
+        card.innerHTML = `
+          <img src="${f.image}" alt="${f.name}" />
+          ${badge}
           <div class="card-info">
-            <div class="card-name">${balik.name}</div>
-            <div class="${balik.isBanned ? 'card-ban' : 'card-season'}">${balik.seasonInfo || ''}</div>
+            <div class="card-name">${f.name}</div>
+            <div class="${seasonClass}">${seasonText}</div>
           </div>
         `;
-        contentDiv.appendChild(kart);
+        content.appendChild(card);
       });
     }
 
-    // 3. Kategori Filtreleme (Tümü, Deniz, Tatlısu)
-    document.querySelectorAll('.filter-btn').forEach((buton) => {
+    // Filtre
+    document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('.filter-btn').forEach((b) => b.classList.remove('active'));
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-
-        const kategori = btn.getAttribute('data-filter');
-        if (kategori === 'all') {
-          baliklariListele(tumBaliklar);
-        } else {
-          const filtrelenmiş = tumBaliklar.filter(b => b.category === kategori);
-          baliklariListele(filtrelenmiş);
-        }
+        currentFilter = btn.dataset.filter;
+        renderFish();
       });
     });
 
-    // Çıkış Yap & Sidebar Tetikleyicileri
-    document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
-    window.openSidebar = () => { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('open'); };
-    window.closeSidebar = () => { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); };
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      await signOut(auth);
+      window.location.href = 'index.html';
+    });
+
+    window.openSidebar = () => {
+      document.getElementById('sidebar').classList.add('open');
+      document.getElementById('overlay').classList.add('open');
+    };
+    window.closeSidebar = () => {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('overlay').classList.remove('open');
+    };
   </script>
 </body>
 </html>
