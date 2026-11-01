@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Olta</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --blue-dark:  #0A1628;
+      --blue-mid:   #1A3A5C;
+      --blue-light: #2E86AB;
+      --accent:     #F4A261;
+      --white:      #FFFFFF;
+      --gray:       #6B7280;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--blue-dark);
+      color: var(--white);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .banner {
+      background: var(--blue-dark);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      height: 56px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .hamburger {
+      background: none;
+      border: none;
+      color: var(--white);
+      cursor: pointer;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .hamburger span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--white);
+      border-radius: 2px;
+    }
+    .banner-title {
+      flex: 1;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 6px;
+    }
+    .banner-placeholder { width: 38px; }
+
+    .sidebar-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 200;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .sidebar-overlay.open { display: block; opacity: 1; }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: -280px;
+      width: 280px;
+      height: 100%;
+      background: var(--blue-dark);
+      border-right: 1px solid rgba(255,255,255,0.08);
+      z-index: 300;
+      transition: left 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar.open { left: 0; }
+
+    .sidebar-header {
+      padding: 56px 20px 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .sidebar-header .logo { font-size: 22px; font-weight: 900; letter-spacing: 4px; }
+    .sidebar-header .tagline { font-size: 11px; color: var(--blue-light); letter-spacing: 1px; margin-top: 4px; }
+
+    .sidebar-user {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .sidebar-user img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+    .sidebar-user .name { font-size: 14px; font-weight: 600; }
+    .sidebar-user .email { font-size: 11px; color: var(--gray); margin-top: 2px; }
+
+    .sidebar-menu { flex: 1; padding: 12px 0; }
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      padding: 14px 20px;
+      cursor: pointer;
+      font-size: 15px;
+      transition: background 0.15s;
+      border: none;
+      background: none;
+      color: var(--white);
+      width: 100%;
+      text-align: left;
+    }
+    .sidebar-item:hover { background: rgba(255,255,255,0.06); }
+    .sidebar-item.active { color: var(--blue-light); font-weight: 700; }
+    .sidebar-bottom { padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.08); }
+    .sidebar-item.logout { color: #F87171; }
+
+    .content {
+      flex: 1;
+      padding: 24px 16px;
+      padding-bottom: 80px;
+    }
+
+    .bottombar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: var(--blue-dark);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      z-index: 100;
+    }
+    .bottom-btn {
+      background: none;
+      border: none;
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 8px;
+    }
+    .bottom-btn svg { width: 26px; height: 26px; }
+    .profile-btn img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--blue-light);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">OLTA</div>
+      <div class="tagline">BALIKÇININ REHBERİ</div>
+    </div>
+    <div class="sidebar-user">
+      <img id="user-photo" src="" alt="" />
+      <div>
+        <div class="name" id="user-name">...</div>
+        <div class="email" id="user-email">...</div>
+      </div>
+    </div>
+    <div class="sidebar-menu">
+      <button class="sidebar-item" onclick="window.location.href='species.html'">Balık Türleri</button>
+      <button class="sidebar-item" onclick="window.location.href='regions.html'">Bölgeler</button>
+      <button class="sidebar-item">Ayarlar</button>
+    </div>
+    <div class="sidebar-bottom">
+      <button class="sidebar-item logout" id="logout-btn">Çıkış Yap</button>
+    </div>
+  </div>
+
+  <div class="banner">
+    <button class="hamburger" onclick="openSidebar()">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="banner-title">OLTA</div>
+    <div class="banner-placeholder"></div>
+  </div>
+
+  <div class="content"></div>
+
+  <div class="bottombar">
+    <button class="bottom-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+    </button>
+    <button class="bottom-btn profile-btn" onclick="window.location.href='profile.html'">
+      <img id="bottom-photo" src="" alt="" />
+    </button>
+  </div>
+
+  <script type="module">
+    import { initializeApp }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCkq0NU1Ao8LMZw6WfPvQUO4F_r4-An9-c",
+      authDomain: "olta-810ae.firebaseapp.com",
+      projectId: "olta-810ae",
+      storageBucket: "olta-810ae.firebasestorage.app",
+      messagingSenderId: "142251428527",
+      appId: "1:142251428527:web:dee8776ee6cde14656225a"
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) { window.location.href = 'index.html'; return; }
+      document.getElementById('user-name').textContent  = user.displayName;
+      document.getElementById('user-email').textContent = user.email;
+      document.getElementById('user-photo').src         = user.photoURL;
+      document.getElementById('bottom-photo').src       = user.photoURL;
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      await signOut(auth);
+      window.location.href = 'index.html';
+    });
+
+    window.openSidebar = () => {
+      document.getElementById('sidebar').classList.add('open');
+      document.getElementById('overlay').classList.add('open');
+    };
+    window.closeSidebar = () => {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('overlay').classList.remove('open');
+    };
+  </script>
+</body>
+</html>
