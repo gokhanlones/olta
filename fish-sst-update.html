@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fish SST Güncelle</title>
+<style>
+  body { background:#0A1628; color:#E8F4FD; font-family:-apple-system,sans-serif; padding:20px; }
+  h2 { color:#F4A261; margin-bottom:4px; }
+  p  { color:#7A9BB5; font-size:.85rem; margin-bottom:20px; }
+  button {
+    background:#F4A261; color:#0A1628; border:none;
+    padding:13px; border-radius:10px; font-size:1rem;
+    font-weight:700; width:100%; cursor:pointer; margin-bottom:16px;
+  }
+  button:disabled { opacity:.4; cursor:not-allowed; }
+  .row {
+    background:#1A3A5C; border-radius:8px;
+    padding:10px 14px; margin-bottom:6px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .name { font-size:.9rem; font-weight:600; }
+  .status { font-size:.75rem; color:#7A9BB5; }
+  .ok   { color:#34D399; }
+  .err  { color:#F87171; }
+  .run  { color:#60A5FA; }
+  #summary { margin-top:16px; text-align:center; font-size:.9rem; color:#34D399; display:none; }
+</style>
+</head>
+<body>
+
+<h2>🎣 OLTA — Fish SST Güncelle</h2>
+<p>Mevcut fish dokümanlarına sstMin / sstMax / sstAvg ekler. Diğer alanlar değişmez.</p>
+
+<button id="btn" onclick="run()">Güncelle (36 tür)</button>
+
+<div id="list"></div>
+<div id="summary"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const app = initializeApp({
+    apiKey: "AIzaSyCkq0NU1Ao8LMZw6WfPvQUO4F_r4-An9-c",
+    authDomain: "olta-810ae.firebaseapp.com",
+    projectId: "olta-810ae",
+    storageBucket: "olta-810ae.firebasestorage.app",
+    messagingSenderId: "142251428527",
+    appId: "1:142251428527:web:dee8776ee6cde14656225a"
+  });
+  const db = getFirestore(app);
+
+  const UPDATES = [{"id":"lufer","sstMin":11.2,"sstMax":27.0,"sstAvg":16.6},{"id":"levrek","sstMin":11.9,"sstMax":18.9,"sstAvg":12.5},{"id":"cipura","sstMin":11.9,"sstMax":23.2,"sstAvg":18.9},{"id":"palamut","sstMin":11.8,"sstMax":28.2,"sstAvg":23.4},{"id":"uskumru","sstMin":8.5,"sstMax":18.3,"sstAvg":12.3},{"id":"istavrit","sstMin":9.9,"sstMax":22.1,"sstAvg":12.9},{"id":"barbunya","sstMin":11.2,"sstMax":23.1,"sstAvg":18.7},{"id":"tekir","sstMin":10.0,"sstMax":23.1,"sstAvg":17.3},{"id":"karagoz","sstMin":15.3,"sstMax":22.3,"sstAvg":18.6},{"id":"mercan","sstMin":13.9,"sstMax":23.1,"sstAvg":19.5},{"id":"kefal","sstMin":11.0,"sstMax":25.1,"sstAvg":17.1},{"id":"kolyoz","sstMin":10.5,"sstMax":23.1,"sstAvg":15.2},{"id":"sinagrit","sstMin":17.6,"sstMax":23.2,"sstAvg":18.9},{"id":"kalkan","sstMin":8.5,"sstMax":16.7,"sstAvg":10.4},{"id":"dil","sstMin":10.1,"sstMax":18.9,"sstAvg":12.0},{"id":"pisi","sstMin":9.8,"sstMax":13.6,"sstAvg":11.0},{"id":"mezgit","sstMin":3.5,"sstMax":19.8,"sstAvg":12.6},{"id":"akya","sstMin":13.0,"sstMax":28.2,"sstAvg":25.0},{"id":"sarıkuyruk","sstMin":12.7,"sstMax":28.0,"sstAvg":21.9},{"id":"lambuka","sstMin":14.2,"sstMax":29.2,"sstAvg":26.0},{"id":"lagos","sstMin":16.8,"sstMax":28.1,"sstAvg":21.4},{"id":"eskina","sstMin":15.2,"sstMax":28.1,"sstAvg":23.1},{"id":"minekop","sstMin":13.9,"sstMax":29.2,"sstAvg":23.2},{"id":"sargos","sstMin":16.7,"sstMax":21.4,"sstAvg":18.8},{"id":"sarıagız","sstMin":14.5,"sstMax":29.2,"sstAvg":17.2},{"id":"ahtapot","sstMin":10.8,"sstMax":28.9,"sstAvg":19.2},{"id":"kilıc","sstMin":17.3,"sstMax":28.1,"sstAvg":23.9},{"id":"sazan","sstMin":null,"sstMax":null,"sstAvg":null},{"id":"yayin","sstMin":null,"sstMax":null,"sstAvg":null},{"id":"turna","sstMin":null,"sstMax":null,"sstAvg":null},{"id":"sudak","sstMin":null,"sstMax":null,"sstAvg":null},{"id":"alabalik","sstMin":null,"sstMax":null,"sstAvg":null},{"id":"gokuşağı-alabalık","sstMin":null,"sstMax":null,"sstAvg":null},{"id":"tatlisulevreği","sstMin":null,"sstMax":null,"sstAvg":null},{"id":"kadife","sstMin":null,"sstMax":null,"sstAvg":null},{"id":"kerevit","sstMin":null,"sstMax":null,"sstAvg":null}];
+
+  // Satırları oluştur
+  const list = document.getElementById('list');
+  UPDATES.forEach(u => {
+    list.insertAdjacentHTML('beforeend', `
+      <div class="row" id="row-${u.id}">
+        <span class="name">${u.id}</span>
+        <span class="status" id="st-${u.id}">bekliyor</span>
+      </div>`);
+  });
+
+  function setSt(id, txt, cls) {
+    const el = document.getElementById(`st-${id}`);
+    el.textContent = txt;
+    el.className = `status ${cls}`;
+  }
+
+  window.run = async function() {
+    document.getElementById('btn').disabled = true;
+    let ok = 0, fail = 0;
+
+    for (const u of UPDATES) {
+      setSt(u.id, 'güncelleniyor…', 'run');
+      try {
+        const payload = { sstMin: u.sstMin, sstMax: u.sstMax, sstAvg: u.sstAvg };
+        await updateDoc(doc(db, 'fish', u.id), payload);
+        const label = u.sstMin !== null
+          ? `${u.sstMin}–${u.sstMax}°C ✓`
+          : 'null ✓';
+        setSt(u.id, label, 'ok');
+        ok++;
+      } catch(e) {
+        setSt(u.id, 'HATA: ' + e.code, 'err');
+        fail++;
+      }
+      await new Promise(r => setTimeout(r, 100));
+    }
+
+    const sum = document.getElementById('summary');
+    sum.style.display = 'block';
+    sum.textContent = `Tamamlandı: ${ok} başarılı${fail ? ', ' + fail + ' hatalı' : ''} ✓`;
+  };
+</script>
+</body>
+</html>
