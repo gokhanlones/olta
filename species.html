@@ -13,6 +13,7 @@
       --accent:     #F4A261;
       --white:      #FFFFFF;
       --gray:       #6B7280;
+      --muted:      #7A9BB5;
       --red:        #DC2626;
     }
     body {
@@ -35,125 +36,59 @@
       border-bottom: 1px solid rgba(255,255,255,0.08);
     }
     .hamburger {
-      background: none;
-      border: none;
-      color: var(--white);
-      cursor: pointer;
-      padding: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
+      background: none; border: none; color: var(--white);
+      cursor: pointer; padding: 8px;
+      display: flex; flex-direction: column; gap: 5px;
     }
-    .hamburger span {
-      display: block;
-      width: 22px;
-      height: 2px;
-      background: var(--white);
-      border-radius: 2px;
-    }
-    .banner-title {
-      flex: 1;
-      text-align: center;
-      font-size: 20px;
-      font-weight: 900;
-      letter-spacing: 6px;
-    }
+    .hamburger span { display: block; width: 22px; height: 2px; background: var(--white); border-radius: 2px; }
+    .banner-title { flex: 1; text-align: center; font-size: 20px; font-weight: 900; letter-spacing: 6px; }
     .banner-placeholder { width: 38px; }
+
     .sidebar-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 200;
-      display: none;
-      opacity: 0;
-      transition: opacity 0.3s;
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      z-index: 200; display: none; opacity: 0; transition: opacity 0.3s;
     }
     .sidebar-overlay.open { display: block; opacity: 1; }
     .sidebar {
-      position: fixed;
-      top: 0;
-      left: -280px;
-      width: 280px;
-      height: 100%;
-      background: var(--blue-dark);
-      border-right: 1px solid rgba(255,255,255,0.08);
-      z-index: 300;
-      transition: left 0.3s ease;
-      display: flex;
-      flex-direction: column;
+      position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
+      background: var(--blue-dark); border-right: 1px solid rgba(255,255,255,0.08);
+      z-index: 300; transition: left 0.3s ease; display: flex; flex-direction: column;
     }
     .sidebar.open { left: 0; }
-    .sidebar-header {
-      padding: 56px 20px 24px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
+    .sidebar-header { padding: 56px 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); }
     .sidebar-header .logo { font-size: 22px; font-weight: 900; letter-spacing: 4px; }
     .sidebar-header .tagline { font-size: 11px; color: var(--blue-light); letter-spacing: 1px; margin-top: 4px; }
-    .sidebar-user {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 20px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
+    .sidebar-user { display: flex; align-items: center; gap: 12px; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
     .sidebar-user img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
     .sidebar-user .name { font-size: 14px; font-weight: 600; }
     .sidebar-user .email { font-size: 11px; color: var(--gray); margin-top: 2px; }
     .sidebar-menu { flex: 1; padding: 12px 0; }
     .sidebar-item {
-      display: flex;
-      align-items: center;
-      padding: 14px 20px;
-      cursor: pointer;
-      font-size: 15px;
-      transition: background 0.15s;
-      border: none;
-      background: none;
-      color: var(--white);
-      width: 100%;
-      text-align: left;
+      display: flex; align-items: center; padding: 14px 20px;
+      cursor: pointer; font-size: 15px; transition: background 0.15s;
+      border: none; background: none; color: var(--white); width: 100%; text-align: left;
     }
     .sidebar-item:hover { background: rgba(255,255,255,0.06); }
     .sidebar-item.active { color: var(--blue-light); font-weight: 700; }
     .sidebar-bottom { padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.08); }
     .sidebar-item.logout { color: #F87171; }
 
-    /* FİLTRE */
     .filter-bar {
-      display: flex;
-      gap: 8px;
-      padding: 12px 16px;
-      background: var(--blue-dark);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      position: sticky;
-      top: 56px;
-      z-index: 99;
+      display: flex; gap: 8px; padding: 12px 16px;
+      background: var(--blue-dark); border-bottom: 1px solid rgba(255,255,255,0.08);
+      position: sticky; top: 56px; z-index: 99;
     }
     .filter-btn {
-      padding: 6px 16px;
-      border-radius: 20px;
-      border: 1px solid rgba(255,255,255,0.2);
-      background: none;
-      color: var(--gray);
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.15s;
+      padding: 6px 16px; border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.2); background: none;
+      color: var(--gray); font-size: 13px; cursor: pointer; transition: all 0.15s;
     }
     .filter-btn.active {
-      background: var(--blue-light);
-      border-color: var(--blue-light);
-      color: var(--white);
-      font-weight: 700;
+      background: var(--blue-light); border-color: var(--blue-light);
+      color: var(--white); font-weight: 700;
     }
 
-    .content {
-      flex: 1;
-      padding: 16px;
-      padding-bottom: 80px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+    .content { flex: 1; padding: 16px; padding-bottom: 80px; display: flex; flex-direction: column; gap: 12px; }
     .loading { text-align: center; padding: 40px; color: var(--gray); }
 
     /* KART */
@@ -161,44 +96,22 @@
       background: rgba(255,255,255,0.06);
       border: 1px solid rgba(255,255,255,0.10);
       border-radius: 5px 5px 0 0;
-      overflow: hidden;
-      cursor: pointer;
-      transition: transform 0.15s;
-      position: relative;
+      overflow: hidden; cursor: pointer;
+      transition: transform 0.15s; position: relative;
     }
     .fish-card:active { transform: scale(0.99); }
-    .fish-card img {
-      width: 100%;
-      aspect-ratio: 2 / 1;
-      object-fit: cover;
-      border-radius: 5px 5px 0 0;
-      display: block;
-    }
+    .fish-card img { width: 100%; aspect-ratio: 2 / 1; object-fit: cover; border-radius: 5px 5px 0 0; display: block; }
 
     /* ROZET */
     .badge {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      right: 10px;
-      padding: 8px 12px;
-      border-radius: 8px;
-      text-align: center;
-      background: rgba(0,0,0,0.65);
+      position: absolute; top: 50%; transform: translateY(-50%);
+      right: 10px; padding: 8px 12px; border-radius: 8px;
+      text-align: center; background: rgba(0,0,0,0.65);
     }
-    .badge-label {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-    }
+    .badge-label { font-size: 10px; font-weight: 700; letter-spacing: 0.5px; }
     .badge-label.serbest { color: #4ADE80; }
     .badge-label.yasak   { color: var(--red); }
-    .badge-detail {
-      font-size: 11px;
-      color: var(--white);
-      margin-top: 3px;
-      line-height: 1.4;
-    }
+    .badge-detail { font-size: 11px; color: var(--white); margin-top: 3px; line-height: 1.4; }
     .badge-detail.dim { color: var(--gray); font-size: 10px; }
 
     /* ALT BİLGİ */
@@ -206,38 +119,30 @@
       padding: 10px 14px;
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       background: rgba(255,255,255,0.03);
     }
+    .card-left { display: flex; flex-direction: column; gap: 0; }
     .card-name { font-size: 15px; font-weight: 700; }
-    .card-season { font-size: 12px; color: #4ADE80; text-align: right; }
-    .card-ban { font-size: 12px; color: var(--red); text-align: right; }
+
+    /* SST */
+    .card-sst { margin-top: 5px; display: flex; flex-direction: column; gap: 2px; }
+    .card-sst span { font-size: 11px; color: var(--muted); }
+
+    .card-season { font-size: 12px; color: #4ADE80; text-align: right; white-space: nowrap; margin-left: 8px; padding-top: 2px; }
+    .card-ban    { font-size: 12px; color: var(--red);   text-align: right; white-space: nowrap; margin-left: 8px; padding-top: 2px; }
 
     /* BOTTOMBAR */
     .bottombar {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      height: 60px;
-      background: var(--blue-dark);
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: 60px; background: var(--blue-dark);
       border-top: 1px solid rgba(255,255,255,0.08);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 40px;
-      z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; z-index: 100;
     }
-    .bottom-btn {
-      background: none; border: none;
-      color: var(--white);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; padding: 8px;
-    }
+    .bottom-btn { background: none; border: none; color: var(--white); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 8px; }
     .bottom-btn svg { width: 26px; height: 26px; }
-    .profile-btn img {
-      width: 32px; height: 32px;
-      border-radius: 50%; object-fit: cover;
-      border: 2px solid var(--blue-light);
-    }
+    .profile-btn img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid var(--blue-light); }
   </style>
 </head>
 <body>
@@ -351,9 +256,7 @@
         const [ed, em] = f.banEnd.split(' ');
         const start = new Date(year, months[sm]-1, parseInt(sd));
         const end   = new Date(year, months[em]-1, parseInt(ed));
-        if (end < start) {
-          return now >= start || now <= end;
-        }
+        if (end < start) { return now >= start || now <= end; }
         return now >= start && now <= end;
       } catch { return false; }
     }
@@ -370,9 +273,7 @@
         const card = document.createElement('div');
         card.className = 'fish-card';
 
-        const minLabel = f.minSize
-          ? `Min: ${f.minSize} ${f.minSizeUnit}`
-          : 'Boy yok';
+        const minLabel = f.minSize ? `Min: ${f.minSize} ${f.minSizeUnit}` : 'Boy yok';
         const maxLabel = f.maxKeep || '-';
 
         const badge = banned
@@ -387,16 +288,25 @@
                <div class="badge-detail dim">${maxLabel}</div>
              </div>`;
 
-        const seasonText = f.banStart
-          ? `${f.banStart} - ${f.banEnd}`
-          : 'Tüm sezon';
+        const seasonText  = f.banStart ? `${f.banStart} - ${f.banEnd}` : 'Tüm sezon';
         const seasonClass = banned ? 'card-ban' : 'card-season';
+
+        // SST satırları — sadece deniz türü ve veri varsa
+        const sstHtml = (f.sstMin !== null && f.sstMin !== undefined)
+          ? `<div class="card-sst">
+               <span>En yüksek su sıcaklığı ${f.sstMax}°C</span>
+               <span>En düşük su sıcaklığı ${f.sstMin}°C</span>
+             </div>`
+          : '';
 
         card.innerHTML = `
           <img src="${f.image}" alt="${f.name}" />
           ${badge}
           <div class="card-info">
-            <div class="card-name">${f.name}</div>
+            <div class="card-left">
+              <div class="card-name">${f.name}</div>
+              ${sstHtml}
+            </div>
             <div class="${seasonClass}">${seasonText}</div>
           </div>
         `;
@@ -404,7 +314,6 @@
       });
     }
 
-    // Filtre
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
