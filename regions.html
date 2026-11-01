@@ -116,7 +116,7 @@
     <button class="hamburger" onclick="openSidebar()">
       <span></span><span></span><span></span>
     </button>
-    <div class="banner-title">BÖLGELER</div>
+    <div class="banner-title">OLTA</div>
     <div class="banner-placeholder"></div>
   </div>
 
@@ -165,23 +165,22 @@
         document.getElementById('bottom-photo').src = user.photoURL;
       }
 
-      // Giriş yapıldıktan sonra verileri getir
+      // Kullanıcı doğrulanınca bölgeleri yükle
       bolgeleriGetir();
     });
 
-    // 2. Firestore'dan Bölgeleri (Şehirleri) Çekme
+    // 2. Firestore'dan Bölgeleri Çekme
     async function bolgeleriGetir() {
       const contentDiv = document.getElementById('content');
       try {
         const querySnapshot = await getDocs(collection(db, 'regions'));
-        contentDiv.innerHTML = ''; // Temizle
+        contentDiv.innerHTML = ''; // Yükleniyor yazısını temizle
 
         querySnapshot.forEach((doc) => {
           const bolge = doc.data();
           const kart = document.createElement('div');
-          card.className = 'region-card';
+          kart.className = 'region-card';
 
-          // Şehir kartı içeriği
           kart.innerHTML = `
             <div class="region-header">
               <span class="region-name">${bolge.name}</span>
@@ -199,7 +198,7 @@
 
       } catch (error) {
         console.error("Bölgeler yüklenirken hata oluştu:", error);
-        contentDiv.innerHTML = '<div class="loading">Veriler yüklenemedi.</div>';
+        contentDiv.innerHTML = '<div class="loading">Veriler veritabanından çekilemedi.</div>';
       }
     }
 
