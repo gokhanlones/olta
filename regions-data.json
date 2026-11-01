@@ -1,0 +1,407 @@
+[
+  {
+    "id": "adana", "name": "Adana", "group": 1,
+    "banPeriod": "1 Mart - 31 Mayıs",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "adiyaman", "name": "Adıyaman", "group": 3,
+    "banPeriod": "1 Nisan - 30 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "afyonkarahisar", "name": "Afyonkarahisar", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "agri", "name": "Ağrı", "group": 4,
+    "banPeriod": "15 Mayıs - 15 Ağustos",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "aksaray", "name": "Aksaray", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "amasya", "name": "Amasya", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "ankara", "name": "Ankara", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "antalya", "name": "Antalya", "group": 1,
+    "banPeriod": "1 Mart - 31 Mayıs",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "ardahan", "name": "Ardahan", "group": 4,
+    "banPeriod": "15 Mayıs - 15 Ağustos",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "artvin", "name": "Artvin", "group": 3,
+    "banPeriod": "1 Nisan - 30 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "aydin", "name": "Aydın", "group": 1,
+    "banPeriod": "1 Mart - 31 Mayıs",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "balikesir", "name": "Balıkesir", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "bartin", "name": "Bartın", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "batman", "name": "Batman", "group": 3,
+    "banPeriod": "1 Nisan - 30 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "bayburt", "name": "Bayburt", "group": 4,
+    "banPeriod": "15 Mayıs - 15 Ağustos",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "bilecik", "name": "Bilecik", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "bingol", "name": "Bingöl", "group": 3,
+    "banPeriod": "1 Nisan - 30 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "bitlis", "name": "Bitlis", "group": 4,
+    "banPeriod": "15 Mayıs - 15 Ağustos",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "bolu", "name": "Bolu", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "burdur", "name": "Burdur", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "bursa", "name": "Bursa", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "canakkale", "name": "Çanakkale", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "cankiri", "name": "Çankırı", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "corum", "name": "Çorum", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "denizli", "name": "Denizli", "group": 1,
+    "banPeriod": "1 Mart - 31 Mayıs",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "diyarbakir", "name": "Diyarbakır", "group": 3,
+    "banPeriod": "1 Nisan - 30 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "duzce", "name": "Düzce", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "edirne", "name": "Edirne", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "elazig", "name": "Elazığ", "group": 3,
+    "banPeriod": "1 Nisan - 30 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "erzincan", "name": "Erzincan", "group": 3,
+    "banPeriod": "1 Nisan - 30 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "erzurum", "name": "Erzurum", "group": 4,
+    "banPeriod": "15 Mayıs - 15 Ağustos",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "eskisehir", "name": "Eskişehir", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "gaziantep", "name": "Gaziantep", "group": 1,
+    "banPeriod": "1 Mart - 31 Mayıs",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "giresun", "name": "Giresun", "group": 3,
+    "banPeriod": "1 Nisan - 30 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "gumushane", "name": "Gümüşhane", "group": 3,
+    "banPeriod": "1 Nisan - 30 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "hakkari", "name": "Hakkari", "group": 4,
+    "banPeriod": "15 Mayıs - 15 Ağustos",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "hatay", "name": "Hatay", "group": 1,
+    "banPeriod": "1 Mart - 31 Mayıs",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "igdir", "name": "Iğdır", "group": 4,
+    "banPeriod": "15 Mayıs - 15 Ağustos",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "isparta", "name": "Isparta", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "istanbul", "name": "İstanbul", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "izmir", "name": "İzmir", "group": 1,
+    "banPeriod": "1 Mart - 31 Mayıs",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "kahramanmaras", "name": "Kahramanmaraş", "group": 3,
+    "banPeriod": "1 Nisan - 30 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "karabuk", "name": "Karabük", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "karaman", "name": "Karaman", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "kars", "name": "Kars", "group": 4,
+    "banPeriod": "15 Mayıs - 15 Ağustos",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "kastamonu", "name": "Kastamonu", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "kayseri", "name": "Kayseri", "group": 3,
+    "banPeriod": "1 Nisan - 30 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "kilis", "name": "Kilis", "group": 1,
+    "banPeriod": "1 Mart - 31 Mayıs",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "kirikkale", "name": "Kırıkkale", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "kirklareli", "name": "Kırklareli", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "kirsehir", "name": "Kırşehir", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "kocaeli", "name": "Kocaeli", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "konya", "name": "Konya", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "kutahya", "name": "Kütahya", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "malatya", "name": "Malatya", "group": 3,
+    "banPeriod": "1 Nisan - 30 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "manisa", "name": "Manisa", "group": 1,
+    "banPeriod": "1 Mart - 31 Mayıs",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "mardin", "name": "Mardin", "group": 3,
+    "banPeriod": "1 Nisan - 30 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "mersin", "name": "Mersin", "group": 1,
+    "banPeriod": "1 Mart - 31 Mayıs",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "mugla", "name": "Muğla", "group": 1,
+    "banPeriod": "1 Mart - 31 Mayıs",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "mus", "name": "Muş", "group": 4,
+    "banPeriod": "15 Mayıs - 15 Ağustos",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "nevsehir", "name": "Nevşehir", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "nigde", "name": "Niğde", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "ordu", "name": "Ordu", "group": 3,
+    "banPeriod": "1 Nisan - 30 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "osmaniye", "name": "Osmaniye", "group": 1,
+    "banPeriod": "1 Mart - 31 Mayıs",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "rize", "name": "Rize", "group": 3,
+    "banPeriod": "1 Nisan - 30 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "sakarya", "name": "Sakarya", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "samsun", "name": "Samsun", "group": 3,
+    "banPeriod": "1 Nisan - 30 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "siirt", "name": "Siirt", "group": 3,
+    "banPeriod": "1 Nisan - 30 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "sinop", "name": "Sinop", "group": 3,
+    "banPeriod": "1 Nisan - 30 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "sivas", "name": "Sivas", "group": 3,
+    "banPeriod": "1 Nisan - 30 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "sanliurfa", "name": "Şanlıurfa", "group": 3,
+    "banPeriod": "1 Nisan - 30 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "sirnak", "name": "Şırnak", "group": 3,
+    "banPeriod": "1 Nisan - 30 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "tekirdag", "name": "Tekirdağ", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "tokat", "name": "Tokat", "group": 3,
+    "banPeriod": "1 Nisan - 30 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "trabzon", "name": "Trabzon", "group": 3,
+    "banPeriod": "1 Nisan - 30 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "tunceli", "name": "Tunceli", "group": 3,
+    "banPeriod": "1 Nisan - 30 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "usak", "name": "Uşak", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "van", "name": "Van", "group": 4,
+    "banPeriod": "15 Mayıs - 15 Ağustos",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "yalova", "name": "Yalova", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "yozgat", "name": "Yozgat", "group": 3,
+    "banPeriod": "1 Nisan - 30 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  },
+  {
+    "id": "zonguldak", "name": "Zonguldak", "group": 2,
+    "banPeriod": "15 Mart - 15 Haziran",
+    "species": ["Sazan", "Kadife", "Siraz", "Yayın", "Tatlısu Kefali", "Diğer Tatlısu Türleri"]
+  }
+]
