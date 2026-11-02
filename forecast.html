@@ -4,183 +4,108 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>Olta — Tür Tahmini</title>
-
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-
 <style>
   :root {
-    --bg:     #0A1628;
-    --panel:  #1A3A5C;
-    --blue:   #2E86AB;
-    --accent: #F4A261;
-    --text:   #E8F4FD;
-    --muted:  #7A9BB5;
-    --ok:     #34D399;
-    --red:    #F87171;
+    --bg:    #0A1628; --panel: #1A3A5C; --blue: #2E86AB;
+    --accent:#F4A261; --text:  #E8F4FD; --muted:#7A9BB5;
+    --ok:    #34D399; --warn:  #FCD34D; --red:  #F87171;
   }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; background: var(--bg); color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
 
-  /* BANNER */
-  .banner {
-    height: 56px; background: var(--bg);
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-    display: flex; align-items: center; padding: 0 16px;
-    position: sticky; top: 0; z-index: 500;
-  }
-  .back-btn {
-    background: none; border: none; color: var(--text);
-    font-size: 1.3rem; cursor: pointer; padding: 8px; margin-right: 4px;
-  }
-  .banner h1 { font-size: 1rem; font-weight: 700; }
+  .banner{height:56px;background:var(--bg);border-bottom:1px solid rgba(255,255,255,.08);
+    display:flex;align-items:center;padding:0 16px;position:sticky;top:0;z-index:500;}
+  .back-btn{background:none;border:none;color:var(--text);font-size:1.3rem;cursor:pointer;padding:8px;margin-right:4px;}
+  .banner h1{font-size:1rem;font-weight:700;}
 
-  /* MAP */
-  #map {
-    width: 100%; height: 45vh;
-    min-height: 260px;
-  }
+  #map{width:100%;height:42vh;min-height:240px;}
 
-  /* KONUM BUTONU */
-  .loc-bar {
-    padding: 12px 16px;
-    background: var(--panel);
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    display: flex; gap: 10px;
-  }
-  .loc-btn {
-    flex: 1; background: var(--accent); color: #0A1628;
-    border: none; border-radius: 8px; padding: 11px;
-    font-size: 0.9rem; font-weight: 700; cursor: pointer;
-  }
-  .loc-btn:active { opacity: .75; }
-  .loc-btn.secondary {
-    background: var(--panel);
-    border: 1px solid rgba(255,255,255,0.15);
-    color: var(--text); font-weight: 400;
-  }
+  .loc-bar{padding:10px 16px;background:var(--panel);border-bottom:1px solid rgba(255,255,255,.06);display:flex;gap:8px;}
+  .loc-btn{flex:1;background:var(--accent);color:#0A1628;border:none;border-radius:8px;padding:10px;
+    font-size:.9rem;font-weight:700;cursor:pointer;}
+  .loc-btn:active{opacity:.75;}
+  .loc-btn.sec{background:var(--panel);border:1px solid rgba(255,255,255,.15);color:var(--text);font-weight:400;}
 
-  /* DURUM / SST */
-  #status-box {
-    padding: 12px 16px;
-    font-size: 0.85rem;
-    color: var(--muted);
-    min-height: 42px;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .sst-pill {
-    background: var(--blue);
-    color: #fff;
-    border-radius: 20px;
-    padding: 3px 10px;
-    font-size: 0.85rem;
-    font-weight: 700;
-  }
+  /* DURUM */
+  #status-box{padding:10px 16px;font-size:.85rem;color:var(--muted);min-height:38px;display:flex;align-items:center;}
 
-  /* SONUÇLAR */
-  .section-title {
-    padding: 10px 16px 6px;
-    font-size: 0.7rem;
-    color: var(--muted);
-    letter-spacing: .6px;
-  }
-  .fish-list { padding: 0 16px 80px; display: flex; flex-direction: column; gap: 8px; }
+  /* DENİZ VERİLERİ GRID */
+  #ocean-grid{display:none;grid-template-columns:repeat(2,1fr);gap:8px;padding:0 16px 8px;}
+  .ocean-card{background:var(--panel);border-radius:10px;padding:10px 12px;}
+  .ocean-label{font-size:.65rem;color:var(--muted);letter-spacing:.5px;margin-bottom:3px;}
+  .ocean-val{font-size:1rem;font-weight:700;}
+  .ocean-sub{font-size:.7rem;color:var(--muted);margin-top:1px;}
 
-  .fish-card {
-    background: var(--panel);
-    border-radius: 10px;
-    display: flex; align-items: center; gap: 12px;
-    padding: 10px 12px;
-  }
-  .fish-card img {
-    width: 56px; height: 38px;
-    object-fit: cover; border-radius: 6px;
-    background: rgba(255,255,255,0.05);
-  }
-  .fish-info { flex: 1; min-width: 0; }
-  .fish-name { font-size: 0.95rem; font-weight: 600; }
-  .fish-sst  { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
-  .match-badge {
-    font-size: 0.7rem; font-weight: 700;
-    border-radius: 6px; padding: 3px 7px;
-    white-space: nowrap;
-  }
-  .match-yes { background: rgba(52,211,153,0.15); color: var(--ok); }
-  .match-no  { background: rgba(248,113,113,0.12); color: var(--red); }
+  /* BÖLGE */
+  #region-box{margin:0 16px 8px;background:var(--panel);border-radius:10px;padding:12px 14px;display:none;}
+  .region-name{font-size:1rem;font-weight:700;margin-bottom:6px;}
+  .region-row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+  .region-label{font-size:.7rem;color:var(--muted);margin-bottom:2px;}
+  .region-val{font-size:.85rem;font-weight:600;}
+  .region-val.ban{color:var(--red);}
+  .region-val.ok{color:var(--ok);}
+  .region-species{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.07);
+    font-size:.72rem;color:var(--muted);line-height:1.6;}
+
+  /* BALIK LİSTESİ */
+  .section-title{padding:8px 16px 4px;font-size:.65rem;color:var(--muted);letter-spacing:.6px;}
+  .fish-list{padding:0 16px 80px;display:flex;flex-direction:column;gap:7px;}
+  .fish-card{background:var(--panel);border-radius:10px;display:flex;align-items:center;gap:10px;padding:9px 11px;}
+  .fish-card img{width:52px;height:35px;object-fit:cover;border-radius:6px;background:rgba(255,255,255,.05);}
+  .fish-info{flex:1;min-width:0;}
+  .fish-name{font-size:.9rem;font-weight:600;}
+  .fish-ranges{font-size:.68rem;color:var(--muted);margin-top:2px;}
+  .badge{font-size:.65rem;font-weight:700;border-radius:6px;padding:3px 7px;white-space:nowrap;}
+  .b-yes{background:rgba(52,211,153,.15);color:var(--ok);}
+  .b-may{background:rgba(252,211,77,.12);color:var(--warn);}
+  .b-no{background:rgba(248,113,113,.12);color:var(--red);}
 
   /* BOTTOMBAR */
-  .bottombar {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    height: 60px; background: var(--bg);
-    border-top: 1px solid rgba(255,255,255,0.08);
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 40px; z-index: 100;
-  }
-  .bottom-btn {
-    background: none; border: none; color: var(--text);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; padding: 8px;
-  }
-  .bottom-btn svg { width: 26px; height: 26px; }
-  .profile-btn img {
-    width: 32px; height: 32px; border-radius: 50%;
-    object-fit: cover; border: 2px solid var(--blue);
-  }
+  .bottombar{position:fixed;bottom:0;left:0;right:0;height:60px;background:var(--bg);
+    border-top:1px solid rgba(255,255,255,.08);display:flex;align-items:center;
+    justify-content:space-between;padding:0 40px;z-index:100;}
+  .bottom-btn{background:none;border:none;color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:8px;}
+  .bottom-btn svg{width:26px;height:26px;}
+  .profile-btn img{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--blue);}
 
-  /* BÖLGE KUTUSU */
-  #region-box {
-    margin: 10px 16px 0;
-    background: var(--panel);
-    border-radius: 10px;
-    padding: 12px 14px;
-    display: none;
-  }
-  .region-name { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
-  .region-row  { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-  .region-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 2px; }
-  .region-val   { font-size: 0.85rem; font-weight: 600; }
-  .region-val.ban   { color: var(--red); }
-  .region-val.ok    { color: var(--ok); }
-  .region-species {
-    margin-top: 8px; padding-top: 8px;
-    border-top: 1px solid rgba(255,255,255,0.07);
-    font-size: 0.75rem; color: var(--muted);
-    line-height: 1.6;
-  }
-
-  /* Leaflet dark override */
-  .leaflet-tile-pane { filter: brightness(.85) saturate(.8); }
-  .leaflet-control-attribution { display: none; }
+  .leaflet-tile-pane{filter:brightness(.85) saturate(.8);}
+  .leaflet-control-attribution{display:none;}
 </style>
 </head>
 <body>
 
 <div class="banner">
   <button class="back-btn" onclick="window.location.href='species.html'">←</button>
-  <h1>Bölgeler & Tahmin</h1>
+  <h1>Tür Tahmini</h1>
 </div>
 
 <div id="map"></div>
 
 <div class="loc-bar">
   <button class="loc-btn" onclick="useMyLocation()">📍 Konumumu Kullan</button>
-  <button class="loc-btn secondary" onclick="showMapHint()">Haritaya Dokun</button>
+  <button class="loc-btn sec" onclick="setStatus('Haritada bir deniz noktasına dokun.')">Haritaya Dokun</button>
 </div>
 
 <div id="status-box">Konum seçerek başla veya haritaya dokun.</div>
 
+<!-- DENİZ VERİLERİ -->
+<div id="ocean-grid">
+  <div class="ocean-card"><div class="ocean-label">SICAKLIK</div><div class="ocean-val" id="v-sst">—</div><div class="ocean-sub">°C</div></div>
+  <div class="ocean-card"><div class="ocean-label">TUZLULUK</div><div class="ocean-val" id="v-sss">—</div><div class="ocean-sub">ppt</div></div>
+  <div class="ocean-card"><div class="ocean-label">KLOROFİL</div><div class="ocean-val" id="v-chl">—</div><div class="ocean-sub">mg/m³</div></div>
+  <div class="ocean-card"><div class="ocean-label">DALGA YÜKSEKLİĞİ</div><div class="ocean-val" id="v-wave">—</div><div class="ocean-sub" id="v-wave-dir">—</div></div>
+  <div class="ocean-card"><div class="ocean-label">DALGA PERİYODU</div><div class="ocean-val" id="v-period">—</div><div class="ocean-sub">saniye</div></div>
+  <div class="ocean-card"><div class="ocean-label">AKINTILAR</div><div class="ocean-val" id="v-curr">—</div><div class="ocean-sub" id="v-curr-dir">—</div></div>
+</div>
+
+<!-- BÖLGE -->
 <div id="region-box">
   <div class="region-name" id="region-name">—</div>
   <div class="region-row">
-    <div>
-      <div class="region-label">YASAK DÖNEMİ</div>
-      <div class="region-val ban" id="region-ban">—</div>
-    </div>
-    <div>
-      <div class="region-label">DURUM</div>
-      <div class="region-val" id="region-status">—</div>
-    </div>
+    <div><div class="region-label">YASAK DÖNEMİ</div><div class="region-val ban" id="region-ban">—</div></div>
+    <div><div class="region-label">DURUM</div><div class="region-val" id="region-status">—</div></div>
   </div>
   <div class="region-species" id="region-species"></div>
 </div>
@@ -191,8 +116,7 @@
 <div class="bottombar">
   <button class="bottom-btn" onclick="window.location.href='home.html'">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-      <polyline points="9 22 9 12 15 12 15 22"/>
+      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
     </svg>
   </button>
   <button class="bottom-btn profile-btn" onclick="window.location.href='profile.html'">
@@ -201,35 +125,29 @@
 </div>
 
 <script type="module">
-import { initializeApp }      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, getDocs, orderBy, query, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, orderBy, query, doc, getDoc }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const app  = initializeApp({
-  apiKey: "AIzaSyCkq0NU1Ao8LMZw6WfPvQUO4F_r4-An9-c",
-  authDomain: "olta-810ae.firebaseapp.com",
-  projectId: "olta-810ae",
-  storageBucket: "olta-810ae.firebasestorage.app",
-  messagingSenderId: "142251428527",
-  appId: "1:142251428527:web:dee8776ee6cde14656225a"
+const app = initializeApp({
+  apiKey:"AIzaSyCkq0NU1Ao8LMZw6WfPvQUO4F_r4-An9-c",
+  authDomain:"olta-810ae.firebaseapp.com", projectId:"olta-810ae",
+  storageBucket:"olta-810ae.firebasestorage.app",
+  messagingSenderId:"142251428527", appId:"1:142251428527:web:dee8776ee6cde14656225a"
 });
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-// ── Auth kontrolü
-onAuthStateChanged(auth, user => {
-  if (!user) { window.location.href = 'index.html'; return; }
-  if (user.photoURL) document.getElementById('bottom-photo').src = user.photoURL;
+onAuthStateChanged(auth, u => {
+  if (!u) { window.location.href='index.html'; return; }
+  if (u.photoURL) document.getElementById('bottom-photo').src = u.photoURL;
 });
 
-// ── Leaflet harita
-const map = L.map('map', { zoomControl: true }).setView([38.5, 35.0], 6);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 18
-}).addTo(map);
-
-let marker = null;
-let fetching = false;
+// ── HARİTA
+const map = L.map('map',{zoomControl:true}).setView([38.5,35.0],6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(map);
+let marker=null, fetching=false;
 
 map.on('click', e => {
   if (fetching) return;
@@ -237,213 +155,235 @@ map.on('click', e => {
   runForecast(e.latlng.lat, e.latlng.lng);
 });
 
-function placeMarker(lat, lng) {
-  if (marker) map.removeLayer(marker);
-  marker = L.circleMarker([lat, lng], {
-    radius: 10, color: '#F4A261', fillColor: '#F4A261',
-    fillOpacity: 0.8, weight: 2
-  }).addTo(map);
+function placeMarker(lat,lng){
+  if(marker) map.removeLayer(marker);
+  marker=L.circleMarker([lat,lng],{radius:10,color:'#F4A261',fillColor:'#F4A261',fillOpacity:.8,weight:2}).addTo(map);
 }
 
-// ── Balık verisi
-let allFish = [];
-async function loadFish() {
-  if (allFish.length) return;
-  const q = query(collection(db, 'fish'), orderBy('order'));
-  const snap = await getDocs(q);
-  snap.forEach(d => allFish.push(d.data()));
+// ── BALIK VERİSİ
+let allFish=[];
+async function loadFish(){
+  if(allFish.length) return;
+  const q=query(collection(db,'fish'),orderBy('order'));
+  const snap=await getDocs(q);
+  snap.forEach(d=>allFish.push(d.data()));
 }
 
-// ── Timeout'lu fetch yardımcısı
-async function fetchWithTimeout(url, options = {}, ms = 5000) {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), ms);
-  try {
-    const res = await fetch(url, { ...options, signal: ctrl.signal });
-    clearTimeout(timer);
-    return res;
-  } catch(e) {
-    clearTimeout(timer);
-    throw e;
-  }
+// ── TIMEOUT'LU FETCH
+async function ft(url,opts={},ms=7000){
+  const ctrl=new AbortController();
+  const t=setTimeout(()=>ctrl.abort(),ms);
+  try{const r=await fetch(url,{...opts,signal:ctrl.signal});clearTimeout(t);return r;}
+  catch(e){clearTimeout(t);throw e;}
 }
 
-// ── Reverse geocoding → il adı (Nominatim)
-async function fetchProvince(lat, lng) {
-  try {
-    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=tr`;
-    const res  = await fetchWithTimeout(url, { headers: { 'User-Agent': 'olta-app/1.0' } }, 5000);
-    const data = await res.json();
-    return data?.address?.state || null;
-  } catch { return null; }
+// ── RÜZGAR YÖNÜ METNİ
+function dirText(deg){
+  if(deg==null) return '—';
+  const dirs=['K','KD','D','GD','G','GB','B','KB'];
+  return dirs[Math.round(deg/45)%8];
 }
 
-// Nominatim'den gelen il adını Firestore ID'ye çevir
-function provinceToId(name) {
-  if (!name) return null;
-  return name
-    .toLowerCase()
+// ── KLOROFİL YORUMU
+function chlText(v){
+  if(v==null) return '—';
+  if(v<0.5) return 'düşük';
+  if(v<2)   return 'orta';
+  return 'yüksek';
+}
+
+// ── 1. OPEN-METEO (SST + dalga + akıntı)
+async function fetchMarine(lat,lng){
+  try{
+    const url=`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lng}`
+      +`&current=sea_surface_temperature,wave_height,wave_direction,wave_period`
+      +`,ocean_current_velocity,ocean_current_direction`;
+    const r=await ft(url,{},7000);
+    const d=await r.json();
+    const c=d?.current||{};
+    return {
+      sst:  c.sea_surface_temperature ?? null,
+      waveH: c.wave_height            ?? null,
+      waveD: c.wave_direction         ?? null,
+      waveP: c.wave_period            ?? null,
+      currV: c.ocean_current_velocity ?? null,
+      currD: c.ocean_current_direction?? null,
+    };
+  }catch{return {sst:null,waveH:null,waveD:null,waveP:null,currV:null,currD:null};}
+}
+
+// ── 2. NOAA ERDDAP — Tuzluluk (CMEMS Global)
+async function fetchSalinity(lat,lng){
+  try{
+    const la=lat.toFixed(2), lo=lng.toFixed(2);
+    const url=`https://erddap.aoml.noaa.gov/hdb/erddap/griddap/salinity_model_g_2024.json`
+      +`?so_glor[(last)][(0.49):1:(0.49)][(${la}):1:(${la})][(${lo}):1:(${lo})]`;
+    const r=await ft(url,{},8000);
+    const d=await r.json();
+    const rows=d?.table?.rows;
+    if(rows&&rows.length>0){const v=rows[0][rows[0].length-1];return typeof v==='number'?+v.toFixed(1):null;}
+    return null;
+  }catch{return null;}
+}
+
+// ── 3. NOAA CoastWatch — Klorofil (Aqua MODIS global günlük)
+async function fetchChlorophyll(lat,lng){
+  try{
+    const la=lat.toFixed(2), lo=lng.toFixed(2);
+    const url=`https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1chla1day_R2022SQ.json`
+      +`?chlorophyll[(last)][(0.0):1:(0.0)][(${la}):1:(${la})][(${lo}):1:(${lo})]`;
+    const r=await ft(url,{},8000);
+    const d=await r.json();
+    const rows=d?.table?.rows;
+    if(rows&&rows.length>0){const v=rows[0][rows[0].length-1];return typeof v==='number'?+v.toFixed(2):null;}
+    return null;
+  }catch{return null;}
+}
+
+// ── BÖLGE
+async function fetchProvince(lat,lng){
+  try{
+    const r=await ft(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=tr`,
+      {headers:{'User-Agent':'olta-app/1.0'}},5000);
+    const d=await r.json();
+    return d?.address?.state||null;
+  }catch{return null;}
+}
+function toId(name){
+  return name?.toLowerCase()
     .replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ş/g,'s')
     .replace(/ı/g,'i').replace(/ö/g,'o').replace(/ç/g,'c')
-    .replace(/\s+/g,'-')
-    .replace(/[^a-z0-9-]/g,'');
+    .replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+}
+function banActive(p){
+  if(!p) return false;
+  const m={Ocak:1,Şubat:2,Mart:3,Nisan:4,Mayıs:5,Haziran:6,Temmuz:7,Ağustos:8,Eylül:9,Ekim:10,Kasım:11,Aralık:12};
+  try{
+    const[ss,es]=p.split(' - ');
+    const[sd,sm]=ss.trim().split(' ');
+    const[ed,em]=es.trim().split(' ');
+    const now=new Date(),y=now.getFullYear();
+    const s=new Date(y,m[sm]-1,+sd),e=new Date(y,m[em]-1,+ed);
+    return e<s?now>=s||now<=e:now>=s&&now<=e;
+  }catch{return false;}
+}
+async function showRegion(lat,lng){
+  document.getElementById('region-box').style.display='none';
+  const name=await fetchProvince(lat,lng);
+  const id=toId(name);
+  if(!id) return;
+  try{
+    const snap=await getDoc(doc(db,'regions',id));
+    if(!snap.exists()) return;
+    const r=snap.data();
+    document.getElementById('region-name').textContent=`📍 ${r.name}`;
+    document.getElementById('region-ban').textContent=r.banPeriod||'—';
+    const b=banActive(r.banPeriod);
+    const el=document.getElementById('region-status');
+    el.textContent=b?'🔴 Yasak':'🟢 Serbest';
+    el.className='region-val '+(b?'ban':'ok');
+    if(r.species?.length)
+      document.getElementById('region-species').textContent='Kapsanan türler: '+r.species.join(', ');
+    document.getElementById('region-box').style.display='block';
+  }catch{}
 }
 
-// Bugün yasak dönemi içinde mi?
-function isBanActive(banPeriod) {
-  if (!banPeriod) return false;
-  const months = {
-    'Ocak':1,'Şubat':2,'Mart':3,'Nisan':4,'Mayıs':5,'Haziran':6,
-    'Temmuz':7,'Ağustos':8,'Eylül':9,'Ekim':10,'Kasım':11,'Aralık':12
-  };
-  try {
-    const [startStr, endStr] = banPeriod.split(' - ');
-    const [sd, sm] = startStr.trim().split(' ');
-    const [ed, em] = endStr.trim().split(' ');
-    const now   = new Date();
-    const year  = now.getFullYear();
-    const start = new Date(year, months[sm]-1, parseInt(sd));
-    const end   = new Date(year, months[em]-1, parseInt(ed));
-    if (end < start) return now >= start || now <= end;
-    return now >= start && now <= end;
-  } catch { return false; }
-}
+// ── ANA FONKSİYON
+async function runForecast(lat,lng){
+  fetching=true;
+  setStatus('⏳ Deniz verileri çekiliyor…');
+  document.getElementById('ocean-grid').style.display='none';
+  document.getElementById('result-title').style.display='none';
+  document.getElementById('fish-list').innerHTML='';
 
-async function showRegion(lat, lng) {
-  document.getElementById('region-box').style.display = 'none';
-  const provinceName = await fetchProvince(lat, lng);
-  if (!provinceName) return;
-
-  const regionId = provinceToId(provinceName);
-  if (!regionId) return;
-
-  try {
-    const snap = await getDoc(doc(db, 'regions', regionId));
-    if (!snap.exists()) return;
-    const r = snap.data();
-
-    document.getElementById('region-name').textContent = `📍 ${r.name}`;
-    document.getElementById('region-ban').textContent  = r.banPeriod || '—';
-
-    const banned = isBanActive(r.banPeriod);
-    const statusEl = document.getElementById('region-status');
-    statusEl.textContent  = banned ? '🔴 Yasak' : '🟢 Serbest';
-    statusEl.className    = 'region-val ' + (banned ? 'ban' : 'ok');
-
-    if (r.species?.length) {
-      document.getElementById('region-species').textContent =
-        'Kapsanan türler: ' + r.species.join(', ');
-    }
-    document.getElementById('region-box').style.display = 'block';
-  } catch { /* bölge bulunamazsa sessizce geç */ }
-}
-
-// ── SST çek (Open-Meteo Marine)
-async function fetchSST(lat, lng) {
-  try {
-    const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lng}&current=sea_surface_temperature`;
-    const res  = await fetchWithTimeout(url, {}, 6000);
-    const data = await res.json();
-    return data?.current?.sea_surface_temperature ?? null;
-  } catch { return null; }
-}
-
-// ── Ana tahmin fonksiyonu
-async function runForecast(lat, lng) {
-  fetching = true;
-  setStatus('⏳ Veriler çekiliyor…');
-  document.getElementById('result-title').style.display = 'none';
-  document.getElementById('fish-list').innerHTML = '';
-
-  try {
+  try{
     await loadFish();
 
-    // SST ve bölge paralel başlat — SST bekle, bölge kendi biter
-    const sstPromise    = fetchSST(lat, lng);
-    const regionPromise = showRegion(lat, lng);
+    // Paralel çek
+    const[marine, sss, chl] = await Promise.all([
+      fetchMarine(lat,lng),
+      fetchSalinity(lat,lng),
+      fetchChlorophyll(lat,lng),
+    ]);
+    showRegion(lat,lng).catch(()=>{});
 
-    const sst = await sstPromise;
-    // Bölge sonucunu beklemeden devam et (kendi kendine güncelliyor)
-    regionPromise.catch(() => {});
+    const{sst,waveH,waveD,waveP,currV,currD}=marine;
 
-    if (sst === null) {
-      setStatus('⚠️ Deniz sıcaklığı alınamadı. Lütfen <b>deniz üzerinde</b> bir nokta seçin (kıyıya yakın olabilir).');
+    if(sst===null){
+      setStatus('⚠️ Deniz verisi alınamadı. <b>Deniz üzerinde</b> bir nokta seçin.');
       return;
     }
 
-    setStatus(`Anlık deniz sıcaklığı: <span class="sst-pill">${sst.toFixed(1)}°C</span>`);
+    // Veri panelini doldur
+    document.getElementById('v-sst').textContent   = sst!=null?sst.toFixed(1):'—';
+    document.getElementById('v-sss').textContent   = sss!=null?sss:'—';
+    document.getElementById('v-chl').textContent   = chl!=null?`${chl} (${chlText(chl)})`:'—';
+    document.getElementById('v-wave').textContent  = waveH!=null?`${waveH} m`:'—';
+    document.getElementById('v-wave-dir').textContent = waveD!=null?`yön: ${dirText(waveD)}`:'—';
+    document.getElementById('v-period').textContent= waveP!=null?waveP:'—';
+    document.getElementById('v-curr').textContent  = currV!=null?`${currV.toFixed(1)} km/s`:'—';
+    document.getElementById('v-curr-dir').textContent= currD!=null?dirText(currD):'—';
+    document.getElementById('ocean-grid').style.display='grid';
 
-    // SST'ye göre eşleşen deniz türleri
-    const matches = allFish.filter(f =>
-      f.type === 'deniz' &&
-      f.sstMin !== null && f.sstMax !== null &&
-      sst >= f.sstMin && sst <= f.sstMax
-    );
-    const others = allFish.filter(f =>
-      f.type === 'deniz' &&
-      f.sstMin !== null && f.sstMax !== null &&
-      !(sst >= f.sstMin && sst <= f.sstMax)
-    );
+    setStatus('');
 
-    if (!matches.length && !others.length) {
-      setStatus(setStatus(`Anlık deniz sıcaklığı: <span class="sst-pill">${sst.toFixed(1)}°C</span>`) || '');
-      document.getElementById('fish-list').innerHTML =
-        '<p style="color:var(--muted);font-size:.85rem;padding:8px 0">Eşleşen tür bulunamadı.</p>';
+    // Eşleştirme
+    const scored = allFish
+      .filter(f=>f.type==='deniz' && f.sstMin!=null)
+      .map(f=>{
+        const sstOk = sst>=f.sstMin && sst<=f.sstMax;
+        const sssOk = (sss==null||f.sssMin==null) ? null : (sss>=f.sssMin && sss<=f.sssMax);
+        let score=0;
+        if(sstOk) score++;
+        if(sssOk===true) score++;
+        return{f,score,sstOk,sssOk};
+      })
+      .sort((a,b)=>b.score-a.score);
+
+    if(!scored.length){
+      document.getElementById('fish-list').innerHTML='<p style="color:var(--muted);font-size:.85rem;padding:8px 0">Eşleşen tür bulunamadı.</p>';
       return;
     }
 
-    document.getElementById('result-title').style.display = 'block';
-    const list = document.getElementById('fish-list');
+    document.getElementById('result-title').style.display='block';
+    const list=document.getElementById('fish-list');
+    scored.forEach(({f,score,sstOk,sssOk})=>{
+      const hasSSS = f.sssMin!=null && sss!=null;
+      const total  = hasSSS?2:1;
+      const badgeCls = score===total?'b-yes':score===0?'b-no':'b-may';
+      const badgeTxt = score===total?'✓ Olabilir':score===0?'✗ Düşük':'~ Mümkün';
+      const ranges = hasSSS
+        ? `${f.sstMin}–${f.sstMax}°C · ${f.sssMin}–${f.sssMax} ppt`
+        : `${f.sstMin}–${f.sstMax}°C`;
+      const div=document.createElement('div');
+      div.className='fish-card';
+      div.innerHTML=`
+        <img src="${f.image}" alt="${f.name}" onerror="this.style.opacity=.3"/>
+        <div class="fish-info">
+          <div class="fish-name">${f.name}</div>
+          <div class="fish-ranges">${ranges}</div>
+        </div>
+        <div class="badge ${badgeCls}">${badgeTxt}</div>
+      `;
+      list.appendChild(div);
+    });
 
-    // Önce eşleşenler
-    matches.forEach(f => list.appendChild(fishCard(f, sst, true)));
-    // Sonra eşleşmeyenler
-    others.forEach(f => list.appendChild(fishCard(f, sst, false)));
-
-  } catch(e) {
-    setStatus('Hata: ' + e.message);
-  } finally {
-    fetching = false;
+  }catch(e){
+    setStatus('Hata: '+e.message);
+  }finally{
+    fetching=false;
   }
 }
 
-function fishCard(f, sst, match) {
-  const div = document.createElement('div');
-  div.className = 'fish-card';
-  div.innerHTML = `
-    <img src="${f.image}" alt="${f.name}" onerror="this.style.opacity=.3"/>
-    <div class="fish-info">
-      <div class="fish-name">${f.name}</div>
-      <div class="fish-sst">${f.sstMin}°C – ${f.sstMax}°C</div>
-    </div>
-    <div class="match-badge ${match ? 'match-yes' : 'match-no'}">
-      ${match ? '✓ Olabilir' : '✗ Düşük ihtimal'}
-    </div>
-  `;
-  return div;
-}
+function setStatus(html){document.getElementById('status-box').innerHTML=html;}
 
-function setStatus(html) {
-  document.getElementById('status-box').innerHTML = html;
-}
-
-// ── GPS konum
-window.useMyLocation = function() {
-  if (!navigator.geolocation) { setStatus('Konum servisi desteklenmiyor.'); return; }
+window.useMyLocation=function(){
+  if(!navigator.geolocation){setStatus('Konum servisi yok.');return;}
   setStatus('📍 Konum alınıyor…');
   navigator.geolocation.getCurrentPosition(
-    pos => {
-      const { latitude: lat, longitude: lng } = pos.coords;
-      map.setView([lat, lng], 10);
-      placeMarker(lat, lng);
-      runForecast(lat, lng);
-    },
-    () => setStatus('Konum alınamadı. Haritaya dokun.')
+    p=>{const{latitude:lat,longitude:lng}=p.coords;map.setView([lat,lng],10);placeMarker(lat,lng);runForecast(lat,lng);},
+    ()=>setStatus('Konum alınamadı. Haritaya dokun.')
   );
-};
-
-window.showMapHint = function() {
-  setStatus('Haritada herhangi bir deniz noktasına dokun.');
 };
 </script>
 </body>
