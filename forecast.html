@@ -229,8 +229,10 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 let marker = null;
+let fetching = false;
 
 map.on('click', e => {
+  if (fetching) return;
   placeMarker(e.latlng.lat, e.latlng.lng);
   runForecast(e.latlng.lat, e.latlng.lng);
 });
@@ -252,13 +254,26 @@ async function loadFish() {
   snap.forEach(d => allFish.push(d.data()));
 }
 
+// ── Timeout'lu fetch yardımcısı
+async function fetchWithTimeout(url, options = {}, ms = 5000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try {
+    const res = await fetch(url, { ...options, signal: ctrl.signal });
+    clearTimeout(timer);
+    return res;
+  } catch(e) {
+    clearTimeout(timer);
+    throw e;
+  }
+}
+
 // ── Reverse geocoding → il adı (Nominatim)
 async function fetchProvince(lat, lng) {
   try {
     const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=tr`;
-    const res  = await fetch(url, { headers: { 'User-Agent': 'olta-app/1.0' } });
+    const res  = await fetchWithTimeout(url, { headers: { 'User-Agent': 'olta-app/1.0' } }, 5000);
     const data = await res.json();
-    // Türkiye için "state" alanı ili verir
     return data?.address?.state || null;
   } catch { return null; }
 }
@@ -325,28 +340,34 @@ async function showRegion(lat, lng) {
 
 // ── SST çek (Open-Meteo Marine)
 async function fetchSST(lat, lng) {
-  const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lng}&current=sea_surface_temperature`;
-  const res  = await fetch(url);
-  const data = await res.json();
-  return data?.current?.sea_surface_temperature ?? null;
+  try {
+    const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lng}&current=sea_surface_temperature`;
+    const res  = await fetchWithTimeout(url, {}, 6000);
+    const data = await res.json();
+    return data?.current?.sea_surface_temperature ?? null;
+  } catch { return null; }
 }
 
 // ── Ana tahmin fonksiyonu
 async function runForecast(lat, lng) {
+  fetching = true;
   setStatus('⏳ Veriler çekiliyor…');
   document.getElementById('result-title').style.display = 'none';
   document.getElementById('fish-list').innerHTML = '';
 
   try {
     await loadFish();
-    // Bölge ve SST paralel çek
-    const [sst] = await Promise.all([
-      fetchSST(lat, lng),
-      showRegion(lat, lng)
-    ]);
+
+    // SST ve bölge paralel başlat — SST bekle, bölge kendi biter
+    const sstPromise    = fetchSST(lat, lng);
+    const regionPromise = showRegion(lat, lng);
+
+    const sst = await sstPromise;
+    // Bölge sonucunu beklemeden devam et (kendi kendine güncelliyor)
+    regionPromise.catch(() => {});
 
     if (sst === null) {
-      setStatus('⚠️ Bu konum için deniz verisi bulunamadı. Deniz üzerinde bir nokta seçin.');
+      setStatus('⚠️ Deniz sıcaklığı alınamadı. Lütfen <b>deniz üzerinde</b> bir nokta seçin (kıyıya yakın olabilir).');
       return;
     }
 
@@ -381,6 +402,8 @@ async function runForecast(lat, lng) {
 
   } catch(e) {
     setStatus('Hata: ' + e.message);
+  } finally {
+    fetching = false;
   }
 }
 
