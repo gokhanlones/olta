@@ -297,13 +297,7 @@
         const seasonText  = f.banStart ? `${f.banStart} - ${f.banEnd}` : 'Tüm sezon';
         const seasonClass = banned ? 'card-ban' : 'card-season';
 
-        // SST satırları — sadece deniz türü ve veri varsa
-        const sstHtml = (f.sstMin !== null && f.sstMin !== undefined)
-          ? `<div class="card-sst">
-               <span>En yüksek su sıcaklığı ${f.sstMax}°C</span>
-               <span>En düşük su sıcaklığı ${f.sstMin}°C</span>
-             </div>`
-          : '';
+        const sstHtml = '';
 
         card.innerHTML = `
           <img src="${f.image}" alt="${f.name}" />
