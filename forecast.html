@@ -212,32 +212,19 @@ async function fetchMarine(lat,lng){
   }catch{return {sst:null,waveH:null,waveD:null,waveP:null,currV:null,currD:null};}
 }
 
-// ── 2. NOAA ERDDAP — Tuzluluk (CMEMS Global)
-async function fetchSalinity(lat,lng){
-  try{
-    const la=lat.toFixed(2), lo=lng.toFixed(2);
-    const url=`https://erddap.aoml.noaa.gov/hdb/erddap/griddap/salinity_model_g_2024.json`
-      +`?so_glor[(last)][(0.49):1:(0.49)][(${la}):1:(${la})][(${lo}):1:(${lo})]`;
-    const r=await ft(url,{},8000);
-    const d=await r.json();
-    const rows=d?.table?.rows;
-    if(rows&&rows.length>0){const v=rows[0][rows[0].length-1];return typeof v==='number'?+v.toFixed(1):null;}
-    return null;
-  }catch{return null;}
-}
+// ── 2 & 3. Apps Script Proxy — Tuzluluk + Klorofil
+const PROXY = "https://script.google.com/macros/s/AKfycbzVnlssJlCxVROr-UtseSjNgvAABBACTyiaW-vZNSOOAny4Yn6cWKpq6vMb22YCGf8iyg/exec";
 
-// ── 3. NOAA CoastWatch — Klorofil (Aqua MODIS global günlük)
-async function fetchChlorophyll(lat,lng){
-  try{
-    const la=lat.toFixed(2), lo=lng.toFixed(2);
-    const url=`https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1chla1day_R2022SQ.json`
-      +`?chlorophyll[(last)][(0.0):1:(0.0)][(${la}):1:(${la})][(${lo}):1:(${lo})]`;
-    const r=await ft(url,{},8000);
-    const d=await r.json();
-    const rows=d?.table?.rows;
-    if(rows&&rows.length>0){const v=rows[0][rows[0].length-1];return typeof v==='number'?+v.toFixed(2):null;}
-    return null;
-  }catch{return null;}
+async function fetchSalinityAndChlorophyll(lat, lng) {
+  try {
+    const url = `${PROXY}?lat=${lat.toFixed(3)}&lng=${lng.toFixed(3)}`;
+    const r = await ft(url, {}, 12000);
+    const d = await r.json();
+    return {
+      sss: typeof d.salinity    === 'number' ? +d.salinity.toFixed(1)    : null,
+      chl: typeof d.chlorophyll === 'number' ? +d.chlorophyll.toFixed(2) : null,
+    };
+  } catch { return { sss: null, chl: null }; }
 }
 
 // ── BÖLGE
@@ -300,14 +287,14 @@ async function runForecast(lat,lng){
     await loadFish();
 
     // Paralel çek
-    const[marine, sss, chl] = await Promise.all([
-      fetchMarine(lat,lng),
-      fetchSalinity(lat,lng),
-      fetchChlorophyll(lat,lng),
+    const [marine, proxy] = await Promise.all([
+      fetchMarine(lat, lng),
+      fetchSalinityAndChlorophyll(lat, lng),
     ]);
-    showRegion(lat,lng).catch(()=>{});
+    showRegion(lat, lng).catch(() => {});
 
-    const{sst,waveH,waveD,waveP,currV,currD}=marine;
+    const { sst, waveH, waveD, waveP, currV, currD } = marine;
+    const { sss, chl } = proxy;
 
     if(sst===null){
       setStatus('⚠️ Deniz verisi alınamadı. <b>Deniz üzerinde</b> bir nokta seçin.');
