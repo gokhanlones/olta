@@ -221,6 +221,7 @@
 
     let allFish = [];
     let currentFilter = 'all';
+    let fishLoaded = false;
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) { window.location.href = 'index.html'; return; }
@@ -228,7 +229,10 @@
       document.getElementById('user-email').textContent = user.email;
       document.getElementById('user-photo').src         = user.photoURL;
       document.getElementById('bottom-photo').src       = user.photoURL;
-      await loadFish();
+      if (!fishLoaded) {
+        fishLoaded = true;
+        await loadFish();
+      }
     });
 
     async function loadFish() {
@@ -240,6 +244,7 @@
         snap.forEach(doc => allFish.push(doc.data()));
         renderFish();
       } catch(e) {
+        fishLoaded = false;
         content.innerHTML = `<div class="loading">Hata: ${e.message}</div>`;
       }
     }
