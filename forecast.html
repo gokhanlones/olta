@@ -274,31 +274,50 @@ map.on('click', e => {
   showAd(e.latlng.lat, e.latlng.lng);
 });
 
-let pendingLat = null, pendingLng = null, adTimer = null;
+let adTimer = null;
+let dataReady = false;
+let adClosed = false;
+let pendingData = null;
 
 function showAd(lat, lng) {
-  pendingLat = lat; pendingLng = lng;
+  dataReady = false;
+  adClosed = false;
+  pendingData = null;
+
+  // Reklam göster
   document.getElementById('ad-overlay').classList.add('show');
   document.getElementById('ad-close-btn').classList.remove('ready');
+  document.getElementById('ad-countdown').innerHTML = 'Kapatmak için <b id="ad-timer">10</b> saniye bekleyin';
+
+  // Geri sayım
   let secs = 10;
-  document.getElementById('ad-timer').textContent = secs;
   adTimer = setInterval(() => {
     secs--;
-    document.getElementById('ad-timer').textContent = secs;
+    const el = document.getElementById('ad-timer');
+    if (el) el.textContent = secs;
     if (secs <= 0) {
       clearInterval(adTimer);
       document.getElementById('ad-countdown').textContent = 'Devam edebilirsiniz!';
       document.getElementById('ad-close-btn').classList.add('ready');
     }
   }, 1000);
+
+  // Arka planda veri çek
+  fetchAllData(lat, lng).then(data => {
+    pendingData = data;
+    dataReady = true;
+    if (adClosed) renderResults(data);
+  });
 }
 
 window.closeAd = function() {
   document.getElementById('ad-overlay').classList.remove('show');
   clearInterval(adTimer);
-  if (pendingLat !== null) {
-    runForecast(pendingLat, pendingLng);
-    pendingLat = null; pendingLng = null;
+  adClosed = true;
+  if (dataReady && pendingData) {
+    renderResults(pendingData);
+  } else {
+    setStatus('⏳ Veri bekleniyor…');
   }
 };
 
@@ -422,91 +441,83 @@ async function showRegion(lat,lng){
   }catch{}
 }
 
-// ── ANA FONKSİYON
-async function runForecast(lat,lng){
-  fetching=true;
-  setStatus('⏳ Deniz verileri çekiliyor…');
+// ── VERİ ÇEKME
+async function fetchAllData(lat, lng) {
+  await loadFish();
+  const [marine, proxy] = await Promise.all([
+    fetchMarine(lat, lng),
+    fetchSalinityAndChlorophyll(lat, lng),
+  ]);
+  showRegion(lat, lng).catch(() => {});
+  return { lat, lng, marine, proxy };
+}
+
+// ── SONUÇLARI GÖSTER
+function renderResults(data) {
+  fetching = false;
+  const { marine, proxy } = data;
+  const { sst, waveH, waveD, waveP, currV, currD } = marine;
+  const { sss, chl } = proxy;
+
   document.getElementById('ocean-grid').style.display='none';
   document.getElementById('result-title').style.display='none';
   document.getElementById('fish-list').innerHTML='';
 
-  try{
-    await loadFish();
-
-    // Paralel çek
-    const [marine, proxy] = await Promise.all([
-      fetchMarine(lat, lng),
-      fetchSalinityAndChlorophyll(lat, lng),
-    ]);
-    showRegion(lat, lng).catch(() => {});
-
-    const { sst, waveH, waveD, waveP, currV, currD } = marine;
-    const { sss, chl } = proxy;
-
-    if(sst===null){
-      setStatus('⚠️ Deniz verisi alınamadı. <b>Deniz üzerinde</b> bir nokta seçin.');
-      return;
-    }
-
-    // Veri panelini doldur
-    document.getElementById('v-sst').textContent   = sst!=null?sst.toFixed(1):'—';
-    document.getElementById('v-sss').textContent   = sss!=null?sss:'—';
-    document.getElementById('v-chl').textContent   = chl!=null?`${chl} (${chlText(chl)})`:'—';
-    document.getElementById('v-wave').textContent  = waveH!=null?`${waveH} m`:'—';
-    document.getElementById('v-wave-dir').textContent = waveD!=null?`yön: ${dirText(waveD)}`:'—';
-    document.getElementById('v-period').textContent= waveP!=null?waveP:'—';
-    document.getElementById('v-curr').textContent  = currV!=null?`${currV.toFixed(1)} km/s`:'—';
-    document.getElementById('v-curr-dir').textContent= currD!=null?dirText(currD):'—';
-    document.getElementById('ocean-grid').style.display='grid';
-
-    setStatus('');
-
-    // Eşleştirme
-    const scored = allFish
-      .filter(f=>f.type==='deniz' && f.sstMin!=null)
-      .map(f=>{
-        const sstOk = sst>=f.sstMin && sst<=f.sstMax;
-        const sssOk = (sss==null||f.sssMin==null) ? null : (sss>=f.sssMin && sss<=f.sssMax);
-        let score=0;
-        if(sstOk) score++;
-        if(sssOk===true) score++;
-        return{f,score,sstOk,sssOk};
-      })
-      .sort((a,b)=>b.score-a.score);
-
-    if(!scored.length){
-      document.getElementById('fish-list').innerHTML='<p style="color:var(--muted);font-size:.85rem;padding:8px 0">Eşleşen tür bulunamadı.</p>';
-      return;
-    }
-
-    document.getElementById('result-title').style.display='block';
-    const list=document.getElementById('fish-list');
-    scored.forEach(({f,score,sstOk,sssOk})=>{
-      const hasSSS = f.sssMin!=null && sss!=null;
-      const total  = hasSSS?2:1;
-      const badgeCls = score===total?'b-yes':score===0?'b-no':'b-may';
-      const badgeTxt = score===total?'✓ Olabilir':score===0?'✗ Düşük':'~ Mümkün';
-      const ranges = hasSSS
-        ? `${f.sstMin}–${f.sstMax}°C · ${f.sssMin}–${f.sssMax} ppt`
-        : `${f.sstMin}–${f.sstMax}°C`;
-      const div=document.createElement('div');
-      div.className='fish-card';
-      div.innerHTML=`
-        <img src="${f.image}" alt="${f.name}" onerror="this.style.opacity=.3"/>
-        <div class="fish-info">
-          <div class="fish-name">${f.name}</div>
-          <div class="fish-ranges">${ranges}</div>
-        </div>
-        <div class="badge ${badgeCls}">${badgeTxt}</div>
-      `;
-      list.appendChild(div);
-    });
-
-  }catch(e){
-    setStatus('Hata: '+e.message);
-  }finally{
-    fetching=false;
+  if (sst === null) {
+    setStatus('⚠️ Deniz verisi alınamadı. <b>Deniz üzerinde</b> bir nokta seçin.');
+    return;
   }
+
+  document.getElementById('v-sst').textContent      = sst!=null?sst.toFixed(1):'—';
+  document.getElementById('v-sss').textContent      = sss!=null?sss:'—';
+  document.getElementById('v-chl').textContent      = chl!=null?`${chl} (${chlText(chl)})`:'—';
+  document.getElementById('v-wave').textContent     = waveH!=null?`${waveH} m`:'—';
+  document.getElementById('v-wave-dir').textContent = waveD!=null?`yön: ${dirText(waveD)}`:'—';
+  document.getElementById('v-period').textContent   = waveP!=null?waveP:'—';
+  document.getElementById('v-curr').textContent     = currV!=null?`${currV.toFixed(1)} km/s`:'—';
+  document.getElementById('v-curr-dir').textContent = currD!=null?dirText(currD):'—';
+  document.getElementById('ocean-grid').style.display='grid';
+  setStatus('');
+
+  const scored = allFish
+    .filter(f=>f.type==='deniz' && f.sstMin!=null)
+    .map(f=>{
+      const sstOk = sst>=f.sstMin && sst<=f.sstMax;
+      const sssOk = (sss==null||f.sssMin==null)?null:(sss>=f.sssMin && sss<=f.sssMax);
+      let score=0;
+      if(sstOk) score++;
+      if(sssOk===true) score++;
+      return{f,score};
+    })
+    .sort((a,b)=>b.score-a.score);
+
+  if(!scored.length){
+    document.getElementById('fish-list').innerHTML='<p style="color:var(--muted);font-size:.85rem;padding:8px 0">Eşleşen tür bulunamadı.</p>';
+    return;
+  }
+
+  document.getElementById('result-title').style.display='block';
+  const list=document.getElementById('fish-list');
+  scored.forEach(({f,score})=>{
+    const hasSSS = f.sssMin!=null && sss!=null;
+    const total  = hasSSS?2:1;
+    const badgeCls = score===total?'b-yes':score===0?'b-no':'b-may';
+    const badgeTxt = score===total?'✓ Olabilir':score===0?'✗ Düşük':'~ Mümkün';
+    const ranges = hasSSS
+      ?`${f.sstMin}–${f.sstMax}°C · ${f.sssMin}–${f.sssMax} ppt`
+      :`${f.sstMin}–${f.sstMax}°C`;
+    const div=document.createElement('div');
+    div.className='fish-card';
+    div.innerHTML=`
+      <img src="${f.image}" alt="${f.name}" onerror="this.style.opacity=.3"/>
+      <div class="fish-info">
+        <div class="fish-name">${f.name}</div>
+        <div class="fish-ranges">${ranges}</div>
+      </div>
+      <div class="badge ${badgeCls}">${badgeTxt}</div>
+    `;
+    list.appendChild(div);
+  });
 }
 
 function setStatus(html){document.getElementById('status-box').innerHTML=html;}
