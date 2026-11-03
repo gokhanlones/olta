@@ -268,10 +268,17 @@ const map = L.map('map',{zoomControl:true}).setView([38.5,35.0],6);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(map);
 let marker=null, fetching=false;
 
+let firstClick = true;
+
 map.on('click', e => {
   if (fetching) return;
   placeMarker(e.latlng.lat, e.latlng.lng);
-  showAd(e.latlng.lat, e.latlng.lng);
+  if (firstClick) {
+    firstClick = false;
+    showAd(e.latlng.lat, e.latlng.lng);
+  } else {
+    fetchAllData(e.latlng.lat, e.latlng.lng).then(renderResults);
+  }
 });
 
 let adTimer = null;
@@ -526,7 +533,17 @@ window.useMyLocation=function(){
   if(!navigator.geolocation){setStatus('Konum servisi yok.');return;}
   setStatus('📍 Konum alınıyor…');
   navigator.geolocation.getCurrentPosition(
-    p=>{const{latitude:lat,longitude:lng}=p.coords;map.setView([lat,lng],10);placeMarker(lat,lng);showAd(lat,lng);},
+    p=>{
+      const{latitude:lat,longitude:lng}=p.coords;
+      map.setView([lat,lng],10);
+      placeMarker(lat,lng);
+      if(firstClick){
+        firstClick=false;
+        showAd(lat,lng);
+      } else {
+        fetchAllData(lat,lng).then(renderResults);
+      }
+    },
     ()=>setStatus('Konum alınamadı. Haritaya dokun.')
   );
 };
