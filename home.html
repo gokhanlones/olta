@@ -42,33 +42,7 @@
 
     .content { flex: 1; padding: 24px 16px; padding-bottom: 80px; }
 
-    /* KARŞILAMA */
-    .welcome { margin-bottom: 24px; }
-    .welcome-sub { font-size: 0.85rem; color: var(--gray); margin-top: 4px; }
-    .welcome h2 { font-size: 1.3rem; font-weight: 700; }
 
-    /* MENÜ KARTLARI */
-    .menu-grid { display: flex; flex-direction: column; gap: 12px; }
-    .menu-card {
-      background: var(--blue-mid);
-      border-radius: 14px;
-      padding: 18px 20px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      cursor: pointer;
-      border: 1px solid rgba(255,255,255,0.07);
-      transition: background 0.15s;
-      text-align: left;
-      width: 100%;
-      color: var(--white);
-    }
-    .menu-card:active { background: #22486e; }
-    .menu-icon { font-size: 1.8rem; width: 44px; text-align: center; flex-shrink: 0; }
-    .menu-info { flex: 1; }
-    .menu-title { font-size: 1rem; font-weight: 700; }
-    .menu-desc { font-size: 0.78rem; color: var(--gray); margin-top: 3px; }
-    .menu-arrow { color: var(--gray); font-size: 1.1rem; }
 
     .bottombar { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: var(--blue-dark); border-top: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; z-index: 100; }
     .bottom-btn { background: none; border: none; color: var(--white); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 8px; }
@@ -112,41 +86,7 @@
     <div class="banner-placeholder"></div>
   </div>
 
-  <div class="content">
-    <div class="welcome">
-      <div class="welcome-sub">Hoş geldin,</div>
-      <h2 id="welcome-name">...</h2>
-    </div>
-
-    <div class="menu-grid">
-      <button class="menu-card" onclick="window.location.href='species.html'">
-        <div class="menu-icon">🐟</div>
-        <div class="menu-info">
-          <div class="menu-title">Balık Türleri</div>
-          <div class="menu-desc">Boy limitleri, sezon ve av bilgileri</div>
-        </div>
-        <div class="menu-arrow">›</div>
-      </button>
-
-      <button class="menu-card" onclick="window.location.href='regions.html'">
-        <div class="menu-icon">🗺️</div>
-        <div class="menu-info">
-          <div class="menu-title">Bölgeler</div>
-          <div class="menu-desc">İl bazlı iç su yasak takvimi</div>
-        </div>
-        <div class="menu-arrow">›</div>
-      </button>
-
-      <button class="menu-card" onclick="window.location.href='forecast.html'">
-        <div class="menu-icon">🌊</div>
-        <div class="menu-info">
-          <div class="menu-title">Tür Tahmini</div>
-          <div class="menu-desc">Konumuna göre deniz koşulları ve tahmin</div>
-        </div>
-        <div class="menu-arrow">›</div>
-      </button>
-    </div>
-  </div>
+  <div class="content"></div>
 
   <div class="bottombar">
     <button class="bottom-btn" onclick="window.location.href='home.html'">
@@ -176,8 +116,6 @@
 
     onAuthStateChanged(auth, (user) => {
       if (!user) { window.location.href = 'index.html'; return; }
-      const name = user.displayName?.split(' ')[0] || 'Balıkçı';
-      document.getElementById('welcome-name').textContent = name;
       document.getElementById('user-name').textContent   = user.displayName;
       document.getElementById('user-email').textContent  = user.email;
       document.getElementById('user-photo').src          = user.photoURL;
