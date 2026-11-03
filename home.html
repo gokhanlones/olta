@@ -6,7 +6,6 @@
   <title>Olta</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     :root {
       --blue-dark:  #0A1628;
       --blue-mid:   #1A3A5C;
@@ -15,154 +14,66 @@
       --white:      #FFFFFF;
       --gray:       #6B7280;
     }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--blue-dark); color: var(--white); min-height: 100vh; display: flex; flex-direction: column; }
 
-    body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      background: var(--blue-dark);
-      color: var(--white);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .banner {
-      background: var(--blue-dark);
-      display: flex;
-      align-items: center;
-      padding: 0 16px;
-      height: 56px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-    .hamburger {
-      background: none;
-      border: none;
-      color: var(--white);
-      cursor: pointer;
-      padding: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-    .hamburger span {
-      display: block;
-      width: 22px;
-      height: 2px;
-      background: var(--white);
-      border-radius: 2px;
-    }
-    .banner-title {
-      flex: 1;
-      text-align: center;
-      font-size: 20px;
-      font-weight: 900;
-      letter-spacing: 6px;
-    }
+    .banner { background: var(--blue-dark); display: flex; align-items: center; padding: 0 16px; height: 56px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .hamburger { background: none; border: none; color: var(--white); cursor: pointer; padding: 8px; display: flex; flex-direction: column; gap: 5px; }
+    .hamburger span { display: block; width: 22px; height: 2px; background: var(--white); border-radius: 2px; }
+    .banner-title { flex: 1; text-align: center; font-size: 20px; font-weight: 900; letter-spacing: 6px; }
     .banner-placeholder { width: 38px; }
 
-    .sidebar-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 200;
-      display: none;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
+    .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: none; opacity: 0; transition: opacity 0.3s; }
     .sidebar-overlay.open { display: block; opacity: 1; }
-
-    .sidebar {
-      position: fixed;
-      top: 0;
-      left: -280px;
-      width: 280px;
-      height: 100%;
-      background: var(--blue-dark);
-      border-right: 1px solid rgba(255,255,255,0.08);
-      z-index: 300;
-      transition: left 0.3s ease;
-      display: flex;
-      flex-direction: column;
-    }
+    .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: var(--blue-dark); border-right: 1px solid rgba(255,255,255,0.08); z-index: 300; transition: left 0.3s ease; display: flex; flex-direction: column; }
     .sidebar.open { left: 0; }
-
-    .sidebar-header {
-      padding: 56px 20px 24px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
+    .sidebar-header { padding: 56px 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); }
     .sidebar-header .logo { font-size: 22px; font-weight: 900; letter-spacing: 4px; }
     .sidebar-header .tagline { font-size: 11px; color: var(--blue-light); letter-spacing: 1px; margin-top: 4px; }
-
-    .sidebar-user {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 20px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
+    .sidebar-user { display: flex; align-items: center; gap: 12px; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
     .sidebar-user img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
     .sidebar-user .name { font-size: 14px; font-weight: 600; }
     .sidebar-user .email { font-size: 11px; color: var(--gray); margin-top: 2px; }
-
     .sidebar-menu { flex: 1; padding: 12px 0; }
-    .sidebar-item {
-      display: flex;
-      align-items: center;
-      padding: 14px 20px;
-      cursor: pointer;
-      font-size: 15px;
-      transition: background 0.15s;
-      border: none;
-      background: none;
-      color: var(--white);
-      width: 100%;
-      text-align: left;
-    }
+    .sidebar-item { display: flex; align-items: center; padding: 14px 20px; cursor: pointer; font-size: 15px; transition: background 0.15s; border: none; background: none; color: var(--white); width: 100%; text-align: left; }
     .sidebar-item:hover { background: rgba(255,255,255,0.06); }
     .sidebar-item.active { color: var(--blue-light); font-weight: 700; }
     .sidebar-bottom { padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.08); }
     .sidebar-item.logout { color: #F87171; }
 
-    .content {
-      flex: 1;
-      padding: 24px 16px;
-      padding-bottom: 80px;
-    }
+    .content { flex: 1; padding: 24px 16px; padding-bottom: 80px; }
 
-    .bottombar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 60px;
-      background: var(--blue-dark);
-      border-top: 1px solid rgba(255,255,255,0.08);
+    /* KARŞILAMA */
+    .welcome { margin-bottom: 24px; }
+    .welcome-sub { font-size: 0.85rem; color: var(--gray); margin-top: 4px; }
+    .welcome h2 { font-size: 1.3rem; font-weight: 700; }
+
+    /* MENÜ KARTLARI */
+    .menu-grid { display: flex; flex-direction: column; gap: 12px; }
+    .menu-card {
+      background: var(--blue-mid);
+      border-radius: 14px;
+      padding: 18px 20px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 0 40px;
-      z-index: 100;
-    }
-    .bottom-btn {
-      background: none;
-      border: none;
-      color: var(--white);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      gap: 16px;
       cursor: pointer;
-      padding: 8px;
+      border: 1px solid rgba(255,255,255,0.07);
+      transition: background 0.15s;
+      text-align: left;
+      width: 100%;
+      color: var(--white);
     }
+    .menu-card:active { background: #22486e; }
+    .menu-icon { font-size: 1.8rem; width: 44px; text-align: center; flex-shrink: 0; }
+    .menu-info { flex: 1; }
+    .menu-title { font-size: 1rem; font-weight: 700; }
+    .menu-desc { font-size: 0.78rem; color: var(--gray); margin-top: 3px; }
+    .menu-arrow { color: var(--gray); font-size: 1.1rem; }
+
+    .bottombar { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: var(--blue-dark); border-top: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; z-index: 100; }
+    .bottom-btn { background: none; border: none; color: var(--white); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 8px; }
     .bottom-btn svg { width: 26px; height: 26px; }
-    .profile-btn img {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid var(--blue-light);
-    }
+    .profile-btn img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid var(--blue-light); }
   </style>
 </head>
 <body>
@@ -182,8 +93,10 @@
       </div>
     </div>
     <div class="sidebar-menu">
+      <button class="sidebar-item active">Ana Sayfa</button>
       <button class="sidebar-item" onclick="window.location.href='species.html'">Balık Türleri</button>
       <button class="sidebar-item" onclick="window.location.href='regions.html'">Bölgeler</button>
+      <button class="sidebar-item" onclick="window.location.href='forecast.html'">Tür Tahmini</button>
       <button class="sidebar-item">Ayarlar</button>
     </div>
     <div class="sidebar-bottom">
@@ -199,10 +112,44 @@
     <div class="banner-placeholder"></div>
   </div>
 
-  <div class="content"></div>
+  <div class="content">
+    <div class="welcome">
+      <div class="welcome-sub">Hoş geldin,</div>
+      <h2 id="welcome-name">...</h2>
+    </div>
+
+    <div class="menu-grid">
+      <button class="menu-card" onclick="window.location.href='species.html'">
+        <div class="menu-icon">🐟</div>
+        <div class="menu-info">
+          <div class="menu-title">Balık Türleri</div>
+          <div class="menu-desc">Boy limitleri, sezon ve av bilgileri</div>
+        </div>
+        <div class="menu-arrow">›</div>
+      </button>
+
+      <button class="menu-card" onclick="window.location.href='regions.html'">
+        <div class="menu-icon">🗺️</div>
+        <div class="menu-info">
+          <div class="menu-title">Bölgeler</div>
+          <div class="menu-desc">İl bazlı iç su yasak takvimi</div>
+        </div>
+        <div class="menu-arrow">›</div>
+      </button>
+
+      <button class="menu-card" onclick="window.location.href='forecast.html'">
+        <div class="menu-icon">🌊</div>
+        <div class="menu-info">
+          <div class="menu-title">Tür Tahmini</div>
+          <div class="menu-desc">Konumuna göre deniz koşulları ve tahmin</div>
+        </div>
+        <div class="menu-arrow">›</div>
+      </button>
+    </div>
+  </div>
 
   <div class="bottombar">
-    <button class="bottom-btn">
+    <button class="bottom-btn" onclick="window.location.href='home.html'">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
         <polyline points="9 22 9 12 15 12 15 22"/>
@@ -214,29 +161,27 @@
   </div>
 
   <script type="module">
-    import { initializeApp }
-      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut }
-      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-    const firebaseConfig = {
+    const app  = initializeApp({
       apiKey: "AIzaSyCkq0NU1Ao8LMZw6WfPvQUO4F_r4-An9-c",
       authDomain: "olta-810ae.firebaseapp.com",
       projectId: "olta-810ae",
       storageBucket: "olta-810ae.firebasestorage.app",
       messagingSenderId: "142251428527",
       appId: "1:142251428527:web:dee8776ee6cde14656225a"
-    };
-
-    const app  = initializeApp(firebaseConfig);
+    });
     const auth = getAuth(app);
 
     onAuthStateChanged(auth, (user) => {
       if (!user) { window.location.href = 'index.html'; return; }
-      document.getElementById('user-name').textContent  = user.displayName;
-      document.getElementById('user-email').textContent = user.email;
-      document.getElementById('user-photo').src         = user.photoURL;
-      document.getElementById('bottom-photo').src       = user.photoURL;
+      const name = user.displayName?.split(' ')[0] || 'Balıkçı';
+      document.getElementById('welcome-name').textContent = name;
+      document.getElementById('user-name').textContent   = user.displayName;
+      document.getElementById('user-email').textContent  = user.email;
+      document.getElementById('user-photo').src          = user.photoURL;
+      document.getElementById('bottom-photo').src        = user.photoURL;
     });
 
     document.getElementById('logout-btn').addEventListener('click', async () => {
@@ -244,14 +189,8 @@
       window.location.href = 'index.html';
     });
 
-    window.openSidebar = () => {
-      document.getElementById('sidebar').classList.add('open');
-      document.getElementById('overlay').classList.add('open');
-    };
-    window.closeSidebar = () => {
-      document.getElementById('sidebar').classList.remove('open');
-      document.getElementById('overlay').classList.remove('open');
-    };
+    window.openSidebar  = () => { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('open'); };
+    window.closeSidebar = () => { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); };
   </script>
 </body>
 </html>
