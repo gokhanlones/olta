@@ -94,6 +94,46 @@
 
   .leaflet-tile-pane{filter:brightness(.85) saturate(.8);}
   .leaflet-control-attribution{display:none;}
+
+  /* REKLAM OVERLAY */
+  #ad-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,.85);
+    z-index:1000;display:none;
+    flex-direction:column;align-items:center;justify-content:center;
+    padding:24px;
+  }
+  #ad-overlay.show{display:flex;}
+  .ad-box{
+    background:var(--panel);border-radius:16px;
+    width:100%;max-width:340px;overflow:hidden;
+  }
+  .ad-top{
+    background:var(--accent);color:#0A1628;
+    font-size:.7rem;font-weight:700;letter-spacing:1px;
+    padding:6px 14px;text-align:right;
+  }
+  .ad-content{
+    padding:24px;text-align:center;
+  }
+  .ad-placeholder{
+    width:100%;height:160px;background:rgba(255,255,255,.05);
+    border-radius:10px;border:2px dashed rgba(255,255,255,.15);
+    display:flex;align-items:center;justify-content:center;
+    flex-direction:column;gap:8px;margin-bottom:16px;
+    color:var(--muted);font-size:.8rem;
+  }
+  .ad-placeholder span{font-size:2rem;}
+  .ad-info{font-size:.8rem;color:var(--muted);margin-bottom:20px;line-height:1.5;}
+  .ad-countdown{
+    font-size:.75rem;color:var(--muted);margin-bottom:12px;
+  }
+  #ad-close-btn{
+    width:100%;background:var(--accent);color:#0A1628;
+    border:none;border-radius:10px;padding:13px;
+    font-size:.95rem;font-weight:700;cursor:pointer;
+    opacity:.4;pointer-events:none;transition:opacity .3s;
+  }
+  #ad-close-btn.ready{opacity:1;pointer-events:all;}
 </style>
 </head>
 <body>
@@ -128,6 +168,22 @@
   <button class="hamburger" onclick="openSidebar()"><span></span><span></span><span></span></button>
   <div class="banner-title">OLTA</div>
   <div class="banner-placeholder"></div>
+</div>
+
+<!-- REKLAM OVERLAY -->
+<div id="ad-overlay">
+  <div class="ad-box">
+    <div class="ad-top">REKLAM</div>
+    <div class="ad-content">
+      <div class="ad-placeholder">
+        <span>📢</span>
+        Reklam alanı
+      </div>
+      <div class="ad-info">Deniz verileri yükleniyor.<br>Lütfen bekleyin...</div>
+      <div class="ad-countdown" id="ad-countdown">Kapatmak için <b id="ad-timer">10</b> saniye bekleyin</div>
+      <button id="ad-close-btn" onclick="closeAd()">Devam Et →</button>
+    </div>
+  </div>
 </div>
 
 <div id="map"></div>
@@ -215,8 +271,36 @@ let marker=null, fetching=false;
 map.on('click', e => {
   if (fetching) return;
   placeMarker(e.latlng.lat, e.latlng.lng);
-  runForecast(e.latlng.lat, e.latlng.lng);
+  showAd(e.latlng.lat, e.latlng.lng);
 });
+
+let pendingLat = null, pendingLng = null, adTimer = null;
+
+function showAd(lat, lng) {
+  pendingLat = lat; pendingLng = lng;
+  document.getElementById('ad-overlay').classList.add('show');
+  document.getElementById('ad-close-btn').classList.remove('ready');
+  let secs = 10;
+  document.getElementById('ad-timer').textContent = secs;
+  adTimer = setInterval(() => {
+    secs--;
+    document.getElementById('ad-timer').textContent = secs;
+    if (secs <= 0) {
+      clearInterval(adTimer);
+      document.getElementById('ad-countdown').textContent = 'Devam edebilirsiniz!';
+      document.getElementById('ad-close-btn').classList.add('ready');
+    }
+  }, 1000);
+}
+
+window.closeAd = function() {
+  document.getElementById('ad-overlay').classList.remove('show');
+  clearInterval(adTimer);
+  if (pendingLat !== null) {
+    runForecast(pendingLat, pendingLng);
+    pendingLat = null; pendingLng = null;
+  }
+};
 
 function placeMarker(lat,lng){
   if(marker) map.removeLayer(marker);
@@ -431,7 +515,7 @@ window.useMyLocation=function(){
   if(!navigator.geolocation){setStatus('Konum servisi yok.');return;}
   setStatus('📍 Konum alınıyor…');
   navigator.geolocation.getCurrentPosition(
-    p=>{const{latitude:lat,longitude:lng}=p.coords;map.setView([lat,lng],10);placeMarker(lat,lng);runForecast(lat,lng);},
+    p=>{const{latitude:lat,longitude:lng}=p.coords;map.setView([lat,lng],10);placeMarker(lat,lng);showAd(lat,lng);},
     ()=>setStatus('Konum alınamadı. Haritaya dokun.')
   );
 };
