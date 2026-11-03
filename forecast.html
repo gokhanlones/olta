@@ -16,14 +16,16 @@
   html,body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
 
   .banner{height:56px;background:var(--bg);border-bottom:1px solid rgba(255,255,255,.08);
-    display:flex;align-items:center;padding:0 16px;position:sticky;top:0;z-index:100;}
+    display:flex;align-items:center;padding:0 16px;position:sticky;top:0;z-index:500;}
   .hamburger{background:none;border:none;color:var(--text);cursor:pointer;padding:8px;display:flex;flex-direction:column;gap:5px;}
   .hamburger span{display:block;width:22px;height:2px;background:var(--text);border-radius:2px;}
   .banner-title{flex:1;text-align:center;font-size:20px;font-weight:900;letter-spacing:6px;}
   .banner-placeholder{width:38px;}
+
   .sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;opacity:0;transition:opacity .3s;}
   .sidebar-overlay.open{display:block;opacity:1;}
-  .sidebar{position:fixed;top:0;left:-280px;width:280px;height:100%;background:var(--bg);border-right:1px solid rgba(255,255,255,.08);z-index:300;transition:left .3s ease;display:flex;flex-direction:column;}
+  .sidebar{position:fixed;top:0;left:-280px;width:280px;height:100%;background:var(--bg);
+    border-right:1px solid rgba(255,255,255,.08);z-index:300;transition:left .3s ease;display:flex;flex-direction:column;}
   .sidebar.open{left:0;}
   .sidebar-header{padding:56px 20px 24px;border-bottom:1px solid rgba(255,255,255,.08);}
   .sidebar-header .logo{font-size:22px;font-weight:900;letter-spacing:4px;}
@@ -33,7 +35,8 @@
   .sidebar-user .name{font-size:14px;font-weight:600;}
   .sidebar-user .email{font-size:11px;color:var(--muted);margin-top:2px;}
   .sidebar-menu{flex:1;padding:12px 0;}
-  .sidebar-item{display:flex;align-items:center;padding:14px 20px;cursor:pointer;font-size:15px;transition:background .15s;border:none;background:none;color:var(--text);width:100%;text-align:left;}
+  .sidebar-item{display:flex;align-items:center;padding:14px 20px;cursor:pointer;font-size:15px;
+    transition:background .15s;border:none;background:none;color:var(--text);width:100%;text-align:left;}
   .sidebar-item:hover{background:rgba(255,255,255,.06);}
   .sidebar-item.active{color:var(--blue);font-weight:700;}
   .sidebar-bottom{padding:12px 0;border-top:1px solid rgba(255,255,255,.08);}
@@ -96,19 +99,33 @@
 <body>
 
 <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
 <div class="sidebar" id="sidebar">
-  <div class="sidebar-header"><div class="logo">OLTA</div><div class="tagline">BALIKÇININ REHBERİ</div></div>
-  <div class="sidebar-user"><img id="user-photo" src="" alt=""/><div><div class="name" id="user-name">...</div><div class="email" id="user-email">...</div></div></div>
+  <div class="sidebar-header">
+    <div class="logo">OLTA</div>
+    <div class="tagline">BALIKÇININ REHBERİ</div>
+  </div>
+  <div class="sidebar-user">
+    <img id="user-photo" src="" alt=""/>
+    <div>
+      <div class="name" id="user-name">...</div>
+      <div class="email" id="user-email">...</div>
+    </div>
+  </div>
   <div class="sidebar-menu">
+    <button class="sidebar-item" onclick="window.location.href='home.html'">Ana Sayfa</button>
     <button class="sidebar-item" onclick="window.location.href='species.html'">Balık Türleri</button>
     <button class="sidebar-item" onclick="window.location.href='regions.html'">Bölgeler</button>
     <button class="sidebar-item active">Tür Tahmini</button>
     <button class="sidebar-item">Ayarlar</button>
   </div>
-  <div class="sidebar-bottom"><button class="sidebar-item logout" id="logout-btn">Çıkış Yap</button></div>
+  <div class="sidebar-bottom">
+    <button class="sidebar-item logout" id="logout-btn">Çıkış Yap</button>
+  </div>
 </div>
+
 <div class="banner">
-  <button class="hamburger" onclick="openSidebar()" aria-label="Menüyü aç"><span></span><span></span><span></span></button>
+  <button class="hamburger" onclick="openSidebar()"><span></span><span></span><span></span></button>
   <div class="banner-title">OLTA</div>
   <div class="banner-placeholder"></div>
 </div>
@@ -158,7 +175,7 @@
 
 <script type="module">
 import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, collection, getDocs, orderBy, query, doc, getDoc }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -173,26 +190,22 @@ const db   = getFirestore(app);
 
 onAuthStateChanged(auth, u => {
   if (!u) { window.location.href='index.html'; return; }
-  document.getElementById('user-name').textContent = u.displayName || 'Balıkçı';
-  document.getElementById('user-email').textContent = u.email || '';
   if (u.photoURL) {
-    document.getElementById('user-photo').src = u.photoURL;
     document.getElementById('bottom-photo').src = u.photoURL;
+    document.getElementById('user-photo').src   = u.photoURL;
   }
+  document.getElementById('user-name').textContent  = u.displayName || '';
+  document.getElementById('user-email').textContent = u.email || '';
 });
 
-window.openSidebar = function(){
-  document.getElementById('sidebar').classList.add('open');
-  document.getElementById('overlay').classList.add('open');
-};
-window.closeSidebar = function(){
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('overlay').classList.remove('open');
-};
 document.getElementById('logout-btn').addEventListener('click', async () => {
+  const { signOut } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
   await signOut(auth);
-  window.location.href='index.html';
+  window.location.href = 'index.html';
 });
+
+window.openSidebar  = () => { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('open'); };
+window.closeSidebar = () => { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); };
 
 // ── HARİTA
 const map = L.map('map',{zoomControl:true}).setView([38.5,35.0],6);
@@ -268,7 +281,7 @@ const PROXY = "https://script.google.com/macros/s/AKfycbzVnlssJlCxVROr-UtseSjNgv
 async function fetchSalinityAndChlorophyll(lat, lng) {
   try {
     const url = `${PROXY}?lat=${lat.toFixed(3)}&lng=${lng.toFixed(3)}`;
-    const r = await ft(url, {}, 12000);
+    const r = await ft(url, { redirect: 'follow' }, 20000);
     const d = await r.json();
     return {
       sss: typeof d.salinity    === 'number' ? +d.salinity.toFixed(1)    : null,
