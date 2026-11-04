@@ -282,11 +282,24 @@ function showCellDetail(cell) {
   document.getElementById('detail-bar').style.display = 'flex';
 }
 
-// ── HABİTAT GRİD YÜKLE
+// ── HABİTAT GRİD YÜKLE (önce Firestore, sonra API)
 async function loadHabitatGrid(species='bluefish') {
   document.getElementById('map-loading').classList.add('show');
   try {
-    const r = await fetch(`${API}/habitat-grid?species=${species}&region=turkey`, {signal: AbortSignal.timeout(90000)});
+    // Firestore'dan oku
+    const snap = await getDoc(doc(db, 'habitat_grids', `${species}_turkey`));
+    if (snap.exists()) {
+      const d = snap.data();
+      if (d.cells?.length) {
+        gridData = d;
+        drawGrid(d.cells);
+        document.getElementById('map-loading').classList.remove('show');
+        return;
+      }
+    }
+    // Firestore'da yoksa API'den çek
+    const r = await fetch(`${API}/habitat-grid?species=${species}&region=turkey`,
+      {signal: AbortSignal.timeout(90000)});
     const d = await r.json();
     if (d.ok && d.cells?.length) {
       gridData = d;
