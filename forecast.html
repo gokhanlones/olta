@@ -352,15 +352,26 @@ async function loadAllFish() {
   }
 }
 
-// ── BALIK SKORU (frontend)
+// ── BALIK SKORU (sıcaklık + tuzluluk)
+function rangeScore(val, min, max) {
+  if (val == null || min == null || max == null) return null;
+  if (val < min || val > max) return 0;
+  const center    = (min + max) / 2;
+  const halfRange = (max - min) / 2;
+  return Math.max(0, (1 - Math.abs(val - center) / halfRange) * 100);
+}
+
 function scoreFishCell(cell, fish) {
-  const temp = cell.temperature;
-  if (temp == null || fish.sstMin == null || fish.sstMax == null) return 0;
-  if (temp < fish.sstMin || temp > fish.sstMax) return 0;
-  const center    = (fish.sstMin + fish.sstMax) / 2;
-  const halfRange = (fish.sstMax - fish.sstMin) / 2;
-  const dist      = Math.abs(temp - center);
-  return Math.round(Math.max(0, (1 - dist / halfRange) * 100));
+  const sstScore = rangeScore(cell.temperature, fish.sstMin, fish.sstMax);
+  const sssScore = rangeScore(cell.salinity,    fish.sssMin, fish.sssMax);
+
+  if (sstScore === null) return 0;
+
+  // Tuzluluk verisi varsa ağırlıklı ortalama (SST %70, SSS %30)
+  if (sssScore !== null) {
+    return Math.round(sstScore * 0.7 + sssScore * 0.3);
+  }
+  return Math.round(sstScore);
 }
 
 // ── BALIK SEÇİCİ
