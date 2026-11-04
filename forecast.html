@@ -6,6 +6,7 @@
 <title>Olta — Tür Tahmini</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
 <style>
 :root{
   --bg:#0A1628;--panel:#1A3A5C;--blue:#2E86AB;
@@ -237,31 +238,39 @@ window.closeSidebar = ()=>{document.getElementById('sidebar').classList.remove('
 const map = L.map('map',{zoomControl:true}).setView([39.5,32],6);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(map);
 
-// ── RENK
-function levelColor(level){
-  switch(level){
-    case 'high':     return {color:'#34D399',opacity:.55};
-    case 'moderate': return {color:'#FCD34D',opacity:.45};
-    case 'low':      return {color:'#F97316',opacity:.3};
-    default:         return {color:'#94A3B8',opacity:.08};
-  }
-}
-
 // ── GRID KATMANI
-let gridLayer = L.layerGroup().addTo(map);
+let heatLayer = null;
+let cellMap   = {};  // "lat,lng" → cell detayı
 let gridData  = null;
 
 function drawGrid(cells) {
-  gridLayer.clearLayers();
+  // Önceki katmanı kaldır
+  if (heatLayer) { map.removeLayer(heatLayer); heatLayer = null; }
+  cellMap = {};
+
+  // Heat map noktaları: [lat, lng, intensity 0-1]
+  const points = [];
   cells.forEach(cell => {
-    const {color, opacity} = levelColor(cell.level);
-    const rect = L.rectangle(
-      [[cell.bounds.south, cell.bounds.west],[cell.bounds.north, cell.bounds.east]],
-      {fillColor:color, fillOpacity:opacity, weight:0, interactive:true}
-    );
-    rect.on('click', () => showCellDetail(cell));
-    rect.addTo(gridLayer);
+    if (cell.score == null) return;
+    const intensity = cell.score / 100;
+    points.push([cell.lat, cell.lng, intensity]);
+    cellMap[`${cell.lat},${cell.lng}`] = cell;
   });
+
+  heatLayer = L.heatLayer(points, {
+    radius: 28,
+    blur:   22,
+    maxZoom: 10,
+    max: 1.0,
+    gradient: {
+      0.0: 'rgba(0,0,0,0)',
+      0.25: '#1e3a5f',
+      0.45: '#F97316',
+      0.65: '#FCD34D',
+      0.85: '#34D399',
+      1.0:  '#00ff88',
+    }
+  }).addTo(map);
 }
 
 function showCellDetail(cell) {
@@ -307,6 +316,38 @@ window.useMyLocation = function() {
   );
 };
 
+// ── HARİTAYA TIKLA → en yakın hücre
+map.on('click', async e => {
+  const {lat, lng} = e.latlng;
+
+  // En yakın grid hücresini bul
+  let best = null, bestDist = Infinity;
+  Object.values(cellMap).forEach(cell => {
+    const d = Math.abs(cell.lat - lat) + Math.abs(cell.lng - lng);
+    if (d < bestDist) { bestDist = d; best = cell; }
+  });
+  if (best && bestDist < 0.3) showCellDetail(best);
+
+  // Bölge bilgisi
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=tr`,
+      {headers:{'User-Agent':'olta-app/1.0'}});
+    const d = await r.json();
+    const name = d?.address?.state;
+    if (!name) return;
+    const snap = await getDoc(doc(db,'regions',toId(name)));
+    if (!snap.exists()) return;
+    const reg = snap.data();
+    document.getElementById('region-name').textContent = `📍 ${reg.name}`;
+    document.getElementById('region-ban').textContent  = reg.banPeriod || '—';
+    const b = banActive(reg.banPeriod);
+    const el = document.getElementById('region-status');
+    el.textContent = b ? '🔴 Yasak' : '🟢 Serbest';
+    el.className   = 'region-val '+(b?'ban':'ok');
+    document.getElementById('region-box').style.display = 'block';
+  } catch {}
+});
+
 // ── BÖLGE
 function toId(name) {
   return name?.toLowerCase()
@@ -326,26 +367,7 @@ function banActive(p) {
     return e<s?now>=s||now<=e:now>=s&&now<=e;
   } catch{return false;}
 }
-map.on('click', async e => {
-  const {lat, lng} = e.latlng;
-  try {
-    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=tr`,
-      {headers:{'User-Agent':'olta-app/1.0'}});
-    const d = await r.json();
-    const name = d?.address?.state;
-    if (!name) return;
-    const snap = await getDoc(doc(db,'regions',toId(name)));
-    if (!snap.exists()) return;
-    const reg = snap.data();
-    document.getElementById('region-name').textContent = `📍 ${reg.name}`;
-    document.getElementById('region-ban').textContent  = reg.banPeriod || '—';
-    const b = banActive(reg.banPeriod);
-    const el = document.getElementById('region-status');
-    el.textContent = b ? '🔴 Yasak' : '🟢 Serbest';
-    el.className   = 'region-val '+(b?'ban':'ok');
-    document.getElementById('region-box').style.display = 'block';
-  } catch {}
-});
+
 
 // ── REKLAM
 let adTimer = null;
