@@ -263,17 +263,24 @@ const HeatCanvas = L.Layer.extend({
     this._map    = map;
     this._canvas = document.createElement('canvas');
     Object.assign(this._canvas.style, {
-      position:'absolute', top:0, left:0,
-      pointerEvents:'none', zIndex:300,
-      filter:'blur(6px)',
+      position:      'absolute',
+      top:           '0',
+      left:          '0',
+      pointerEvents: 'none',
+      zIndex:        '400',
+      filter:        'blur(6px)',
     });
-    map.getPanes().overlayPane.appendChild(this._canvas);
-    map.on('moveend zoomend', this._draw, this);
+    // Overlay pane yerine map container'a ekle — transform kaymasını önler
+    map.getContainer().appendChild(this._canvas);
+    this._drawFn = L.Util.throttle(this._draw, 40, this);
+    map.on('move zoom', this._drawFn, this);
+    map.on('zoomend',   this._draw,   this);
     this._draw();
   },
   onRemove(map) {
-    map.getPanes().overlayPane.removeChild(this._canvas);
-    map.off('moveend zoomend', this._draw, this);
+    map.getContainer().removeChild(this._canvas);
+    map.off('move zoom', this._drawFn, this);
+    map.off('zoomend',   this._draw,   this);
   },
   _draw() {
     const size = this._map.getSize();
@@ -286,12 +293,16 @@ const HeatCanvas = L.Layer.extend({
     canvasCells.forEach(cell => {
       const color = scoreToRGBA(cell.score);
       if (!color) return;
-      const tl = this._map.latLngToContainerPoint([cell.lat + GRID_STEP/2, cell.lng - GRID_STEP/2]);
-      const br = this._map.latLngToContainerPoint([cell.lat - GRID_STEP/2, cell.lng + GRID_STEP/2]);
-      const w  = Math.max(1, br.x - tl.x + 1);
-      const h  = Math.max(1, br.y - tl.y + 1);
+      const tl = this._map.latLngToContainerPoint(
+        L.latLng(cell.lat + GRID_STEP / 2, cell.lng - GRID_STEP / 2)
+      );
+      const br = this._map.latLngToContainerPoint(
+        L.latLng(cell.lat - GRID_STEP / 2, cell.lng + GRID_STEP / 2)
+      );
+      const w = Math.max(2, Math.ceil(br.x - tl.x) + 1);
+      const h = Math.max(2, Math.ceil(br.y - tl.y) + 1);
       ctx.fillStyle = color;
-      ctx.fillRect(Math.floor(tl.x), Math.floor(tl.y), Math.ceil(w), Math.ceil(h));
+      ctx.fillRect(Math.floor(tl.x), Math.floor(tl.y), w, h);
     });
   },
   redraw() { this._draw(); }
