@@ -205,7 +205,7 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const app = initializeApp({
   apiKey:"AIzaSyCkq0NU1Ao8LMZw6WfPvQUO4F_r4-An9-c",
@@ -290,9 +290,8 @@ async function loadHabitatGrid(species='bluefish') {
     const metaSnap = await getDoc(doc(db, 'habitat_grids', `${species}_turkey`));
     if (metaSnap.exists()) {
       // chunks sub-collection'dan tüm hücreleri oku
-      const { getDocs, collection: col, orderBy, query } =
-        await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-      const chunksQ    = query(col(db,'habitat_grids/'+species+'_turkey/chunks'), orderBy('index'));
+      const chunksRef  = collection(db, 'habitat_grids', `${species}_turkey`, 'chunks');
+      const chunksQ    = query(chunksRef, orderBy('index'));
       const chunksSnap = await getDocs(chunksQ);
       let cells = [];
       chunksSnap.forEach(c => { cells = cells.concat(c.data().cells || []); });
