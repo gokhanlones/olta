@@ -142,10 +142,7 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
 
 <!-- BALIK SEÇİCİ -->
 <div class="fish-bar" id="fish-bar">
-  <button class="fish-pill active" data-species="bluefish" onclick="selectSpecies('bluefish',this)">🐟 Lüfer</button>
-  <button class="fish-pill" data-species="seabream" onclick="selectSpecies('seabream',this)">🐠 Çipura</button>
-  <button class="fish-pill" data-species="seabass" onclick="selectSpecies('seabass',this)">🐡 Levrek</button>
-  <button class="fish-pill" data-species="palamut" onclick="selectSpecies('palamut',this)">🐟 Palamut</button>
+  <span style="color:var(--muted);font-size:.8rem;flex-shrink:0;">⏳</span>
 </div>
 
 <!-- HARİTA -->
@@ -296,8 +293,11 @@ async function loadHabitatGrid(species='bluefish') {
       let cells = [];
       chunksSnap.forEach(c => { cells = cells.concat(c.data().cells || []); });
       if (cells.length) {
-        gridData = { ...metaSnap.data(), cells };
-        drawGrid(cells);
+        gridData         = { ...metaSnap.data(), cells };
+        currentGridCells = cells;
+        await loadAllFish();
+        if (currentFish) rescoreAndDraw();
+        else drawGrid(cells);
         document.getElementById('map-loading').classList.remove('show');
         return;
       }
@@ -307,8 +307,11 @@ async function loadHabitatGrid(species='bluefish') {
       {signal: AbortSignal.timeout(90000)});
     const d = await r.json();
     if (d.ok && d.cells?.length) {
-      gridData = d;
-      drawGrid(d.cells);
+      gridData         = d;
+      currentGridCells = d.cells;
+      await loadAllFish();
+      if (currentFish) rescoreAndDraw();
+      else drawGrid(d.cells);
     }
   } catch(e) {
     console.error('Grid yüklenemedi:', e);
@@ -317,13 +320,77 @@ async function loadHabitatGrid(species='bluefish') {
   }
 }
 
+// ── BALIK VERİSİ
+let allFish = [];
+let currentGridCells = null; // ham grid hücreleri (çevre verileri)
+let currentFish = null;
+
+async function loadAllFish() {
+  if (allFish.length) return;
+  try {
+    const snap = await getDocs(query(collection(db, 'fish')));
+    snap.forEach(d => {
+      const f = d.data();
+      if (f.type === 'deniz' && f.sstMin != null) allFish.push(f);
+    });
+    // Balık seçiciyi doldur
+    const bar = document.getElementById('fish-bar');
+    bar.innerHTML = '';
+    allFish.forEach((f, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'fish-pill' + (i === 0 ? ' active' : '');
+      btn.textContent = f.name;
+      btn.onclick = () => selectFish(f, btn);
+      bar.appendChild(btn);
+    });
+    // İlk balığı seç
+    if (allFish.length && currentGridCells) {
+      selectFish(allFish[0], bar.querySelector('.fish-pill'));
+    }
+  } catch(e) {
+    console.error('Balık yüklenemedi:', e);
+  }
+}
+
+// ── BALIK SKORU (frontend)
+function scoreFishCell(cell, fish) {
+  const temp = cell.temperature;
+  if (temp == null || fish.sstMin == null || fish.sstMax == null) return 0;
+  if (temp < fish.sstMin || temp > fish.sstMax) return 0;
+  const center    = (fish.sstMin + fish.sstMax) / 2;
+  const halfRange = (fish.sstMax - fish.sstMin) / 2;
+  const dist      = Math.abs(temp - center);
+  return Math.round(Math.max(0, (1 - dist / halfRange) * 100));
+}
+
 // ── BALIK SEÇİCİ
-window.selectSpecies = function(species, btn) {
-  document.querySelectorAll('.fish-pill').forEach(p=>p.classList.remove('active'));
+function selectFish(fish, btn) {
+  currentFish = fish;
+  document.querySelectorAll('.fish-pill').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('detail-bar').style.display = 'none';
-  loadHabitatGrid(species);
-};
+  if (currentGridCells) rescoreAndDraw();
+}
+
+function rescoreAndDraw() {
+  if (!currentFish || !currentGridCells) return;
+  const scored = currentGridCells.map(cell => ({
+    ...cell,
+    score: scoreFishCell(cell, currentFish),
+    level: getLevelFromScore(scoreFishCell(cell, currentFish)),
+  }));
+  drawGrid(scored);
+}
+
+function getLevelFromScore(score) {
+  if (score >= 75) return 'high';
+  if (score >= 50) return 'moderate';
+  if (score >= 25) return 'low';
+  return 'very_low';
+}
+
+// Eski selectSpecies — artık kullanılmıyor ama hata vermemesi için bırak
+window.selectSpecies = function() {};
 
 // ── GPS
 window.useMyLocation = function() {
@@ -410,9 +477,9 @@ window.closeAd = function() {
   clearInterval(adTimer);
 };
 
-// ── BAŞLAT: reklam göster + arka planda grid yükle
+// ── BAŞLAT: reklam göster + arka planda grid + balıkları yükle
 showAd();
-loadHabitatGrid('bluefish');
+loadHabitatGrid('bluefish'); // grid yüklenince loadAllFish otomatik çağrılır
 </script>
 </body>
 </html>
