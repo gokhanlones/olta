@@ -6,7 +6,7 @@
 <title>Olta — Tür Tahmini</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
+
 <style>
 :root{
   --bg:#0A1628;--panel:#1A3A5C;--blue:#2E86AB;
@@ -243,65 +243,76 @@ let heatLayer = null;
 let cellMap   = {};  // "lat,lng" → cell detayı
 let gridData  = null;
 
-let heatPoints = [];
+const GRID_STEP = 0.1;
 
-function getRadius() {
-  const z = map.getZoom();
-  if (z <= 6)  return 25;
-  if (z <= 8)  return 35;
-  if (z <= 10) return 50;
-  return 70;
+// ── SKOR → RGBA
+function scoreToRGBA(score) {
+  if (score <= 0)  return null;
+  if (score < 25)  return `rgba(30,58,95,${(score/25*0.35).toFixed(2)})`;
+  if (score < 50)  return `rgba(234,88,12,${(0.35+score/200).toFixed(2)})`;
+  if (score < 75)  return `rgba(234,179,8,${(0.45+score/300).toFixed(2)})`;
+  return             `rgba(34,197,94,${(0.55+score/400).toFixed(2)})`;
 }
 
+// ── CANVAS OVERLAY
+let canvasLayer = null;
+let canvasCells = [];
+
+const HeatCanvas = L.Layer.extend({
+  onAdd(map) {
+    this._map    = map;
+    this._canvas = document.createElement('canvas');
+    Object.assign(this._canvas.style, {
+      position:'absolute', top:0, left:0,
+      pointerEvents:'none', zIndex:300,
+      filter:'blur(6px)',
+    });
+    map.getPanes().overlayPane.appendChild(this._canvas);
+    map.on('moveend zoomend', this._draw, this);
+    this._draw();
+  },
+  onRemove(map) {
+    map.getPanes().overlayPane.removeChild(this._canvas);
+    map.off('moveend zoomend', this._draw, this);
+  },
+  _draw() {
+    const size = this._map.getSize();
+    this._canvas.width  = size.x;
+    this._canvas.height = size.y;
+    const ctx = this._canvas.getContext('2d');
+    ctx.clearRect(0, 0, size.x, size.y);
+    if (!canvasCells.length) return;
+
+    canvasCells.forEach(cell => {
+      const color = scoreToRGBA(cell.score);
+      if (!color) return;
+      const tl = this._map.latLngToContainerPoint([cell.lat + GRID_STEP/2, cell.lng - GRID_STEP/2]);
+      const br = this._map.latLngToContainerPoint([cell.lat - GRID_STEP/2, cell.lng + GRID_STEP/2]);
+      const w  = Math.max(1, br.x - tl.x + 1);
+      const h  = Math.max(1, br.y - tl.y + 1);
+      ctx.fillStyle = color;
+      ctx.fillRect(Math.floor(tl.x), Math.floor(tl.y), Math.ceil(w), Math.ceil(h));
+    });
+  },
+  redraw() { this._draw(); }
+});
+
+// ── GRİD ÇİZ
 function drawGrid(cells) {
-  if (heatLayer) { map.removeLayer(heatLayer); heatLayer = null; }
-  cellMap   = {};
-  heatPoints = [];
+  if (canvasLayer) { map.removeLayer(canvasLayer); canvasLayer = null; }
+  cellMap     = {};
+  canvasCells = [];
 
   cells.forEach(cell => {
     if (cell.score == null) return;
-    // Kara filtresi: tuzluluk < 1 ppt ise deniz değil
-    if (cell.salinity != null && cell.salinity < 1) return;
-    const intensity = cell.score / 100;
-    heatPoints.push([cell.lat, cell.lng, intensity]);
+    if (cell.salinity != null && cell.salinity < 1) return; // kara filtresi
+    canvasCells.push(cell);
     cellMap[`${cell.lat},${cell.lng}`] = cell;
   });
 
-  heatLayer = L.heatLayer(heatPoints, {
-    radius:  getRadius(),
-    blur:    Math.round(getRadius() * 0.75),
-    maxZoom: 12,
-    max: 1.0,
-    gradient: {
-      0.0:  'rgba(0,0,0,0)',
-      0.15: 'rgba(30,58,95,0.3)',
-      0.4:  '#F97316',
-      0.6:  '#FCD34D',
-      0.8:  '#34D399',
-      1.0:  '#00ff88',
-    }
-  }).addTo(map);
+  canvasLayer = new HeatCanvas();
+  map.addLayer(canvasLayer);
 }
-
-// Zoom değişince radius güncelle
-map.on('zoomend', () => {
-  if (!heatLayer || !heatPoints.length) return;
-  map.removeLayer(heatLayer);
-  heatLayer = L.heatLayer(heatPoints, {
-    radius:  getRadius(),
-    blur:    Math.round(getRadius() * 0.75),
-    maxZoom: 12,
-    max: 1.0,
-    gradient: {
-      0.0:  'rgba(0,0,0,0)',
-      0.15: 'rgba(30,58,95,0.3)',
-      0.4:  '#F97316',
-      0.6:  '#FCD34D',
-      0.8:  '#34D399',
-      1.0:  '#00ff88',
-    }
-  }).addTo(map);
-});
 
 function showCellDetail(cell) {
   document.getElementById('d-sst').textContent   = cell.temperature!=null ? cell.temperature.toFixed(1)+'°C' : '—';
