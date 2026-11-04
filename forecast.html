@@ -7,150 +7,119 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
-  :root {
-    --bg:    #0A1628; --panel: #1A3A5C; --blue: #2E86AB;
-    --accent:#F4A261; --text:  #E8F4FD; --muted:#7A9BB5;
-    --ok:    #34D399; --warn:  #FCD34D; --red:  #F87171;
-  }
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-  html,body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+:root{
+  --bg:#0A1628;--panel:#1A3A5C;--blue:#2E86AB;
+  --accent:#F4A261;--text:#E8F4FD;--muted:#7A9BB5;
+  --ok:#34D399;--warn:#FCD34D;--red:#F87171;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;height:100%;}
 
-  .banner{height:56px;background:var(--bg);border-bottom:1px solid rgba(255,255,255,.08);
-    display:flex;align-items:center;padding:0 16px;position:sticky;top:0;z-index:500;}
-  .hamburger{background:none;border:none;color:var(--text);cursor:pointer;padding:8px;display:flex;flex-direction:column;gap:5px;}
-  .hamburger span{display:block;width:22px;height:2px;background:var(--text);border-radius:2px;}
-  .banner-title{flex:1;text-align:center;font-size:20px;font-weight:900;letter-spacing:6px;}
-  .banner-placeholder{width:38px;}
+/* BANNER */
+.banner{height:56px;background:var(--bg);border-bottom:1px solid rgba(255,255,255,.08);
+  display:flex;align-items:center;padding:0 16px;position:sticky;top:0;z-index:500;}
+.hamburger{background:none;border:none;color:var(--text);cursor:pointer;padding:8px;display:flex;flex-direction:column;gap:5px;}
+.hamburger span{display:block;width:22px;height:2px;background:var(--text);border-radius:2px;}
+.banner-title{flex:1;text-align:center;font-size:20px;font-weight:900;letter-spacing:6px;}
+.banner-placeholder{width:38px;}
 
-  .sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;opacity:0;transition:opacity .3s;}
-  .sidebar-overlay.open{display:block;opacity:1;}
-  .sidebar{position:fixed;top:0;left:-280px;width:280px;height:100%;background:var(--bg);
-    border-right:1px solid rgba(255,255,255,.08);z-index:300;transition:left .3s ease;display:flex;flex-direction:column;}
-  .sidebar.open{left:0;}
-  .sidebar-header{padding:56px 20px 24px;border-bottom:1px solid rgba(255,255,255,.08);}
-  .sidebar-header .logo{font-size:22px;font-weight:900;letter-spacing:4px;}
-  .sidebar-header .tagline{font-size:11px;color:var(--blue);letter-spacing:1px;margin-top:4px;}
-  .sidebar-user{display:flex;align-items:center;gap:12px;padding:20px;border-bottom:1px solid rgba(255,255,255,.08);}
-  .sidebar-user img{width:40px;height:40px;border-radius:50%;object-fit:cover;}
-  .sidebar-user .name{font-size:14px;font-weight:600;}
-  .sidebar-user .email{font-size:11px;color:var(--muted);margin-top:2px;}
-  .sidebar-menu{flex:1;padding:12px 0;}
-  .sidebar-item{display:flex;align-items:center;padding:14px 20px;cursor:pointer;font-size:15px;
-    transition:background .15s;border:none;background:none;color:var(--text);width:100%;text-align:left;}
-  .sidebar-item:hover{background:rgba(255,255,255,.06);}
-  .sidebar-item.active{color:var(--blue);font-weight:700;}
-  .sidebar-bottom{padding:12px 0;border-top:1px solid rgba(255,255,255,.08);}
-  .sidebar-item.logout{color:#F87171;}
+/* SIDEBAR */
+.sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;opacity:0;transition:opacity .3s;}
+.sidebar-overlay.open{display:block;opacity:1;}
+.sidebar{position:fixed;top:0;left:-280px;width:280px;height:100%;background:var(--bg);
+  border-right:1px solid rgba(255,255,255,.08);z-index:300;transition:left .3s ease;display:flex;flex-direction:column;}
+.sidebar.open{left:0;}
+.sidebar-header{padding:56px 20px 24px;border-bottom:1px solid rgba(255,255,255,.08);}
+.sidebar-header .logo{font-size:22px;font-weight:900;letter-spacing:4px;}
+.sidebar-header .tagline{font-size:11px;color:var(--blue);letter-spacing:1px;margin-top:4px;}
+.sidebar-user{display:flex;align-items:center;gap:12px;padding:20px;border-bottom:1px solid rgba(255,255,255,.08);}
+.sidebar-user img{width:40px;height:40px;border-radius:50%;object-fit:cover;}
+.sidebar-user .name{font-size:14px;font-weight:600;}
+.sidebar-user .email{font-size:11px;color:var(--muted);margin-top:2px;}
+.sidebar-menu{flex:1;padding:12px 0;}
+.sidebar-item{display:flex;align-items:center;padding:14px 20px;cursor:pointer;font-size:15px;
+  transition:background .15s;border:none;background:none;color:var(--text);width:100%;text-align:left;}
+.sidebar-item:hover{background:rgba(255,255,255,.06);}
+.sidebar-item.active{color:var(--blue);font-weight:700;}
+.sidebar-bottom{padding:12px 0;border-top:1px solid rgba(255,255,255,.08);}
+.sidebar-item.logout{color:#F87171;}
 
-  #map{width:100%;height:42vh;min-height:240px;}
+/* BALIK SEÇİCİ */
+.fish-bar{padding:10px 16px;background:var(--panel);border-bottom:1px solid rgba(255,255,255,.06);
+  display:flex;align-items:center;gap:8px;overflow-x:auto;}
+.fish-pill{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:var(--muted);
+  border-radius:20px;padding:6px 14px;font-size:.8rem;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.fish-pill.active{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600;}
+.fish-pill:active{opacity:.75;}
 
-  .loc-bar{padding:10px 16px;background:var(--panel);border-bottom:1px solid rgba(255,255,255,.06);display:flex;gap:8px;}
-  .loc-btn{flex:1;background:var(--accent);color:#0A1628;border:none;border-radius:8px;padding:10px;
-    font-size:.9rem;font-weight:700;cursor:pointer;}
-  .loc-btn:active{opacity:.75;}
-  .loc-btn.sec{background:var(--panel);border:1px solid rgba(255,255,255,.15);color:var(--text);font-weight:400;}
+/* HARİTA */
+#map{width:100%;height:48vh;min-height:260px;position:relative;}
+.map-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:rgba(10,22,40,.85);color:var(--text);padding:10px 18px;border-radius:10px;
+  font-size:.85rem;z-index:400;pointer-events:none;display:none;}
+.map-loading.show{display:block;}
 
-  /* DURUM */
-  #status-box{padding:10px 16px;font-size:.85rem;color:var(--muted);min-height:38px;display:flex;align-items:center;}
+/* LEJANd */
+.map-legend{position:absolute;bottom:10px;right:10px;background:rgba(10,22,40,.88);
+  border-radius:8px;padding:8px 10px;z-index:400;font-size:.65rem;color:var(--muted);}
+.legend-row{display:flex;align-items:center;gap:6px;margin-bottom:3px;}
+.legend-row:last-child{margin-bottom:0;}
+.legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
 
-  /* DENİZ VERİLERİ GRID */
-  #ocean-grid{display:none;grid-template-columns:repeat(2,1fr);gap:8px;padding:0 16px 8px;}
-  .ocean-card{background:var(--panel);border-radius:10px;padding:10px 12px;}
-  .ocean-label{font-size:.65rem;color:var(--muted);letter-spacing:.5px;margin-bottom:3px;}
-  .ocean-val{font-size:1rem;font-weight:700;}
-  .ocean-sub{font-size:.7rem;color:var(--muted);margin-top:1px;}
+/* BALIK DETAY */
+.detail-bar{padding:10px 16px;background:var(--panel);border-bottom:1px solid rgba(255,255,255,.06);
+  display:flex;gap:8px;overflow-x:auto;}
+.stat-pill{background:rgba(255,255,255,.06);border-radius:8px;padding:7px 10px;text-align:center;flex-shrink:0;min-width:70px;}
+.stat-label{font-size:.6rem;color:var(--muted);letter-spacing:.4px;}
+.stat-val{font-size:.85rem;font-weight:700;margin-top:2px;}
 
-  /* BÖLGE */
-  #region-box{margin:0 16px 8px;background:var(--panel);border-radius:10px;padding:12px 14px;display:none;}
-  .region-name{font-size:1rem;font-weight:700;margin-bottom:6px;}
-  .region-row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
-  .region-label{font-size:.7rem;color:var(--muted);margin-bottom:2px;}
-  .region-val{font-size:.85rem;font-weight:600;}
-  .region-val.ban{color:var(--red);}
-  .region-val.ok{color:var(--ok);}
-  .region-species{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.07);
-    font-size:.72rem;color:var(--muted);line-height:1.6;}
+/* YASAKLANAN */
+#region-box{margin:8px 16px;background:var(--panel);border-radius:10px;padding:12px 14px;display:none;}
+.region-name{font-size:.95rem;font-weight:700;margin-bottom:6px;}
+.region-row{display:flex;justify-content:space-between;gap:8px;}
+.region-label{font-size:.68rem;color:var(--muted);margin-bottom:2px;}
+.region-val{font-size:.82rem;font-weight:600;}
+.region-val.ban{color:var(--red);}
+.region-val.ok{color:var(--ok);}
 
-  /* BALIK LİSTESİ */
-  .section-title{padding:8px 16px 4px;font-size:.65rem;color:var(--muted);letter-spacing:.6px;}
-  .fish-list{padding:0 16px 80px;display:flex;flex-direction:column;gap:7px;}
-  .fish-card{background:var(--panel);border-radius:10px;display:flex;align-items:center;gap:10px;padding:9px 11px;}
-  .fish-card img{width:52px;height:35px;object-fit:cover;border-radius:6px;background:rgba(255,255,255,.05);}
-  .fish-info{flex:1;min-width:0;}
-  .fish-name{font-size:.9rem;font-weight:600;}
-  .fish-ranges{font-size:.68rem;color:var(--muted);margin-top:2px;}
-  .badge{font-size:.65rem;font-weight:700;border-radius:6px;padding:3px 7px;white-space:nowrap;}
-  .b-yes{background:rgba(52,211,153,.15);color:var(--ok);}
-  .b-may{background:rgba(252,211,77,.12);color:var(--warn);}
-  .b-no{background:rgba(248,113,113,.12);color:var(--red);}
+/* BOTTOMBAR */
+.bottombar{position:fixed;bottom:0;left:0;right:0;height:60px;background:var(--bg);
+  border-top:1px solid rgba(255,255,255,.08);display:flex;align-items:center;
+  justify-content:space-between;padding:0 40px;z-index:100;}
+.bottom-btn{background:none;border:none;color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:8px;}
+.bottom-btn svg{width:26px;height:26px;}
+.gps-btn{background:var(--accent);color:#0A1628;border:none;border-radius:8px;padding:8px 14px;font-size:.8rem;font-weight:700;cursor:pointer;}
+.profile-btn img{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--blue);}
 
-  /* BOTTOMBAR */
-  .bottombar{position:fixed;bottom:0;left:0;right:0;height:60px;background:var(--bg);
-    border-top:1px solid rgba(255,255,255,.08);display:flex;align-items:center;
-    justify-content:space-between;padding:0 40px;z-index:100;}
-  .bottom-btn{background:none;border:none;color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:8px;}
-  .bottom-btn svg{width:26px;height:26px;}
-  .profile-btn img{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--blue);}
+/* REKLAM */
+#ad-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;display:none;
+  flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+#ad-overlay.show{display:flex;}
+.ad-box{background:var(--panel);border-radius:16px;width:100%;max-width:340px;overflow:hidden;}
+.ad-top{background:var(--accent);color:#0A1628;font-size:.7rem;font-weight:700;letter-spacing:1px;padding:6px 14px;text-align:right;}
+.ad-content{padding:24px;text-align:center;}
+.ad-placeholder{width:100%;height:140px;background:rgba(255,255,255,.05);border-radius:10px;
+  border:2px dashed rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:8px;margin-bottom:16px;color:var(--muted);font-size:.8rem;}
+.ad-placeholder span{font-size:2rem;}
+.ad-info{font-size:.8rem;color:var(--muted);margin-bottom:16px;line-height:1.5;}
+.ad-countdown{font-size:.75rem;color:var(--muted);margin-bottom:12px;}
+#ad-close-btn{width:100%;background:var(--accent);color:#0A1628;border:none;border-radius:10px;
+  padding:13px;font-size:.95rem;font-weight:700;cursor:pointer;opacity:.4;pointer-events:none;transition:opacity .3s;}
+#ad-close-btn.ready{opacity:1;pointer-events:all;}
 
-  .leaflet-tile-pane{filter:brightness(.85) saturate(.8);}
-  .leaflet-control-attribution{display:none;}
-
-  /* REKLAM OVERLAY */
-  #ad-overlay{
-    position:fixed;inset:0;background:rgba(0,0,0,.85);
-    z-index:1000;display:none;
-    flex-direction:column;align-items:center;justify-content:center;
-    padding:24px;
-  }
-  #ad-overlay.show{display:flex;}
-  .ad-box{
-    background:var(--panel);border-radius:16px;
-    width:100%;max-width:340px;overflow:hidden;
-  }
-  .ad-top{
-    background:var(--accent);color:#0A1628;
-    font-size:.7rem;font-weight:700;letter-spacing:1px;
-    padding:6px 14px;text-align:right;
-  }
-  .ad-content{
-    padding:24px;text-align:center;
-  }
-  .ad-placeholder{
-    width:100%;height:160px;background:rgba(255,255,255,.05);
-    border-radius:10px;border:2px dashed rgba(255,255,255,.15);
-    display:flex;align-items:center;justify-content:center;
-    flex-direction:column;gap:8px;margin-bottom:16px;
-    color:var(--muted);font-size:.8rem;
-  }
-  .ad-placeholder span{font-size:2rem;}
-  .ad-info{font-size:.8rem;color:var(--muted);margin-bottom:20px;line-height:1.5;}
-  .ad-countdown{
-    font-size:.75rem;color:var(--muted);margin-bottom:12px;
-  }
-  #ad-close-btn{
-    width:100%;background:var(--accent);color:#0A1628;
-    border:none;border-radius:10px;padding:13px;
-    font-size:.95rem;font-weight:700;cursor:pointer;
-    opacity:.4;pointer-events:none;transition:opacity .3s;
-  }
-  #ad-close-btn.ready{opacity:1;pointer-events:all;}
+.leaflet-tile-pane{filter:brightness(.82) saturate(.75);}
+.leaflet-control-attribution{display:none;}
 </style>
 </head>
 <body>
 
 <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
-
 <div class="sidebar" id="sidebar">
-  <div class="sidebar-header">
-    <div class="logo">OLTA</div>
-    <div class="tagline">BALIKÇININ REHBERİ</div>
-  </div>
+  <div class="sidebar-header"><div class="logo">OLTA</div><div class="tagline">BALIKÇININ REHBERİ</div></div>
   <div class="sidebar-user">
     <img id="user-photo" src="" alt=""/>
-    <div>
-      <div class="name" id="user-name">...</div>
-      <div class="email" id="user-email">...</div>
-    </div>
+    <div><div class="name" id="user-name">...</div><div class="email" id="user-email">...</div></div>
   </div>
   <div class="sidebar-menu">
     <button class="sidebar-item" onclick="window.location.href='home.html'">Ana Sayfa</button>
@@ -170,53 +139,55 @@
   <div class="banner-placeholder"></div>
 </div>
 
-<!-- REKLAM OVERLAY -->
-<div id="ad-overlay">
-  <div class="ad-box">
-    <div class="ad-top">REKLAM</div>
-    <div class="ad-content">
-      <div class="ad-placeholder">
-        <span>📢</span>
-        Reklam alanı
-      </div>
-      <div class="ad-info">Deniz verileri yükleniyor.<br>Lütfen bekleyin...</div>
-      <div class="ad-countdown" id="ad-countdown">Kapatmak için <b id="ad-timer">10</b> saniye bekleyin</div>
-      <button id="ad-close-btn" onclick="closeAd()">Devam Et →</button>
-    </div>
+<!-- BALIK SEÇİCİ -->
+<div class="fish-bar" id="fish-bar">
+  <button class="fish-pill active" data-species="bluefish" onclick="selectSpecies('bluefish',this)">🐟 Lüfer</button>
+  <button class="fish-pill" data-species="seabream" onclick="selectSpecies('seabream',this)">🐠 Çipura</button>
+  <button class="fish-pill" data-species="seabass" onclick="selectSpecies('seabass',this)">🐡 Levrek</button>
+  <button class="fish-pill" data-species="palamut" onclick="selectSpecies('palamut',this)">🐟 Palamut</button>
+</div>
+
+<!-- HARİTA -->
+<div id="map">
+  <div class="map-loading" id="map-loading">🌊 Deniz verileri yükleniyor…</div>
+  <div class="map-legend" id="legend">
+    <div class="legend-row"><div class="legend-dot" style="background:#34D399"></div> Yüksek ihtimal</div>
+    <div class="legend-row"><div class="legend-dot" style="background:#FCD34D"></div> Orta ihtimal</div>
+    <div class="legend-row"><div class="legend-dot" style="background:#F97316"></div> Düşük ihtimal</div>
+    <div class="legend-row"><div class="legend-dot" style="background:rgba(255,255,255,.15)"></div> Çok düşük</div>
   </div>
 </div>
 
-<div id="map"></div>
-
-<div class="loc-bar">
-  <button class="loc-btn" onclick="useMyLocation()">📍 Konumumu Kullan</button>
-  <button class="loc-btn sec" onclick="setStatus('Haritada bir deniz noktasına dokun.')">Haritaya Dokun</button>
-</div>
-
-<div id="status-box">Konum seçerek başla veya haritaya dokun.</div>
-
-<!-- DENİZ VERİLERİ -->
-<div id="ocean-grid">
-  <div class="ocean-card"><div class="ocean-label">SICAKLIK</div><div class="ocean-val" id="v-sst">—</div><div class="ocean-sub">°C</div></div>
-  <div class="ocean-card"><div class="ocean-label">TUZLULUK</div><div class="ocean-val" id="v-sss">—</div><div class="ocean-sub">ppt</div></div>
-  <div class="ocean-card"><div class="ocean-label">KLOROFİL</div><div class="ocean-val" id="v-chl">—</div><div class="ocean-sub">mg/m³</div></div>
-  <div class="ocean-card"><div class="ocean-label">DALGA YÜKSEKLİĞİ</div><div class="ocean-val" id="v-wave">—</div><div class="ocean-sub" id="v-wave-dir">—</div></div>
-  <div class="ocean-card"><div class="ocean-label">DALGA PERİYODU</div><div class="ocean-val" id="v-period">—</div><div class="ocean-sub">saniye</div></div>
-  <div class="ocean-card"><div class="ocean-label">AKINTILAR</div><div class="ocean-val" id="v-curr">—</div><div class="ocean-sub" id="v-curr-dir">—</div></div>
+<!-- DETAY BAR (hücre seçilince görünür) -->
+<div class="detail-bar" id="detail-bar" style="display:none;">
+  <div class="stat-pill"><div class="stat-label">SICAKLIK</div><div class="stat-val" id="d-sst">—</div></div>
+  <div class="stat-pill"><div class="stat-label">TUZLULUK</div><div class="stat-val" id="d-sss">—</div></div>
+  <div class="stat-pill"><div class="stat-label">OKSİJEN</div><div class="stat-val" id="d-o2">—</div></div>
+  <div class="stat-pill"><div class="stat-label">KLOROFİL</div><div class="stat-val" id="d-chl">—</div></div>
+  <div class="stat-pill"><div class="stat-label">UYUM</div><div class="stat-val" id="d-score">—</div></div>
 </div>
 
 <!-- BÖLGE -->
 <div id="region-box">
   <div class="region-name" id="region-name">—</div>
   <div class="region-row">
-    <div><div class="region-label">YASAK DÖNEMİ</div><div class="region-val ban" id="region-ban">—</div></div>
+    <div><div class="region-label">YASAK</div><div class="region-val ban" id="region-ban">—</div></div>
     <div><div class="region-label">DURUM</div><div class="region-val" id="region-status">—</div></div>
   </div>
-  <div class="region-species" id="region-species"></div>
 </div>
 
-<div class="section-title" id="result-title" style="display:none">EŞLEŞEN TÜRLER</div>
-<div class="fish-list" id="fish-list"></div>
+<!-- REKLAM -->
+<div id="ad-overlay">
+  <div class="ad-box">
+    <div class="ad-top">REKLAM</div>
+    <div class="ad-content">
+      <div class="ad-placeholder"><span>📢</span>Reklam alanı</div>
+      <div class="ad-info">Deniz verileri arka planda yükleniyor.<br>Hazır olunca haritada görünür.</div>
+      <div class="ad-countdown" id="ad-countdown">Kapatmak için <b id="ad-timer">10</b> saniye bekleyin</div>
+      <button id="ad-close-btn" onclick="closeAd()">Devam Et →</button>
+    </div>
+  </div>
+</div>
 
 <div class="bottombar">
   <button class="bottom-btn" onclick="window.location.href='home.html'">
@@ -224,26 +195,29 @@
       <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
     </svg>
   </button>
+  <button class="gps-btn" onclick="useMyLocation()">📍 Konumum</button>
   <button class="bottom-btn profile-btn" onclick="window.location.href='profile.html'">
     <img id="bottom-photo" src="" alt=""/>
   </button>
 </div>
 
 <script type="module">
-import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, getDocs, orderBy, query, doc, getDoc }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const app = initializeApp({
   apiKey:"AIzaSyCkq0NU1Ao8LMZw6WfPvQUO4F_r4-An9-c",
-  authDomain:"olta-810ae.firebaseapp.com", projectId:"olta-810ae",
+  authDomain:"olta-810ae.firebaseapp.com",projectId:"olta-810ae",
   storageBucket:"olta-810ae.firebasestorage.app",
-  messagingSenderId:"142251428527", appId:"1:142251428527:web:dee8776ee6cde14656225a"
+  messagingSenderId:"142251428527",appId:"1:142251428527:web:dee8776ee6cde14656225a"
 });
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
+const API = "https://olta-api.onrender.com";
+
+// ── AUTH
 onAuthStateChanged(auth, u => {
   if (!u) { window.location.href='index.html'; return; }
   if (u.photoURL) {
@@ -253,50 +227,132 @@ onAuthStateChanged(auth, u => {
   document.getElementById('user-name').textContent  = u.displayName || '';
   document.getElementById('user-email').textContent = u.email || '';
 });
-
 document.getElementById('logout-btn').addEventListener('click', async () => {
-  const { signOut } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
-  await signOut(auth);
-  window.location.href = 'index.html';
+  await signOut(auth); window.location.href='index.html';
 });
-
-window.openSidebar  = () => { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('open'); };
-window.closeSidebar = () => { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); };
+window.openSidebar  = ()=>{document.getElementById('sidebar').classList.add('open');document.getElementById('overlay').classList.add('open');};
+window.closeSidebar = ()=>{document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('open');};
 
 // ── HARİTA
-const map = L.map('map',{zoomControl:true}).setView([38.5,35.0],6);
+const map = L.map('map',{zoomControl:true}).setView([39.5,32],6);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(map);
-let marker=null, fetching=false;
 
-let firstClick = true;
-
-map.on('click', e => {
-  if (fetching) return;
-  placeMarker(e.latlng.lat, e.latlng.lng);
-  if (firstClick) {
-    firstClick = false;
-    showAd(e.latlng.lat, e.latlng.lng);
-  } else {
-    fetchAllData(e.latlng.lat, e.latlng.lng).then(renderResults);
+// ── RENK
+function levelColor(level){
+  switch(level){
+    case 'high':     return {color:'#34D399',opacity:.55};
+    case 'moderate': return {color:'#FCD34D',opacity:.45};
+    case 'low':      return {color:'#F97316',opacity:.3};
+    default:         return {color:'#94A3B8',opacity:.08};
   }
+}
+
+// ── GRID KATMANI
+let gridLayer = L.layerGroup().addTo(map);
+let gridData  = null;
+
+function drawGrid(cells) {
+  gridLayer.clearLayers();
+  cells.forEach(cell => {
+    const {color, opacity} = levelColor(cell.level);
+    const rect = L.rectangle(
+      [[cell.bounds.south, cell.bounds.west],[cell.bounds.north, cell.bounds.east]],
+      {fillColor:color, fillOpacity:opacity, weight:0, interactive:true}
+    );
+    rect.on('click', () => showCellDetail(cell));
+    rect.addTo(gridLayer);
+  });
+}
+
+function showCellDetail(cell) {
+  document.getElementById('d-sst').textContent   = cell.temperature!=null ? cell.temperature.toFixed(1)+'°C' : '—';
+  document.getElementById('d-sss').textContent   = cell.salinity!=null    ? cell.salinity.toFixed(1)+' ppt'  : '—';
+  document.getElementById('d-o2').textContent    = cell.oxygen_mg_l!=null ? cell.oxygen_mg_l.toFixed(1)+' mg' : '—';
+  document.getElementById('d-chl').textContent   = cell.chlorophyll!=null ? cell.chlorophyll.toFixed(2)+' mg' : '—';
+  document.getElementById('d-score').textContent = cell.score!=null       ? Math.round(cell.score)+'%'        : '—';
+  document.getElementById('detail-bar').style.display = 'flex';
+}
+
+// ── HABİTAT GRİD YÜKLE
+async function loadHabitatGrid(species='bluefish') {
+  document.getElementById('map-loading').classList.add('show');
+  try {
+    const r = await fetch(`${API}/habitat-grid?species=${species}&region=turkey`, {signal: AbortSignal.timeout(90000)});
+    const d = await r.json();
+    if (d.ok && d.cells?.length) {
+      gridData = d;
+      drawGrid(d.cells);
+    }
+  } catch(e) {
+    console.error('Grid yüklenemedi:', e);
+  } finally {
+    document.getElementById('map-loading').classList.remove('show');
+  }
+}
+
+// ── BALIK SEÇİCİ
+window.selectSpecies = function(species, btn) {
+  document.querySelectorAll('.fish-pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('detail-bar').style.display = 'none';
+  loadHabitatGrid(species);
+};
+
+// ── GPS
+window.useMyLocation = function() {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(
+    p => map.setView([p.coords.latitude, p.coords.longitude], 9),
+    () => {}
+  );
+};
+
+// ── BÖLGE
+function toId(name) {
+  return name?.toLowerCase()
+    .replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ş/g,'s')
+    .replace(/ı/g,'i').replace(/ö/g,'o').replace(/ç/g,'c')
+    .replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+}
+function banActive(p) {
+  if (!p) return false;
+  const m={Ocak:1,Şubat:2,Mart:3,Nisan:4,Mayıs:5,Haziran:6,Temmuz:7,Ağustos:8,Eylül:9,Ekim:10,Kasım:11,Aralık:12};
+  try {
+    const[ss,es]=p.split(' - ');
+    const[sd,sm]=ss.trim().split(' ');
+    const[ed,em]=es.trim().split(' ');
+    const now=new Date(),y=now.getFullYear();
+    const s=new Date(y,m[sm]-1,+sd),e=new Date(y,m[em]-1,+ed);
+    return e<s?now>=s||now<=e:now>=s&&now<=e;
+  } catch{return false;}
+}
+map.on('click', async e => {
+  const {lat, lng} = e.latlng;
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=tr`,
+      {headers:{'User-Agent':'olta-app/1.0'}});
+    const d = await r.json();
+    const name = d?.address?.state;
+    if (!name) return;
+    const snap = await getDoc(doc(db,'regions',toId(name)));
+    if (!snap.exists()) return;
+    const reg = snap.data();
+    document.getElementById('region-name').textContent = `📍 ${reg.name}`;
+    document.getElementById('region-ban').textContent  = reg.banPeriod || '—';
+    const b = banActive(reg.banPeriod);
+    const el = document.getElementById('region-status');
+    el.textContent = b ? '🔴 Yasak' : '🟢 Serbest';
+    el.className   = 'region-val '+(b?'ban':'ok');
+    document.getElementById('region-box').style.display = 'block';
+  } catch {}
 });
 
+// ── REKLAM
 let adTimer = null;
-let dataReady = false;
-let adClosed = false;
-let pendingData = null;
-
-function showAd(lat, lng) {
-  dataReady = false;
-  adClosed = false;
-  pendingData = null;
-
-  // Reklam göster
+function showAd() {
   document.getElementById('ad-overlay').classList.add('show');
   document.getElementById('ad-close-btn').classList.remove('ready');
   document.getElementById('ad-countdown').innerHTML = 'Kapatmak için <b id="ad-timer">10</b> saniye bekleyin';
-
-  // Geri sayım
   let secs = 10;
   adTimer = setInterval(() => {
     secs--;
@@ -308,245 +364,15 @@ function showAd(lat, lng) {
       document.getElementById('ad-close-btn').classList.add('ready');
     }
   }, 1000);
-
-  // Arka planda veri çek
-  fetchAllData(lat, lng).then(data => {
-    pendingData = data;
-    dataReady = true;
-    if (adClosed) renderResults(data);
-  });
 }
-
 window.closeAd = function() {
   document.getElementById('ad-overlay').classList.remove('show');
   clearInterval(adTimer);
-  adClosed = true;
-  if (dataReady && pendingData) {
-    renderResults(pendingData);
-  } else {
-    setStatus('⏳ Veri bekleniyor…');
-  }
 };
 
-function placeMarker(lat,lng){
-  if(marker) map.removeLayer(marker);
-  marker=L.circleMarker([lat,lng],{radius:10,color:'#F4A261',fillColor:'#F4A261',fillOpacity:.8,weight:2}).addTo(map);
-}
-
-// ── BALIK VERİSİ
-let allFish=[];
-async function loadFish(){
-  if(allFish.length) return;
-  const q=query(collection(db,'fish'),orderBy('order'));
-  const snap=await getDocs(q);
-  snap.forEach(d=>allFish.push(d.data()));
-}
-
-// ── TIMEOUT'LU FETCH
-async function ft(url,opts={},ms=7000){
-  const ctrl=new AbortController();
-  const t=setTimeout(()=>ctrl.abort(),ms);
-  try{const r=await fetch(url,{...opts,signal:ctrl.signal});clearTimeout(t);return r;}
-  catch(e){clearTimeout(t);throw e;}
-}
-
-// ── RÜZGAR YÖNÜ METNİ
-function dirText(deg){
-  if(deg==null) return '—';
-  const dirs=['K','KD','D','GD','G','GB','B','KB'];
-  return dirs[Math.round(deg/45)%8];
-}
-
-// ── KLOROFİL YORUMU
-function chlText(v){
-  if(v==null) return '—';
-  if(v<0.5) return 'düşük';
-  if(v<2)   return 'orta';
-  return 'yüksek';
-}
-
-// ── 1. OPEN-METEO (SST + dalga + akıntı)
-async function fetchMarine(lat,lng){
-  try{
-    const url=`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lng}`
-      +`&current=sea_surface_temperature,wave_height,wave_direction,wave_period`
-      +`,ocean_current_velocity,ocean_current_direction`;
-    const r=await ft(url,{},7000);
-    const d=await r.json();
-    const c=d?.current||{};
-    return {
-      sst:  c.sea_surface_temperature ?? null,
-      waveH: c.wave_height            ?? null,
-      waveD: c.wave_direction         ?? null,
-      waveP: c.wave_period            ?? null,
-      currV: c.ocean_current_velocity ?? null,
-      currD: c.ocean_current_direction?? null,
-    };
-  }catch{return {sst:null,waveH:null,waveD:null,waveP:null,currV:null,currD:null};}
-}
-
-// ── 2 & 3. Apps Script Proxy — Tuzluluk + Klorofil
-const PROXY = "https://script.google.com/macros/s/AKfycbzVnlssJlCxVROr-UtseSjNgvAABBACTyiaW-vZNSOOAny4Yn6cWKpq6vMb22YCGf8iyg/exec";
-
-async function fetchSalinityAndChlorophyll(lat, lng) {
-  try {
-    const url = `${PROXY}?lat=${lat.toFixed(3)}&lng=${lng.toFixed(3)}`;
-    const r = await ft(url, { redirect: 'follow' }, 20000);
-    const d = await r.json();
-    return {
-      sss: typeof d.salinity    === 'number' ? +d.salinity.toFixed(1)    : null,
-      chl: typeof d.chlorophyll === 'number' ? +d.chlorophyll.toFixed(2) : null,
-    };
-  } catch { return { sss: null, chl: null }; }
-}
-
-// ── BÖLGE
-async function fetchProvince(lat,lng){
-  try{
-    const r=await ft(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=tr`,
-      {headers:{'User-Agent':'olta-app/1.0'}},5000);
-    const d=await r.json();
-    return d?.address?.state||null;
-  }catch{return null;}
-}
-function toId(name){
-  return name?.toLowerCase()
-    .replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ş/g,'s')
-    .replace(/ı/g,'i').replace(/ö/g,'o').replace(/ç/g,'c')
-    .replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-}
-function banActive(p){
-  if(!p) return false;
-  const m={Ocak:1,Şubat:2,Mart:3,Nisan:4,Mayıs:5,Haziran:6,Temmuz:7,Ağustos:8,Eylül:9,Ekim:10,Kasım:11,Aralık:12};
-  try{
-    const[ss,es]=p.split(' - ');
-    const[sd,sm]=ss.trim().split(' ');
-    const[ed,em]=es.trim().split(' ');
-    const now=new Date(),y=now.getFullYear();
-    const s=new Date(y,m[sm]-1,+sd),e=new Date(y,m[em]-1,+ed);
-    return e<s?now>=s||now<=e:now>=s&&now<=e;
-  }catch{return false;}
-}
-async function showRegion(lat,lng){
-  document.getElementById('region-box').style.display='none';
-  const name=await fetchProvince(lat,lng);
-  const id=toId(name);
-  if(!id) return;
-  try{
-    const snap=await getDoc(doc(db,'regions',id));
-    if(!snap.exists()) return;
-    const r=snap.data();
-    document.getElementById('region-name').textContent=`📍 ${r.name}`;
-    document.getElementById('region-ban').textContent=r.banPeriod||'—';
-    const b=banActive(r.banPeriod);
-    const el=document.getElementById('region-status');
-    el.textContent=b?'🔴 Yasak':'🟢 Serbest';
-    el.className='region-val '+(b?'ban':'ok');
-    if(r.species?.length)
-      document.getElementById('region-species').textContent='Kapsanan türler: '+r.species.join(', ');
-    document.getElementById('region-box').style.display='block';
-  }catch{}
-}
-
-// ── VERİ ÇEKME
-async function fetchAllData(lat, lng) {
-  await loadFish();
-  const [marine, proxy] = await Promise.all([
-    fetchMarine(lat, lng),
-    fetchSalinityAndChlorophyll(lat, lng),
-  ]);
-  showRegion(lat, lng).catch(() => {});
-  return { lat, lng, marine, proxy };
-}
-
-// ── SONUÇLARI GÖSTER
-function renderResults(data) {
-  fetching = false;
-  const { marine, proxy } = data;
-  const { sst, waveH, waveD, waveP, currV, currD } = marine;
-  const { sss, chl } = proxy;
-
-  document.getElementById('ocean-grid').style.display='none';
-  document.getElementById('result-title').style.display='none';
-  document.getElementById('fish-list').innerHTML='';
-
-  if (sst === null) {
-    setStatus('⚠️ Deniz verisi alınamadı. <b>Deniz üzerinde</b> bir nokta seçin.');
-    return;
-  }
-
-  document.getElementById('v-sst').textContent      = sst!=null?sst.toFixed(1):'—';
-  document.getElementById('v-sss').textContent      = sss!=null?sss:'—';
-  document.getElementById('v-chl').textContent      = chl!=null?`${chl} (${chlText(chl)})`:'—';
-  document.getElementById('v-wave').textContent     = waveH!=null?`${waveH} m`:'—';
-  document.getElementById('v-wave-dir').textContent = waveD!=null?`yön: ${dirText(waveD)}`:'—';
-  document.getElementById('v-period').textContent   = waveP!=null?waveP:'—';
-  document.getElementById('v-curr').textContent     = currV!=null?`${currV.toFixed(1)} km/s`:'—';
-  document.getElementById('v-curr-dir').textContent = currD!=null?dirText(currD):'—';
-  document.getElementById('ocean-grid').style.display='grid';
-  setStatus('');
-
-  const scored = allFish
-    .filter(f=>f.type==='deniz' && f.sstMin!=null)
-    .map(f=>{
-      const sstOk = sst>=f.sstMin && sst<=f.sstMax;
-      const sssOk = (sss==null||f.sssMin==null)?null:(sss>=f.sssMin && sss<=f.sssMax);
-      let score=0;
-      if(sstOk) score++;
-      if(sssOk===true) score++;
-      return{f,score};
-    })
-    .sort((a,b)=>b.score-a.score);
-
-  if(!scored.length){
-    document.getElementById('fish-list').innerHTML='<p style="color:var(--muted);font-size:.85rem;padding:8px 0">Eşleşen tür bulunamadı.</p>';
-    return;
-  }
-
-  document.getElementById('result-title').style.display='block';
-  const list=document.getElementById('fish-list');
-  scored.forEach(({f,score})=>{
-    const hasSSS = f.sssMin!=null && sss!=null;
-    const total  = hasSSS?2:1;
-    const badgeCls = score===total?'b-yes':score===0?'b-no':'b-may';
-    const badgeTxt = score===total?'✓ Olabilir':score===0?'✗ Düşük':'~ Mümkün';
-    const ranges = hasSSS
-      ?`${f.sstMin}–${f.sstMax}°C · ${f.sssMin}–${f.sssMax} ppt`
-      :`${f.sstMin}–${f.sstMax}°C`;
-    const div=document.createElement('div');
-    div.className='fish-card';
-    div.innerHTML=`
-      <img src="${f.image}" alt="${f.name}" onerror="this.style.opacity=.3"/>
-      <div class="fish-info">
-        <div class="fish-name">${f.name}</div>
-        <div class="fish-ranges">${ranges}</div>
-      </div>
-      <div class="badge ${badgeCls}">${badgeTxt}</div>
-    `;
-    list.appendChild(div);
-  });
-}
-
-function setStatus(html){document.getElementById('status-box').innerHTML=html;}
-
-window.useMyLocation=function(){
-  if(!navigator.geolocation){setStatus('Konum servisi yok.');return;}
-  setStatus('📍 Konum alınıyor…');
-  navigator.geolocation.getCurrentPosition(
-    p=>{
-      const{latitude:lat,longitude:lng}=p.coords;
-      map.setView([lat,lng],10);
-      placeMarker(lat,lng);
-      if(firstClick){
-        firstClick=false;
-        showAd(lat,lng);
-      } else {
-        fetchAllData(lat,lng).then(renderResults);
-      }
-    },
-    ()=>setStatus('Konum alınamadı. Haritaya dokun.')
-  );
-};
+// ── BAŞLAT: reklam göster + arka planda grid yükle
+showAd();
+loadHabitatGrid('bluefish');
 </script>
 </body>
 </html>
