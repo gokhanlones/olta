@@ -163,6 +163,9 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
   <div class="stat-pill"><div class="stat-label">OKSİJEN</div><div class="stat-val" id="d-o2">—</div></div>
   <div class="stat-pill"><div class="stat-label">KLOROFİL</div><div class="stat-val" id="d-chl">—</div></div>
   <div class="stat-pill"><div class="stat-label">UYUM</div><div class="stat-val" id="d-score">—</div></div>
+  <div class="stat-pill" id="pill-wave" style="display:none"><div class="stat-label">DALGA</div><div class="stat-val" id="d-wave">—</div></div>
+  <div class="stat-pill" id="pill-wind" style="display:none"><div class="stat-label">RÜZGAR</div><div class="stat-val" id="d-wind">—</div></div>
+  <div class="stat-pill" id="pill-curr" style="display:none"><div class="stat-label">AKINTILAR</div><div class="stat-val" id="d-curr">—</div></div>
 </div>
 
 <!-- BÖLGE -->
@@ -412,9 +415,53 @@ window.useMyLocation = function() {
   );
 };
 
-// ── HARİTAYA TIKLA → en yakın hücre
+// ── RÜZGAR YÖNÜ METNİ
+function dirText(deg) {
+  if (deg == null) return '—';
+  const dirs = ['K','KD','D','GD','G','GB','B','KB'];
+  return dirs[Math.round(deg / 45) % 8];
+}
+
+// ── OPEN-METEO HAVA DURUMU
+async function fetchWeather(lat, lng) {
+  try {
+    const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lng}`
+      + `&current=wave_height,wave_direction,wave_period,ocean_current_velocity,ocean_current_direction`;
+    const rw  = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}`
+      + `&current=wind_speed_10m,wind_direction_10m&wind_speed_unit=ms`, {signal: AbortSignal.timeout(6000)});
+    const rm  = await fetch(url, {signal: AbortSignal.timeout(6000)});
+    const dw  = await rw.json();
+    const dm  = await rm.json();
+    const wc  = dw?.current || {};
+    const mc  = dm?.current || {};
+
+    // Dalga
+    if (mc.wave_height != null) {
+      document.getElementById('d-wave').textContent =
+        `${mc.wave_height}m ${dirText(mc.wave_direction)}`;
+      document.getElementById('pill-wave').style.display = 'block';
+    }
+    // Rüzgar
+    if (wc.wind_speed_10m != null) {
+      document.getElementById('d-wind').textContent =
+        `${wc.wind_speed_10m.toFixed(1)}m/s ${dirText(wc.wind_direction_10m)}`;
+      document.getElementById('pill-wind').style.display = 'block';
+    }
+    // Akıntı
+    if (mc.ocean_current_velocity != null) {
+      document.getElementById('d-curr').textContent =
+        `${mc.ocean_current_velocity.toFixed(2)}m/s ${dirText(mc.ocean_current_direction)}`;
+      document.getElementById('pill-curr').style.display = 'block';
+    }
+  } catch {}
+}
+
+// ── HARİTAYA TIKLA → en yakın hücre + hava durumu
 map.on('click', async e => {
   const {lat, lng} = e.latlng;
+
+  // Hava durumunu arka planda çek
+  fetchWeather(lat, lng);
 
   // En yakın grid hücresini bul
   let best = null, bestDist = Infinity;
