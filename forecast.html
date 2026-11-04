@@ -282,22 +282,28 @@ function showCellDetail(cell) {
   document.getElementById('detail-bar').style.display = 'flex';
 }
 
-// ── HABİTAT GRİD YÜKLE (önce Firestore, sonra API)
+// ── HABİTAT GRİD YÜKLE (Firestore chunks → API fallback)
 async function loadHabitatGrid(species='bluefish') {
   document.getElementById('map-loading').classList.add('show');
   try {
-    // Firestore'dan oku
-    const snap = await getDoc(doc(db, 'habitat_grids', `${species}_turkey`));
-    if (snap.exists()) {
-      const d = snap.data();
-      if (d.cells?.length) {
-        gridData = d;
-        drawGrid(d.cells);
+    // Firestore metadata
+    const metaSnap = await getDoc(doc(db, 'habitat_grids', `${species}_turkey`));
+    if (metaSnap.exists()) {
+      // chunks sub-collection'dan tüm hücreleri oku
+      const { getDocs, collection: col, orderBy, query } =
+        await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      const chunksQ    = query(col(db,'habitat_grids/'+species+'_turkey/chunks'), orderBy('index'));
+      const chunksSnap = await getDocs(chunksQ);
+      let cells = [];
+      chunksSnap.forEach(c => { cells = cells.concat(c.data().cells || []); });
+      if (cells.length) {
+        gridData = { ...metaSnap.data(), cells };
+        drawGrid(cells);
         document.getElementById('map-loading').classList.remove('show');
         return;
       }
     }
-    // Firestore'da yoksa API'den çek
+    // Fallback: Render API
     const r = await fetch(`${API}/habitat-grid?species=${species}&region=turkey`,
       {signal: AbortSignal.timeout(90000)});
     const d = await r.json();
