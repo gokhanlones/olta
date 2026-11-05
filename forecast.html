@@ -429,8 +429,8 @@ async function drawGrid(cells) {
 function showCellDetail(cell) {
   document.getElementById('d-sst').textContent   = cell.temperature!=null ? cell.temperature.toFixed(1)+'°C' : '—';
   document.getElementById('d-sss').textContent   = cell.salinity!=null    ? cell.salinity.toFixed(1)+' ppt'  : '—';
-  document.getElementById('d-o2').textContent    = cell.oxygen_mg_l!=null ? cell.oxygen_mg_l.toFixed(1)+' mg' : '—';
-  document.getElementById('d-chl').textContent   = cell.chlorophyll!=null ? cell.chlorophyll.toFixed(2)+' mg' : '—';
+  document.getElementById('d-o2').textContent    = cell.oxygen_mg_l!=null ? cell.oxygen_mg_l.toFixed(1)+' mg/L' : '—';
+  document.getElementById('d-chl').textContent   = cell.chlorophyll!=null ? cell.chlorophyll.toFixed(2)+' mg/m³' : '—';
   document.getElementById('d-score').textContent = cell.score!=null       ? Math.round(cell.score)+'%'        : '—';
   document.getElementById('detail-bar').style.display = 'flex';
 }
@@ -446,8 +446,14 @@ async function loadHabitatGrid(species='bluefish') {
       const chunksRef  = collection(db, 'habitat_grids', `${species}_turkey`, 'chunks');
       const chunksQ    = query(chunksRef, orderBy('index'));
       const chunksSnap = await getDocs(chunksQ);
+      // Yalnızca metadata'daki nesle ait parçalar (yazım sırasında eski/yeni karışmasın)
+      const genId = metaSnap.data().generation_id;
       let cells = [];
-      chunksSnap.forEach(c => { cells = cells.concat(c.data().cells || []); });
+      chunksSnap.forEach(c => {
+        const d = c.data();
+        if (genId && d.generation_id !== genId) return;
+        cells = cells.concat(d.cells || []);
+      });
       if (cells.length) {
         gridData         = { ...metaSnap.data(), cells };
         GRID_STEP        = gridData.grid?.step_degrees || 0.1;
