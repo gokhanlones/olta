@@ -77,7 +77,7 @@ body{padding-bottom:calc(72px + env(safe-area-inset-bottom));}
 .fish-item.active .check{visibility:visible;}
 
 /* HARİTA */
-#map{width:100%;height:48vh;min-height:260px;position:relative;z-index:0;isolation:isolate;}  /* harita içindeki katmanlar dışarı taşmasın */
+#map{width:100%;height:60vh;min-height:260px;position:relative;z-index:0;isolation:isolate;}  /* harita içindeki katmanlar dışarı taşmasın */
 .map-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
   background:rgba(10,22,40,.85);color:var(--text);padding:10px 18px;border-radius:10px;
   font-size:.85rem;z-index:400;pointer-events:none;display:none;}
@@ -91,8 +91,7 @@ body{padding-bottom:calc(72px + env(safe-area-inset-bottom));}
 .legend-title .note{letter-spacing:0;opacity:.8;}
 .legend-bar{height:8px;border-radius:4px;
   background:linear-gradient(to right,#22C55E 0%,#22C55E 22%,#EAB308 50%,#EA580C 75%,rgba(30,58,95,.75) 100%);}
-.legend-scale{display:grid;grid-template-columns:auto 1fr auto;align-items:baseline;gap:8px;font-size:.6rem;color:var(--text);margin-top:3px;font-weight:600;}
-.legend-fish{text-align:center;font-size:.72rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.legend-scale{display:flex;justify-content:space-between;font-size:.6rem;color:var(--text);margin-top:3px;font-weight:600;}
 
 /* GÖSTERGELER — haritanın üstünde, 4 sütun, yatay kaydırma yok */
 .detail-bar{padding:10px 16px;background:var(--panel);border-bottom:1px solid rgba(255,255,255,.06);
@@ -185,7 +184,7 @@ body{padding-bottom:calc(72px + env(safe-area-inset-bottom));}
   <div class="map-legend" id="legend">
     <div class="legend-title"><span class="note">Deniz canlısı için uygun alan</span></div>
     <div class="legend-bar"></div>
-    <div class="legend-scale"><span>100</span><span class="legend-fish" id="legend-fish"></span><span>0</span></div>
+    <div class="legend-scale"><span>100</span><span>0</span></div>
   </div>
 </div>
 
@@ -268,6 +267,23 @@ window.closeSidebar = ()=>{document.getElementById('sidebar').classList.remove('
 
 // ── HARİTA (MapLibre GL — WebGL)
 const TURKEY_SEAS_BOUNDS = [[24.8, 34.8], [42.2, 42.9]];   // [güneybatı, kuzeydoğu]
+// Harita ekranda kalan alanı doldursun: pencere yüksekliği − (üst bant +
+// göstergeler + balık seçici + alt menü). Sayfa ilk açılışta kaydırma gerektirmez.
+function fitMapHeight() {
+  const h = id => document.querySelector(id)?.getBoundingClientRect().height || 0;
+  const sel = document.getElementById('fish-select');
+  const selSpace = sel ? sel.getBoundingClientRect().height + 12 /* üst boşluk */ + 12 /* alt boşluk */ : 0;
+  const used = h('.banner') + h('#detail-bar') + selSpace + h('.bottombar');
+  const target = Math.max(260, Math.floor(window.innerHeight - used));
+  const el = document.getElementById('map');
+  if (Math.abs(el.getBoundingClientRect().height - target) > 1) {
+    el.style.height = target + 'px';
+    return true;
+  }
+  return false;
+}
+fitMapHeight();
+
 const map = new maplibregl.Map({
   container: 'map',
   style: {
@@ -332,6 +348,7 @@ function limitToTurkeySeas(jump) {
 limitToTurkeySeas(true);
 // Adres çubuğu açılıp kapanınca da (yükseklik değişir) sınırı güncelle, görünümü oynatma
 map.on('resize', () => limitToTurkeySeas(false));
+window.addEventListener('resize', () => { if (fitMapHeight()) map.resize(); });
 
 // ── KARA MASKESİ (OSM kıyı çizgisi, ~1 km; Türkiye bölgesine kırpılmış)
 const landReady = fetch('data/land-tr.geojson')
@@ -754,7 +771,6 @@ function selectFish(fish, btn) {
   document.querySelectorAll('.fish-item').forEach(p => p.classList.remove('active'));
   btn?.classList.add('active');
   document.getElementById('fish-select-name').textContent = fish.name || '';
-  document.getElementById('legend-fish').textContent = fish.name || '';
   resetCellDetail();  // skor balığa göre değişir; eski hücre değerlerini temizle
   if (currentGridCells) rescoreAndDraw();
 }
