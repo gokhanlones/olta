@@ -4,8 +4,8 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>Olta — Tür Tahmini</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"/>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 
 <style>
 :root{
@@ -109,8 +109,8 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
   padding:13px;font-size:.95rem;font-weight:700;cursor:pointer;opacity:.4;pointer-events:none;transition:opacity .3s;}
 #ad-close-btn.ready{opacity:1;pointer-events:all;}
 
-.leaflet-tile-pane{filter:brightness(.82) saturate(.75);}
-.leaflet-control-attribution{display:none;}
+.maplibregl-ctrl-attrib{font-size:.6rem;}
+.maplibregl-ctrl-attrib.maplibregl-compact{background:rgba(255,255,255,.7);}
 </style>
 </head>
 <body>
@@ -236,20 +236,45 @@ document.getElementById('logout-btn').addEventListener('click', async () => {
 window.openSidebar  = ()=>{document.getElementById('sidebar').classList.add('open');document.getElementById('overlay').classList.add('open');};
 window.closeSidebar = ()=>{document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('open');};
 
-// ── HARİTA
-const map = L.map('map',{zoomControl:true}).setView([39.5,32],6);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(map);
+// ── HARİTA (MapLibre GL — WebGL)
+const map = new maplibregl.Map({
+  container: 'map',
+  style: {
+    version: 8,
+    sources: {
+      osm: {
+        type: 'raster',
+        tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+        tileSize: 256, maxzoom: 19,
+        attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> katkıcıları'
+      }
+    },
+    layers: [
+      { id: 'bg',  type: 'background', paint: { 'background-color': '#0A1628' } },
+      { id: 'osm', type: 'raster', source: 'osm',
+        paint: { 'raster-brightness-max': 0.82, 'raster-saturation': -0.25 } }
+    ]
+  },
+  center: [32, 39.5], zoom: 5, maxZoom: 17,
+  attributionControl: { compact: true },
+  dragRotate: false, pitchWithRotate: false,
+});
+map.touchZoomRotate.disableRotation();
+map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
+const mapReady = new Promise(res => map.on('load', res));
+
+// ── KARA MASKESİ (OSM kıyı çizgisi, ~1 km; Türkiye bölgesine kırpılmış)
+const landReady = fetch('data/land-tr.geojson')
+  .then(r => r.ok ? r.json() : null)
+  .catch(() => null);
 
 // ── GRID KATMANI
-let heatLayer = null;
 let cellMap   = {};  // "lat,lng" → cell detayı
 let gridData  = null;
-
 let GRID_STEP = 0.1; // metadata'dan güncellenir
 
 // ── GRID LOOKUP (Float32Array — bilinear interpolasyon için)
 let gridLookup = null;
-
 function buildGridLookup(cells, step) {
   const sea = cells.filter(c =>
     c.score != null && !(c.salinity != null && c.salinity < 1)
@@ -275,6 +300,8 @@ function buildGridLookup(cells, step) {
   return { scores, mask, minLat, minLng, nLat, nLng, step };
 }
 
+// Komşu deniz hücrelerinden ağırlıklı ortalama. Kıyıda da değer üretir;
+// karaya taşan kısım sonradan kara maskesiyle kesilir.
 function bilinearScore(lat, lng, lk) {
   const {scores,mask,minLat,minLng,nLat,nLng,step} = lk;
   const lf=(lat-minLat)/step, gf=(lng-minLng)/step;
@@ -284,10 +311,11 @@ function bilinearScore(lat, lng, lk) {
   if(!mask[i00]&&!mask[i01]&&!mask[i10]&&!mask[i11]) return null;
   const tl=lf-l0, tg=gf-g0;
   let sum=0,w=0;
-  [[i00,(1-tl)*(1-tg)],[i01,(1-tl)*tg],[i10,tl*(1-tg)],[i11,tl*tg]].forEach(([i,wt])=>{
-    if(mask[i]){sum+=scores[i]*wt;w+=wt;}
-  });
-  return w>0.05 ? sum/w : null;
+  if(mask[i00]){const k=(1-tl)*(1-tg);sum+=scores[i00]*k;w+=k;}
+  if(mask[i01]){const k=(1-tl)*tg;    sum+=scores[i01]*k;w+=k;}
+  if(mask[i10]){const k=tl*(1-tg);    sum+=scores[i10]*k;w+=k;}
+  if(mask[i11]){const k=tl*tg;        sum+=scores[i11]*k;w+=k;}
+  return w>0 ? sum/w : null;
 }
 
 // ── SKOR → RGBA piksel
@@ -310,73 +338,99 @@ function scoreToPixel(score) {
   return [r,g,b,a];
 }
 
-// ── CANVAS OVERLAY — piksel bazlı bilinear + deniz maskesi
-let canvasLayer = null;
+// ── IZGARA → GÖRÜNTÜ (bir kez hesaplanır; kaydırma/zoom GPU'da)
+// MapLibre görüntüyü Mercator uzayında gerer; bu yüzden satırlar enleme göre
+// değil Mercator Y'ye göre eşit aralıklı üretilir.
+const mercY    = lat => Math.log(Math.tan(Math.PI/4 + lat*Math.PI/360));
+const invMercY = y   => (2*Math.atan(Math.exp(y)) - Math.PI/2) * 180/Math.PI;
+const PX_PER_CELL = 8;
 
-const HeatCanvas = L.Layer.extend({
-  onAdd(map) {
-    this._map    = map;
-    this._canvas = document.createElement('canvas');
-    Object.assign(this._canvas.style, {
-      position:'absolute',top:'0',left:'0',
-      pointerEvents:'none',zIndex:'400',
-    });
-    map.getContainer().appendChild(this._canvas);
-    this._drawFn = L.Util.throttle(this._draw, 50, this);
-    map.on('move zoom', this._drawFn, this);
-    map.on('zoomend',   this._draw,   this);
-    this._draw();
-  },
-  onRemove(map) {
-    map.getContainer().removeChild(this._canvas);
-    map.off('move zoom', this._drawFn, this);
-    map.off('zoomend',   this._draw,   this);
-  },
-  _draw() {
-    if (!gridLookup) return;
-    const size = this._map.getSize();
-    const W=size.x, H=size.y;
-    this._canvas.width=W; this._canvas.height=H;
-    const ctx = this._canvas.getContext('2d');
-    const img = ctx.createImageData(W, H);
-    const d   = img.data;
-    const S   = 2; // her S piksel bir örnekleme
+function renderHabitatImage(lk, land) {
+  const h = lk.step / 2;
+  const west  = lk.minLng - h, east  = lk.minLng + (lk.nLng-1)*lk.step + h;
+  const south = lk.minLat - h, north = lk.minLat + (lk.nLat-1)*lk.step + h;
+  const yN = mercY(north), yS = mercY(south);
+  const W = Math.min(2048, Math.round(lk.nLng * PX_PER_CELL));
+  const H = Math.min(2048, Math.round(W * (yN - yS) / ((east - west) * Math.PI / 180)));
 
-    for (let y=0; y<H; y+=S) {
-      for (let x=0; x<W; x+=S) {
-        const ll    = this._map.containerPointToLatLng([x+0.5, y+0.5]);
-        const score = bilinearScore(ll.lat, ll.lng, gridLookup);
-        if (score === null) continue;
-        const [r,g,b,a] = scoreToPixel(score);
-        for (let dy=0; dy<S&&y+dy<H; dy++)
-          for (let dx=0; dx<S&&x+dx<W; dx++) {
-            const i=((y+dy)*W+(x+dx))*4;
-            d[i]=r;d[i+1]=g;d[i+2]=b;d[i+3]=a;
-          }
-      }
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  const img = ctx.createImageData(W, H);
+  const d   = img.data;
+  const lngs = new Float64Array(W);
+  for (let x = 0; x < W; x++) lngs[x] = west + (x + 0.5) / W * (east - west);
+  for (let y = 0; y < H; y++) {
+    const lat = invMercY(yN - (y + 0.5) / H * (yN - yS));
+    for (let x = 0; x < W; x++) {
+      const score = bilinearScore(lat, lngs[x], lk);
+      if (score === null) continue;
+      const [r,g,b,a] = scoreToPixel(score);
+      const i = (y*W + x) * 4;
+      d[i]=r; d[i+1]=g; d[i+2]=b; d[i+3]=a;
     }
-    ctx.putImageData(img,0,0);
-  },
-  redraw() { this._draw(); }
-});
+  }
+  ctx.putImageData(img, 0, 0);
+
+  // Kara maskesi: kara poligonlarının altında kalan pikselleri sil
+  if (land?.features) {
+    const px = lng => (lng - west) / (east - west) * W;
+    const py = lat => (yN - mercY(lat)) / (yN - yS) * H;
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.fillStyle = '#000';
+    const drawPoly = rings => {
+      ctx.beginPath();
+      rings.forEach(ring => ring.forEach(([lng, lat], k) =>
+        k ? ctx.lineTo(px(lng), py(lat)) : ctx.moveTo(px(lng), py(lat))));
+      ctx.fill('evenodd');
+    };
+    land.features.forEach(f => {
+      const g = f.geometry;
+      if (!g) return;
+      if (g.type === 'Polygon') drawPoly(g.coordinates);
+      else if (g.type === 'MultiPolygon') g.coordinates.forEach(drawPoly);
+    });
+    ctx.globalCompositeOperation = 'source-over';
+  }
+
+  return {
+    url: canvas.toDataURL('image/png'),
+    coordinates: [[west, north], [east, north], [east, south], [west, south]],
+  };
+}
+
+async function showHabitatImage(image) {
+  await mapReady;
+  const src = map.getSource('habitat');
+  if (src) {
+    src.updateImage(image);
+  } else {
+    map.addSource('habitat', { type: 'image', ...image });
+    map.addLayer({
+      id: 'habitat', type: 'raster', source: 'habitat',
+      paint: { 'raster-opacity': 0.85, 'raster-resampling': 'linear', 'raster-fade-duration': 0 }
+    });
+  }
+}
 
 // ── GRİD ÇİZ
-function drawGrid(cells) {
-  if (canvasLayer) { map.removeLayer(canvasLayer); canvasLayer = null; }
+async function drawGrid(cells) {
   cellMap    = {};
   gridLookup = buildGridLookup(cells, GRID_STEP);
   cells.forEach(c => {
     if (c.score!=null && !(c.salinity!=null&&c.salinity<1))
       cellMap[`${c.lat},${c.lng}`] = c;
   });
-  if (gridLookup) { canvasLayer = new HeatCanvas(); map.addLayer(canvasLayer); }
+  if (!gridLookup) return;
+  const land = await landReady;
+  await showHabitatImage(renderHabitatImage(gridLookup, land));
 }
 
 function showCellDetail(cell) {
   document.getElementById('d-sst').textContent   = cell.temperature!=null ? cell.temperature.toFixed(1)+'°C' : '—';
   document.getElementById('d-sss').textContent   = cell.salinity!=null    ? cell.salinity.toFixed(1)+' ppt'  : '—';
-  document.getElementById('d-o2').textContent    = cell.oxygen_mg_l!=null ? cell.oxygen_mg_l.toFixed(1)+' mg' : '—';
-  document.getElementById('d-chl').textContent   = cell.chlorophyll!=null ? cell.chlorophyll.toFixed(2)+' mg' : '—';
+  document.getElementById('d-o2').textContent    = cell.oxygen_mg_l!=null ? cell.oxygen_mg_l.toFixed(1)+' mg/L' : '—';
+  document.getElementById('d-chl').textContent   = cell.chlorophyll!=null ? cell.chlorophyll.toFixed(2)+' mg/m³' : '—';
   document.getElementById('d-score').textContent = cell.score!=null       ? Math.round(cell.score)+'%'        : '—';
   document.getElementById('detail-bar').style.display = 'flex';
 }
@@ -392,15 +446,20 @@ async function loadHabitatGrid(species='bluefish') {
       const chunksRef  = collection(db, 'habitat_grids', `${species}_turkey`, 'chunks');
       const chunksQ    = query(chunksRef, orderBy('index'));
       const chunksSnap = await getDocs(chunksQ);
+      // Yalnızca metadata'daki nesle ait parçalar (yazım sırasında eski/yeni karışmasın)
+      const genId = metaSnap.data().generation_id;
       let cells = [];
-      chunksSnap.forEach(c => { cells = cells.concat(c.data().cells || []); });
+      chunksSnap.forEach(c => {
+        const d = c.data();
+        if (genId && d.generation_id !== genId) return;
+        cells = cells.concat(d.cells || []);
+      });
       if (cells.length) {
         gridData         = { ...metaSnap.data(), cells };
         GRID_STEP        = gridData.grid?.step_degrees || 0.1;
         currentGridCells = cells;
-        await loadAllFish();
-        if (currentFish) rescoreAndDraw();
-        else drawGrid(cells);
+        await loadAllFish();            // ilk balığı seçer ve çizer
+        if (!currentFish) drawGrid(cells);
         document.getElementById('map-loading').classList.remove('show');
         return;
       }
@@ -414,8 +473,7 @@ async function loadHabitatGrid(species='bluefish') {
       GRID_STEP        = d.grid?.step_degrees || 0.1;
       currentGridCells = d.cells;
       await loadAllFish();
-      if (currentFish) rescoreAndDraw();
-      else drawGrid(d.cells);
+      if (!currentFish) drawGrid(d.cells);
     }
   } catch(e) {
     console.error('Grid yüklenemedi:', e);
@@ -489,11 +547,10 @@ function selectFish(fish, btn) {
 
 function rescoreAndDraw() {
   if (!currentFish || !currentGridCells) return;
-  const scored = currentGridCells.map(cell => ({
-    ...cell,
-    score: scoreFishCell(cell, currentFish),
-    level: getLevelFromScore(scoreFishCell(cell, currentFish)),
-  }));
+  const scored = currentGridCells.map(cell => {
+    const score = scoreFishCell(cell, currentFish);
+    return { ...cell, score, level: getLevelFromScore(score) };
+  });
   drawGrid(scored);
 }
 
@@ -511,7 +568,7 @@ window.selectSpecies = function() {};
 window.useMyLocation = function() {
   if (!navigator.geolocation) return;
   navigator.geolocation.getCurrentPosition(
-    p => map.setView([p.coords.latitude, p.coords.longitude], 9),
+    p => map.flyTo({ center: [p.coords.longitude, p.coords.latitude], zoom: 8 }),
     () => {}
   );
 };
@@ -559,7 +616,7 @@ async function fetchWeather(lat, lng) {
 
 // ── HARİTAYA TIKLA → en yakın hücre + hava durumu
 map.on('click', async e => {
-  const {lat, lng} = e.latlng;
+  const {lat, lng} = e.lngLat;
 
   // Hava durumunu arka planda çek
   fetchWeather(lat, lng);
