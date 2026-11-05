@@ -344,6 +344,9 @@ function scoreToPixel(score) {
 const mercY    = lat => Math.log(Math.tan(Math.PI/4 + lat*Math.PI/360));
 const invMercY = y   => (2*Math.atan(Math.exp(y)) - Math.PI/2) * 180/Math.PI;
 const PX_PER_CELL = 8;
+// Veri bölgesinin açık denizdeki dış sınırında renk bu genişlikte (derece) yumuşakça kaybolur
+const EDGE_FADE_DEG = 0.8;
+const smoothstep = t => t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t);
 
 function renderHabitatImage(lk, land) {
   const h = lk.step / 2;
@@ -360,14 +363,18 @@ function renderHabitatImage(lk, land) {
   const d   = img.data;
   const lngs = new Float64Array(W);
   for (let x = 0; x < W; x++) lngs[x] = west + (x + 0.5) / W * (east - west);
+  const fadeX = new Float32Array(W);
+  for (let x = 0; x < W; x++)
+    fadeX[x] = smoothstep(Math.min(lngs[x] - west, east - lngs[x]) / EDGE_FADE_DEG);
   for (let y = 0; y < H; y++) {
     const lat = invMercY(yN - (y + 0.5) / H * (yN - yS));
+    const fadeY = smoothstep(Math.min(lat - south, north - lat) / EDGE_FADE_DEG);
     for (let x = 0; x < W; x++) {
       const score = bilinearScore(lat, lngs[x], lk);
       if (score === null) continue;
       const [r,g,b,a] = scoreToPixel(score);
       const i = (y*W + x) * 4;
-      d[i]=r; d[i+1]=g; d[i+2]=b; d[i+3]=a;
+      d[i]=r; d[i+1]=g; d[i+2]=b; d[i+3]=Math.round(a * fadeX[x] * fadeY);
     }
   }
   ctx.putImageData(img, 0, 0);
