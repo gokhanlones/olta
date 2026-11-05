@@ -91,11 +91,15 @@ body{padding-bottom:calc(72px + env(safe-area-inset-bottom));}
 .legend-title .note{letter-spacing:0;opacity:.8;}
 .legend-bar{height:8px;border-radius:4px;
   background:linear-gradient(to right,#22C55E 0%,#22C55E 22%,#EAB308 50%,#EA580C 75%,rgba(30,58,95,.75) 100%);}
-.legend-scale{display:flex;justify-content:space-between;font-size:.6rem;color:var(--text);margin-top:3px;font-weight:600;}
+.legend-scale{display:grid;grid-template-columns:auto 1fr auto;align-items:baseline;gap:8px;font-size:.6rem;color:var(--text);margin-top:3px;font-weight:600;}
+.legend-score{text-align:center;font-size:.8rem;font-weight:800;}
 
 /* GÖSTERGELER — haritanın üstünde, 4 sütun, yatay kaydırma yok */
 .detail-bar{padding:10px 16px;background:var(--panel);border-bottom:1px solid rgba(255,255,255,.06);
-  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;}
+  display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px;}
+/* Üst satır 4 kart (sıcaklık, tuzluluk, oksijen, klorofil), alt satır 3 kart (dalga, rüzgar, akıntı) */
+.detail-bar .stat-pill{grid-column:span 3;}
+.detail-bar .stat-pill:nth-child(n+5){grid-column:span 4;}
 .stat-pill{background:rgba(255,255,255,.06);border-radius:8px;padding:6px 4px;text-align:center;min-width:0;}
 .stat-label{font-size:.55rem;color:var(--muted);letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .stat-val{font-size:clamp(.68rem,3.1vw,.85rem);font-weight:700;margin-top:2px;
@@ -178,7 +182,6 @@ body{padding-bottom:calc(72px + env(safe-area-inset-bottom));}
   <div class="stat-pill"><div class="stat-label">TUZLULUK</div><div class="stat-val" id="d-sss">—</div></div>
   <div class="stat-pill"><div class="stat-label">OKSİJEN</div><div class="stat-val" id="d-o2">—</div></div>
   <div class="stat-pill"><div class="stat-label">KLOROFİL</div><div class="stat-val" id="d-chl">—</div></div>
-  <div class="stat-pill"><div class="stat-label">UYUM</div><div class="stat-val" id="d-score">—</div></div>
   <div class="stat-pill"><div class="stat-label">DALGA</div><div class="stat-val" id="d-wave">—</div></div>
   <div class="stat-pill"><div class="stat-label">RÜZGAR</div><div class="stat-val" id="d-wind">—</div></div>
   <div class="stat-pill"><div class="stat-label">AKINTI</div><div class="stat-val" id="d-curr">—</div></div>
@@ -190,7 +193,7 @@ body{padding-bottom:calc(72px + env(safe-area-inset-bottom));}
   <div class="map-legend" id="legend">
     <div class="legend-title"><span class="note">Deniz canlısı için uygun alan</span></div>
     <div class="legend-bar"></div>
-    <div class="legend-scale"><span>100</span><span>0</span></div>
+    <div class="legend-scale"><span>100</span><span class="legend-score" id="d-score" title="Seçilen noktanın uygunluğu"></span><span>0</span></div>
   </div>
 </div>
 
@@ -654,7 +657,8 @@ async function drawGrid(cells) {
 }
 
 function resetCellDetail() {
-  ['d-sst','d-sss','d-o2','d-chl','d-score'].forEach(id => document.getElementById(id).textContent = '—');
+  ['d-sst','d-sss','d-o2','d-chl'].forEach(id => document.getElementById(id).textContent = '—');
+  document.getElementById('d-score').textContent = '';
 }
 
 function showCellDetail(cell) {
@@ -662,7 +666,7 @@ function showCellDetail(cell) {
   document.getElementById('d-sss').textContent   = cell.salinity!=null    ? cell.salinity.toFixed(1)+' ppt'  : '—';
   document.getElementById('d-o2').textContent    = cell.oxygen_mg_l!=null ? cell.oxygen_mg_l.toFixed(1)+' mg/L' : '—';
   document.getElementById('d-chl').textContent   = cell.chlorophyll!=null ? cell.chlorophyll.toFixed(2)+' mg/m³' : '—';
-  document.getElementById('d-score').textContent = cell.score!=null       ? Math.round(cell.score)+'%'        : '—';
+  document.getElementById('d-score').textContent = cell.score!=null       ? 'Uyum %' + Math.round(cell.score) : '';
 }
 
 // ── HABİTAT GRİD YÜKLE (Firestore chunks → API fallback)
