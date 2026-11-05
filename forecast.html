@@ -26,10 +26,11 @@ body{padding-bottom:calc(72px + env(safe-area-inset-bottom));}
 .banner-placeholder{width:38px;}
 
 /* SIDEBAR */
-.sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;opacity:0;transition:opacity .3s;}
+/* Yan menü sayfadaki her şeyin (üst bant, harita, alt menü, reklam) üstünde */
+.sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;display:none;opacity:0;transition:opacity .3s;}
 .sidebar-overlay.open{display:block;opacity:1;}
 .sidebar{position:fixed;top:0;left:-280px;width:280px;height:100%;background:var(--bg);
-  border-right:1px solid rgba(255,255,255,.08);z-index:300;transition:left .3s ease;display:flex;flex-direction:column;}
+  border-right:1px solid rgba(255,255,255,.08);z-index:2100;transition:left .3s ease;display:flex;flex-direction:column;}
 .sidebar.open{left:0;}
 .sidebar-header{padding:56px 20px 24px;border-bottom:1px solid rgba(255,255,255,.08);}
 .sidebar-header .logo{font-size:22px;font-weight:900;letter-spacing:4px;}
@@ -54,7 +55,7 @@ body{padding-bottom:calc(72px + env(safe-area-inset-bottom));}
 .fish-pill:active{opacity:.75;}
 
 /* HARİTA */
-#map{width:100%;height:48vh;min-height:260px;position:relative;}
+#map{width:100%;height:48vh;min-height:260px;position:relative;z-index:0;isolation:isolate;}  /* harita içindeki katmanlar dışarı taşmasın */
 .map-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
   background:rgba(10,22,40,.85);color:var(--text);padding:10px 18px;border-radius:10px;
   font-size:.85rem;z-index:400;pointer-events:none;display:none;}
