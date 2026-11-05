@@ -56,6 +56,13 @@
     .bottom-btn { background: none; border: none; color: var(--white); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 8px; }
     .bottom-btn svg { width: 26px; height: 26px; }
     .profile-btn img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid var(--blue-light); }
+  
+    /* Alt menü: solda Tür Tahmini, ortada Ana Sayfa, sağda Profil */
+    .bottombar { display: grid; grid-template-columns: 1fr auto 1fr; }
+    .bottombar > :first-child { justify-self: start; }
+    .bottombar > :nth-child(2) { justify-self: center; }
+    .bottombar > :last-child { justify-self: end; }
+    .bottom-btn.active { color: var(--blue-light); }
   </style>
 </head>
 <body>
@@ -74,9 +81,9 @@
       </div>
     </div>
     <div class="sidebar-menu">
+      <button class="sidebar-item" onclick="window.location.href='home.html'">Ana Sayfa</button>
       <button class="sidebar-item" onclick="window.location.href='species.html'">Balık Türleri</button>
       <button class="sidebar-item active">Bölgeler</button>
-      <button class="sidebar-item" onclick="window.location.href='forecast.html'">Tür Tahmini</button>
       <button class="sidebar-item">Ayarlar</button>
     </div>
     <div class="sidebar-bottom">
@@ -99,13 +106,20 @@
   </div>
 
   <div class="bottombar">
-    <button class="bottom-btn" onclick="window.location.href='home.html'">
+    <button class="bottom-btn" onclick="window.location.href='forecast.html'" aria-label="Tür Tahmini">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+        <line x1="8" y1="2" x2="8" y2="18"/>
+        <line x1="16" y1="6" x2="16" y2="22"/>
+      </svg>
+    </button>
+    <button class="bottom-btn" onclick="window.location.href='home.html'" aria-label="Ana Sayfa">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
         <polyline points="9 22 9 12 15 12 15 22"/>
       </svg>
     </button>
-    <button class="bottom-btn profile-btn" onclick="window.location.href='profile.html'">
+    <button class="bottom-btn profile-btn" onclick="window.location.href='profile.html'" aria-label="Profil">
       <img id="bottom-photo" src="" alt=""/>
     </button>
   </div>
