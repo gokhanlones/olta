@@ -420,8 +420,84 @@ async function showHabitatImage(image) {
     map.addLayer({
       id: 'habitat', type: 'raster', source: 'habitat',
       paint: { 'raster-opacity': 0.85, 'raster-resampling': 'linear', 'raster-fade-duration': 0 }
-    });
+    }, map.getLayer('currents-0') ? 'currents-0' : undefined);  // oklar her zaman üstte
   }
+}
+
+// ── AKINTI OKLARI (ok uçları; yön = akıntının gittiği yön, boyut = hız)
+// Kalabalık olmasın diye 3 kademe: uzakta seyrek, yakınlaştıkça sıklaşır.
+const CURRENT_TIERS = [
+  { every: 6, minzoom: 0   },   // ~0.6°
+  { every: 3, minzoom: 6   },   // ~0.3°
+  { every: 1, minzoom: 7.5 },   // 0.1° (her hücre)
+];
+
+function makeArrowHead(px) {
+  const c = document.createElement('canvas');
+  c.width = c.height = px;
+  const g = c.getContext('2d');
+  const m = px / 32;
+  g.beginPath();                       // yukarı (kuzeye) bakan ok ucu
+  g.moveTo(16*m, 4*m);
+  g.lineTo(27*m, 26*m);
+  g.lineTo(16*m, 19*m);
+  g.lineTo(5*m, 26*m);
+  g.closePath();
+  g.lineJoin = 'round';
+  g.lineWidth = 3*m;
+  g.strokeStyle = 'rgba(10,22,40,.85)';
+  g.stroke();
+  g.fillStyle = '#FFFFFF';
+  g.fill();
+  return g.getImageData(0, 0, px, px);
+}
+
+function currentsGeoJSON(cells, step) {
+  const sea = cells.filter(c => c.current_u != null && c.current_v != null
+                             && !(c.salinity != null && c.salinity < 1));
+  if (!sea.length) return null;
+  const minLat = Math.min(...sea.map(c => c.lat)), minLng = Math.min(...sea.map(c => c.lng));
+  const features = [];
+  sea.forEach(c => {
+    const li = Math.round((c.lat - minLat) / step), gi = Math.round((c.lng - minLng) / step);
+    const tier = CURRENT_TIERS.findIndex(t => li % t.every === 0 && gi % t.every === 0);
+    const speed = Math.hypot(c.current_u, c.current_v);
+    if (tier < 0 || speed < 0.02) return;
+    features.push({
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [c.lng, c.lat] },
+      properties: {
+        tier, speed,
+        dir: (Math.atan2(c.current_u, c.current_v) * 180 / Math.PI + 360) % 360,
+      },
+    });
+  });
+  return { type: 'FeatureCollection', features };
+}
+
+async function showCurrents(cells) {
+  const data = currentsGeoJSON(cells, GRID_STEP);
+  if (!data) return;
+  await mapReady;
+  const src = map.getSource('currents');
+  if (src) { src.setData(data); return; }
+  map.addImage('arrow-head', makeArrowHead(64), { pixelRatio: 2 });
+  map.addSource('currents', { type: 'geojson', data });
+  CURRENT_TIERS.forEach((t, i) => map.addLayer({
+    id: `currents-${i}`, type: 'symbol', source: 'currents', minzoom: t.minzoom,
+    filter: ['==', ['get', 'tier'], i],
+    layout: {
+      'icon-image': 'arrow-head',
+      'icon-rotate': ['get', 'dir'],
+      'icon-rotation-alignment': 'map',
+      'icon-allow-overlap': true,
+      'icon-ignore-placement': true,
+      'icon-size': ['interpolate', ['linear'], ['get', 'speed'], 0, 0.28, 0.5, 0.42, 1.0, 0.55],  // ~9–18 px
+    },
+    paint: {
+      'icon-opacity': ['interpolate', ['linear'], ['get', 'speed'], 0, 0.45, 0.3, 0.9],
+    },
+  }));
 }
 
 // ── GRİD ÇİZ
@@ -435,6 +511,7 @@ async function drawGrid(cells) {
   if (!gridLookup) return;
   const land = await landReady;
   await showHabitatImage(renderHabitatImage(gridLookup, land));
+  await showCurrents(cells);
 }
 
 function resetCellDetail() {
@@ -541,7 +618,7 @@ function scoreFishCell(cell, fish) {
   const sstScore = rangeScore(cell.temperature, fish.sstMin, fish.sstMax);
   const sssScore = rangeScore(cell.salinity,    fish.sssMin, fish.sssMax);
 
-  if (sstScore === null) return 0;
+  if (sstScore === null) return null;   // API ile aynı: sıcaklık yoksa skor yok
 
   // Tuzluluk verisi varsa ağırlıklı ortalama (SST %70, SSS %30)
   if (sssScore !== null) {
@@ -569,6 +646,7 @@ function rescoreAndDraw() {
 }
 
 function getLevelFromScore(score) {
+  if (score == null) return 'insufficient_data';
   if (score >= 75) return 'high';
   if (score >= 50) return 'moderate';
   if (score >= 25) return 'low';
