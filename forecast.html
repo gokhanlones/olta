@@ -48,11 +48,33 @@ body{padding-bottom:calc(72px + env(safe-area-inset-bottom));}
 .sidebar-item.logout{color:#F87171;}
 
 /* BALIK SEÇİCİ */
-.fish-bar{padding:12px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;}
-.fish-pill{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:var(--muted);
-  border-radius:20px;padding:7px 14px;font-size:.8rem;cursor:pointer;white-space:nowrap;}
-.fish-pill.active{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600;}
-.fish-pill:active{opacity:.75;}
+/* BALIK SEÇİCİ — haritanın altında tek satır; dokununca liste açılır */
+.fish-select{display:flex;align-items:center;gap:10px;width:calc(100% - 32px);margin:12px 16px 0;
+  background:var(--panel);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px 14px;
+  color:var(--text);font-size:.95rem;font-weight:700;cursor:pointer;text-align:left;}
+.fish-select .label{font-size:.6rem;color:var(--muted);font-weight:600;letter-spacing:.5px;display:block;margin-bottom:2px;}
+.fish-select .name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.fish-select .chev{color:var(--muted);transition:transform .25s;}
+.fish-select.open .chev{transform:rotate(180deg);}
+.fish-select:active{opacity:.8;}
+
+/* Açılır balık listesi: alt menünün üst kenarından üst bandın alt kenarına kadar */
+.fish-sheet{position:fixed;left:0;right:0;top:56px;bottom:calc(60px + env(safe-area-inset-bottom));
+  z-index:90;background:var(--bg);border-top:1px solid rgba(255,255,255,.08);
+  display:flex;flex-direction:column;transform:translateY(100%);visibility:hidden;
+  transition:transform .3s ease, visibility 0s linear .3s;}
+.fish-sheet.open{transform:translateY(0);visibility:visible;transition:transform .3s ease;}
+.fish-sheet-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;
+  border-bottom:1px solid rgba(255,255,255,.08);font-size:.8rem;color:var(--muted);letter-spacing:.5px;}
+.fish-sheet-head button{background:none;border:none;color:var(--text);font-size:1.3rem;cursor:pointer;padding:0 4px;line-height:1;}
+.fish-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
+.fish-item{display:flex;align-items:center;justify-content:space-between;width:100%;padding:14px 16px;
+  background:none;border:none;border-bottom:1px solid rgba(255,255,255,.05);color:var(--text);
+  font-size:.95rem;text-align:left;cursor:pointer;}
+.fish-item:active{background:rgba(255,255,255,.06);}
+.fish-item.active{color:var(--blue);font-weight:700;}
+.fish-item .check{visibility:hidden;}
+.fish-item.active .check{visibility:visible;}
 
 /* HARİTA */
 #map{width:100%;height:48vh;min-height:260px;position:relative;z-index:0;isolation:isolate;}  /* harita içindeki katmanlar dışarı taşmasın */
@@ -92,7 +114,7 @@ body{padding-bottom:calc(72px + env(safe-area-inset-bottom));}
 /* BOTTOMBAR */
 .bottombar{position:fixed;bottom:0;left:0;right:0;height:60px;background:var(--bg);
   border-top:1px solid rgba(255,255,255,.08);display:flex;align-items:center;
-  justify-content:space-between;padding:0 40px;z-index:100;}
+  justify-content:space-between;padding:0 40px;z-index:110;}
 .bottom-btn{background:none;border:none;color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:8px;}
 .bottom-btn svg{width:26px;height:26px;}
 .profile-btn img{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--blue);}
@@ -167,6 +189,12 @@ body{padding-bottom:calc(72px + env(safe-area-inset-bottom));}
   </div>
 </div>
 
+<!-- BALIK SEÇİCİ -->
+<button class="fish-select" id="fish-select" onclick="toggleFishSheet()" aria-haspopup="listbox" aria-expanded="false">
+  <span class="name"><span class="label">BALIK</span><span id="fish-select-name">Yükleniyor…</span></span>
+  <span class="chev">▲</span>
+</button>
+
 <!-- BÖLGE -->
 <div id="region-box">
   <div class="region-name" id="region-name">—</div>
@@ -176,9 +204,10 @@ body{padding-bottom:calc(72px + env(safe-area-inset-bottom));}
   </div>
 </div>
 
-<!-- BALIK SEÇİCİ (satırlar halinde) -->
-<div class="fish-bar" id="fish-bar">
-  <span style="color:var(--muted);font-size:.8rem;">⏳</span>
+<!-- AÇILIR BALIK LİSTESİ -->
+<div class="fish-sheet" id="fish-sheet" aria-hidden="true">
+  <div class="fish-sheet-head"><span>BALIK SEÇ</span><button onclick="toggleFishSheet(false)" aria-label="Kapat">✕</button></div>
+  <div class="fish-list" id="fish-list" role="listbox"></div>
 </div>
 
 <!-- REKLAM -->
@@ -664,19 +693,22 @@ async function loadAllFish() {
       const f = d.data();
       if (f.type === 'deniz' && f.sstMin != null) allFish.push(f);
     });
-    // Balık seçiciyi doldur
-    const bar = document.getElementById('fish-bar');
-    bar.innerHTML = '';
-    allFish.forEach((f, i) => {
+    // Alfabetik, Türkçe sıralamayla (Ç, İ, Ö, Ş, Ü doğru yerde)
+    allFish.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'tr'));
+    const list = document.getElementById('fish-list');
+    list.innerHTML = '';
+    allFish.forEach(f => {
       const btn = document.createElement('button');
-      btn.className = 'fish-pill' + (i === 0 ? ' active' : '');
-      btn.textContent = f.name;
-      btn.onclick = () => selectFish(f, btn);
-      bar.appendChild(btn);
+      btn.className = 'fish-item';
+      btn.setAttribute('role', 'option');
+      btn.innerHTML = '<span></span><span class="check">✓</span>';
+      btn.firstChild.textContent = f.name;
+      btn.onclick = () => { selectFish(f, btn); toggleFishSheet(false); };
+      list.appendChild(btn);
     });
-    // İlk balığı seç
+    // İlk (alfabetik) balığı seç
     if (allFish.length && currentGridCells) {
-      selectFish(allFish[0], bar.querySelector('.fish-pill'));
+      selectFish(allFish[0], list.querySelector('.fish-item'));
     }
   } catch(e) {
     console.error('Balık yüklenemedi:', e);
@@ -706,10 +738,22 @@ function scoreFishCell(cell, fish) {
 }
 
 // ── BALIK SEÇİCİ
+window.toggleFishSheet = function(open) {
+  const sheet = document.getElementById('fish-sheet');
+  const sel   = document.getElementById('fish-select');
+  const show  = open ?? !sheet.classList.contains('open');
+  sheet.classList.toggle('open', show);
+  sel.classList.toggle('open', show);
+  sel.setAttribute('aria-expanded', show);
+  sheet.setAttribute('aria-hidden', !show);
+  if (show) document.querySelector('.fish-item.active')?.scrollIntoView({ block: 'center' });
+};
+
 function selectFish(fish, btn) {
   currentFish = fish;
-  document.querySelectorAll('.fish-pill').forEach(p => p.classList.remove('active'));
-  btn.classList.add('active');
+  document.querySelectorAll('.fish-item').forEach(p => p.classList.remove('active'));
+  btn?.classList.add('active');
+  document.getElementById('fish-select-name').textContent = fish.name || '';
   document.getElementById('legend-fish').textContent = fish.name || '';
   resetCellDetail();  // skor balığa göre değişir; eski hücre değerlerini temizle
   if (currentGridCells) rescoreAndDraw();
