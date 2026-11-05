@@ -247,34 +247,82 @@ let gridData  = null;
 
 let GRID_STEP = 0.1; // metadata'dan güncellenir
 
-// ── SKOR → RGBA
-function scoreToRGBA(score) {
-  if (score <= 0)  return null;
-  if (score < 25)  return `rgba(30,58,95,${(score/25*0.35).toFixed(2)})`;
-  if (score < 50)  return `rgba(234,88,12,${(0.35+score/200).toFixed(2)})`;
-  if (score < 75)  return `rgba(234,179,8,${(0.45+score/300).toFixed(2)})`;
-  return             `rgba(34,197,94,${(0.55+score/400).toFixed(2)})`;
+// ── GRID LOOKUP (Float32Array — bilinear interpolasyon için)
+let gridLookup = null;
+
+function buildGridLookup(cells, step) {
+  const sea = cells.filter(c =>
+    c.score != null && !(c.salinity != null && c.salinity < 1)
+  );
+  if (!sea.length) return null;
+  let minLat=Infinity,maxLat=-Infinity,minLng=Infinity,maxLng=-Infinity;
+  sea.forEach(c => {
+    if(c.lat<minLat)minLat=c.lat; if(c.lat>maxLat)maxLat=c.lat;
+    if(c.lng<minLng)minLng=c.lng; if(c.lng>maxLng)maxLng=c.lng;
+  });
+  const nLat = Math.round((maxLat-minLat)/step)+1;
+  const nLng = Math.round((maxLng-minLng)/step)+1;
+  const scores = new Float32Array(nLat*nLng).fill(-1);
+  const mask   = new Uint8Array(nLat*nLng);
+  sea.forEach(c => {
+    const li = Math.round((c.lat-minLat)/step);
+    const gi = Math.round((c.lng-minLng)/step);
+    if(li<0||gi<0||li>=nLat||gi>=nLng) return;
+    const i = li*nLng+gi;
+    scores[i] = c.score;
+    mask[i]   = 1;
+  });
+  return { scores, mask, minLat, minLng, nLat, nLng, step };
 }
 
-// ── CANVAS OVERLAY
+function bilinearScore(lat, lng, lk) {
+  const {scores,mask,minLat,minLng,nLat,nLng,step} = lk;
+  const lf=(lat-minLat)/step, gf=(lng-minLng)/step;
+  const l0=Math.floor(lf), l1=l0+1, g0=Math.floor(gf), g1=g0+1;
+  if(l0<0||g0<0||l1>=nLat||g1>=nLng) return null;
+  const i00=l0*nLng+g0,i01=l0*nLng+g1,i10=l1*nLng+g0,i11=l1*nLng+g1;
+  if(!mask[i00]&&!mask[i01]&&!mask[i10]&&!mask[i11]) return null;
+  const tl=lf-l0, tg=gf-g0;
+  let sum=0,w=0;
+  [[i00,(1-tl)*(1-tg)],[i01,(1-tl)*tg],[i10,tl*(1-tg)],[i11,tl*tg]].forEach(([i,wt])=>{
+    if(mask[i]){sum+=scores[i]*wt;w+=wt;}
+  });
+  return w>0.05 ? sum/w : null;
+}
+
+// ── SKOR → RGBA piksel
+function scoreToPixel(score) {
+  if (score <= 0) return [0,0,0,0];
+  const t = Math.max(0, Math.min(1, score/100));
+  let r,g,b,a;
+  if (t < 0.25) {
+    const f=t/0.25;
+    r=Math.round(30+f*204);g=Math.round(58+f*30);b=Math.round(95-f*83);a=Math.round(f*180);
+  } else if (t < 0.5) {
+    const f=(t-0.25)/0.25;
+    r=234;g=Math.round(88+f*91);b=12;a=Math.round(180+f*25);
+  } else if (t < 0.75) {
+    const f=(t-0.5)/0.25;
+    r=Math.round(234-f*200);g=Math.round(179+f*18);b=Math.round(8+f*86);a=Math.round(205+f*20);
+  } else {
+    r=34;g=197;b=94;a=225;
+  }
+  return [r,g,b,a];
+}
+
+// ── CANVAS OVERLAY — piksel bazlı bilinear + deniz maskesi
 let canvasLayer = null;
-let canvasCells = [];
 
 const HeatCanvas = L.Layer.extend({
   onAdd(map) {
     this._map    = map;
     this._canvas = document.createElement('canvas');
     Object.assign(this._canvas.style, {
-      position:      'absolute',
-      top:           '0',
-      left:          '0',
-      pointerEvents: 'none',
-      zIndex:        '400',
-      opacity:       '0.82',
+      position:'absolute',top:'0',left:'0',
+      pointerEvents:'none',zIndex:'400',
     });
-    // Overlay pane yerine map container'a ekle — transform kaymasını önler
     map.getContainer().appendChild(this._canvas);
-    this._drawFn = L.Util.throttle(this._draw, 40, this);
+    this._drawFn = L.Util.throttle(this._draw, 50, this);
     map.on('move zoom', this._drawFn, this);
     map.on('zoomend',   this._draw,   this);
     this._draw();
@@ -285,28 +333,29 @@ const HeatCanvas = L.Layer.extend({
     map.off('zoomend',   this._draw,   this);
   },
   _draw() {
+    if (!gridLookup) return;
     const size = this._map.getSize();
-    this._canvas.width  = size.x;
-    this._canvas.height = size.y;
+    const W=size.x, H=size.y;
+    this._canvas.width=W; this._canvas.height=H;
     const ctx = this._canvas.getContext('2d');
-    ctx.clearRect(0, 0, size.x, size.y);
-    if (!canvasCells.length) return;
+    const img = ctx.createImageData(W, H);
+    const d   = img.data;
+    const S   = 2; // her S piksel bir örnekleme
 
-    canvasCells.forEach(cell => {
-      const color = scoreToRGBA(cell.score);
-      if (!color || !cell.bounds) return;
-      // bounds alanından çiz — GRID_STEP hesabına bağımlılık yok
-      const tl = this._map.latLngToContainerPoint(
-        L.latLng(cell.bounds.north, cell.bounds.west)
-      );
-      const br = this._map.latLngToContainerPoint(
-        L.latLng(cell.bounds.south, cell.bounds.east)
-      );
-      const w = Math.max(1, Math.ceil(br.x - tl.x) + 1);
-      const h = Math.max(1, Math.ceil(br.y - tl.y) + 1);
-      ctx.fillStyle = color;
-      ctx.fillRect(Math.floor(tl.x), Math.floor(tl.y), w, h);
-    });
+    for (let y=0; y<H; y+=S) {
+      for (let x=0; x<W; x+=S) {
+        const ll    = this._map.containerPointToLatLng([x+0.5, y+0.5]);
+        const score = bilinearScore(ll.lat, ll.lng, gridLookup);
+        if (score === null) continue;
+        const [r,g,b,a] = scoreToPixel(score);
+        for (let dy=0; dy<S&&y+dy<H; dy++)
+          for (let dx=0; dx<S&&x+dx<W; dx++) {
+            const i=((y+dy)*W+(x+dx))*4;
+            d[i]=r;d[i+1]=g;d[i+2]=b;d[i+3]=a;
+          }
+      }
+    }
+    ctx.putImageData(img,0,0);
   },
   redraw() { this._draw(); }
 });
@@ -314,18 +363,13 @@ const HeatCanvas = L.Layer.extend({
 // ── GRİD ÇİZ
 function drawGrid(cells) {
   if (canvasLayer) { map.removeLayer(canvasLayer); canvasLayer = null; }
-  cellMap     = {};
-  canvasCells = [];
-
-  cells.forEach(cell => {
-    if (cell.score == null) return;
-    if (cell.salinity != null && cell.salinity < 1) return; // kara filtresi
-    canvasCells.push(cell);
-    cellMap[`${cell.lat},${cell.lng}`] = cell;
+  cellMap    = {};
+  gridLookup = buildGridLookup(cells, GRID_STEP);
+  cells.forEach(c => {
+    if (c.score!=null && !(c.salinity!=null&&c.salinity<1))
+      cellMap[`${c.lat},${c.lng}`] = c;
   });
-
-  canvasLayer = new HeatCanvas();
-  map.addLayer(canvasLayer);
+  if (gridLookup) { canvasLayer = new HeatCanvas(); map.addLayer(canvasLayer); }
 }
 
 function showCellDetail(cell) {
