@@ -701,6 +701,7 @@ async function loadHabitatGrid(species='bluefish') {
         currentGridCells = cells;
         await loadAllFish();            // ilk balığı seçer ve çizer
         if (!currentFish) drawGrid(cells);
+        applyDeepLink();
         document.getElementById('map-loading').classList.remove('show');
         return;
       }
@@ -715,6 +716,7 @@ async function loadHabitatGrid(species='bluefish') {
       currentGridCells = d.cells;
       await loadAllFish();
       if (!currentFish) drawGrid(d.cells);
+      applyDeepLink();
     }
   } catch(e) {
     console.error('Grid yüklenemedi:', e);
@@ -753,7 +755,8 @@ async function loadAllFish() {
     // İlk (alfabetik) balığı seç
     updateFishListScores();   // başlangıçta yüzde yok; ipucu metni
     if (allFish.length && currentGridCells) {
-      selectFish(allFish[0], list.querySelector('.fish-item'));
+      const i = Math.max(0, allFish.findIndex(f => f.name === DEEP.tur));
+      selectFish(allFish[i], list.querySelectorAll('.fish-item')[i]);
     }
   } catch(e) {
     console.error('Balık yüklenemedi:', e);
@@ -908,16 +911,36 @@ async function fetchWeather(lat, lng) {
 }
 
 // ── HARİTAYA TIKLA → en yakın hücre + hava durumu
-map.on('click', async e => {
-  const {lat, lng} = e.lngLat;
+// ── ADRESTEN GELEN SEÇİM (ana sayfadaki gönderi bağlantıları)
+// forecast.html?tur=Lüfer&lat=41.18&lng=29.61 → tür seçili, pin hazır
+const DEEP = (() => {
+  const p = new URLSearchParams(location.search);
+  const num = k => { const v = parseFloat(p.get(k)); return Number.isFinite(v) ? v : null; };
+  // lat/lng: pinin yeri (kıyı); clat/clng: skorun hesaplandığı deniz karesi
+  return { tur: p.get('tur'), lat: num('lat'), lng: num('lng'), clat: num('clat'), clng: num('clng') };
+})();
+let deepLinkApplied = false;
+async function applyDeepLink() {
+  if (deepLinkApplied || DEEP.lat == null || DEEP.lng == null) return;
+  deepLinkApplied = true;
+  await mapReady;
+  map.flyTo({ center: [DEEP.lng, DEEP.lat], zoom: 9 });
+  const hint = DEEP.clat != null && DEEP.clng != null ? { lat: DEEP.clat, lng: DEEP.clng } : null;
+  handleMapPoint(DEEP.lat, DEEP.lng, hint);
+}
+
+map.on('click', e => handleMapPoint(e.lngLat.lat, e.lngLat.lng));
+
+async function handleMapPoint(lat, lng, cellHint = null) {
 
   // Hava durumunu arka planda çek
   fetchWeather(lat, lng);
 
-  // En yakın grid hücresini bul
+  // En yakın grid hücresini bul (bağlantıdan gelindiyse gönderideki hücre)
+  const ref = cellHint || { lat, lng };
   let best = null, bestDist = Infinity;
   Object.values(cellMap).forEach(cell => {
-    const d = Math.abs(cell.lat - lat) + Math.abs(cell.lng - lng);
+    const d = Math.abs(cell.lat - ref.lat) + Math.abs(cell.lng - ref.lng);
     if (d < bestDist) { bestDist = d; best = cell; }
   });
   placePin(lng, lat);
@@ -944,7 +967,7 @@ map.on('click', async e => {
     el.className   = 'region-val '+(b?'ban':'ok');
     document.getElementById('region-box').style.display = 'block';
   } catch {}
-});
+}
 
 // ── BÖLGE
 function toId(name) {
