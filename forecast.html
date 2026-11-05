@@ -47,6 +47,9 @@ body{padding-bottom:calc(72px + env(safe-area-inset-bottom));}
 .sidebar-bottom{padding:12px 0;border-top:1px solid rgba(255,255,255,.08);}
 .sidebar-item.logout{color:#F87171;}
 
+/* HARİTA PİNİ */
+.map-pin{pointer-events:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45));}
+
 /* BALIK SEÇİCİ */
 /* BALIK SEÇİCİ — haritanın altında tek satır; dokununca liste açılır */
 .fish-select{display:flex;align-items:center;gap:10px;width:calc(100% - 32px);margin:12px 16px 0;
@@ -66,6 +69,7 @@ body{padding-bottom:calc(72px + env(safe-area-inset-bottom));}
 .fish-sheet.open{transform:translateY(0);visibility:visible;transition:transform .3s ease;}
 .fish-sheet-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;
   border-bottom:1px solid rgba(255,255,255,.08);font-size:.8rem;color:var(--muted);letter-spacing:.5px;}
+.fish-sheet-head .hint{font-size:.65rem;letter-spacing:0;opacity:.8;margin-left:6px;}
 .fish-sheet-head button{background:none;border:none;color:var(--text);font-size:1.3rem;cursor:pointer;padding:0 4px;line-height:1;}
 .fish-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
 .fish-item{display:flex;align-items:center;justify-content:space-between;width:100%;padding:14px 16px;
@@ -73,6 +77,9 @@ body{padding-bottom:calc(72px + env(safe-area-inset-bottom));}
   font-size:.95rem;text-align:left;cursor:pointer;}
 .fish-item:active{background:rgba(255,255,255,.06);}
 .fish-item.active{color:var(--blue);font-weight:700;}
+.fish-item .right{display:flex;align-items:center;gap:10px;}
+.fish-pct{min-width:44px;text-align:right;font-size:.85rem;font-weight:700;color:var(--muted);}
+.fish-pct.high{color:#22C55E;} .fish-pct.moderate{color:#EAB308;} .fish-pct.low{color:#EA580C;}
 .fish-item .check{visibility:hidden;}
 .fish-item.active .check{visibility:visible;}
 
@@ -214,7 +221,7 @@ body{padding-bottom:calc(72px + env(safe-area-inset-bottom));}
 
 <!-- AÇILIR BALIK LİSTESİ -->
 <div class="fish-sheet" id="fish-sheet" aria-hidden="true">
-  <div class="fish-sheet-head"><span>TÜR SEÇ</span><button onclick="toggleFishSheet(false)" aria-label="Kapat">✕</button></div>
+  <div class="fish-sheet-head"><span>TÜR SEÇ<span class="hint" id="fish-sheet-hint"></span></span><button onclick="toggleFishSheet(false)" aria-label="Kapat">✕</button></div>
   <div class="fish-list" id="fish-list" role="listbox"></div>
 </div>
 
@@ -737,12 +744,14 @@ async function loadAllFish() {
       const btn = document.createElement('button');
       btn.className = 'fish-item';
       btn.setAttribute('role', 'option');
-      btn.innerHTML = '<span></span><span class="check">✓</span>';
+      btn.innerHTML = '<span></span><span class="right"><span class="fish-pct"></span><span class="check">✓</span></span>';
       btn.firstChild.textContent = f.name;
+      btn._fish = f;
       btn.onclick = () => { selectFish(f, btn); toggleFishSheet(false); };
       list.appendChild(btn);
     });
     // İlk (alfabetik) balığı seç
+    updateFishListScores();   // başlangıçta yüzde yok; ipucu metni
     if (allFish.length && currentGridCells) {
       selectFish(allFish[0], list.querySelector('.fish-item'));
     }
@@ -790,8 +799,48 @@ function selectFish(fish, btn) {
   document.querySelectorAll('.fish-item').forEach(p => p.classList.remove('active'));
   btn?.classList.add('active');
   document.getElementById('fish-select-name').textContent = fish.name || '';
-  resetCellDetail();  // skor balığa göre değişir; eski hücre değerlerini temizle
   if (currentGridCells) rescoreAndDraw();
+  // Pin duruyorsa uyum yüzdesini yeni türe göre güncelle
+  if (pinnedCell) {
+    const sc = scoreFishCell(pinnedCell, fish);
+    document.getElementById('d-score').textContent = sc != null ? 'Uyum %' + sc : '';
+  } else {
+    document.getElementById('d-score').textContent = '';
+  }
+}
+
+// ── PİN: dokunulan nokta; tüm türlerin o noktadaki uygunluğu listede
+let pinMarker = null;
+let pinnedCell = null;   // pinin düştüğü en yakın deniz hücresi (yoksa null)
+
+function makePinElement() {
+  const el = document.createElement('div');
+  el.className = 'map-pin';
+  el.innerHTML = '<svg viewBox="0 0 24 32" width="26" height="35" aria-hidden="true">'
+    + '<path d="M12 1.5C6.2 1.5 1.8 5.9 1.8 11.6 1.8 19.2 12 30.5 12 30.5S22.2 19.2 22.2 11.6C22.2 5.9 17.8 1.5 12 1.5z" '
+    + 'fill="#F4A261" stroke="#0A1628" stroke-width="2"/>'
+    + '<circle cx="12" cy="11.6" r="3.8" fill="#0A1628"/></svg>';
+  return el;
+}
+
+function placePin(lng, lat) {
+  if (!pinMarker) {
+    pinMarker = new maplibregl.Marker({ element: makePinElement(), anchor: 'bottom' })
+      .setLngLat([lng, lat]).addTo(map);
+  } else {
+    pinMarker.setLngLat([lng, lat]);
+  }
+}
+
+function updateFishListScores() {
+  document.querySelectorAll('.fish-item').forEach(btn => {
+    const pct = btn.querySelector('.fish-pct');
+    const sc  = pinnedCell && btn._fish ? scoreFishCell(pinnedCell, btn._fish) : null;
+    pct.textContent = sc != null ? '%' + sc : '';
+    pct.className = 'fish-pct ' + (sc == null ? '' : getLevelFromScore(sc));
+  });
+  document.getElementById('fish-sheet-hint').textContent =
+    pinnedCell ? '· pin noktası için uygunluk' : '· yüzde için haritaya dokunun';
 }
 
 function rescoreAndDraw() {
@@ -871,7 +920,11 @@ map.on('click', async e => {
     const d = Math.abs(cell.lat - lat) + Math.abs(cell.lng - lng);
     if (d < bestDist) { bestDist = d; best = cell; }
   });
-  if (best && bestDist < 0.3) showCellDetail(best);
+  placePin(lng, lat);
+  pinnedCell = (best && bestDist < 0.3) ? best : null;
+  if (pinnedCell) showCellDetail(pinnedCell);
+  else resetCellDetail();          // karaya/veri dışına düştü: eski değerler kalmasın
+  updateFishListScores();
 
   // Bölge bilgisi
   try {
