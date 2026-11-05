@@ -452,6 +452,42 @@ function makeArrowHead(px) {
   return g.getImageData(0, 0, px, px);
 }
 
+// Kara maskesi (ok konumlarını elemek için): kara poligonları + ~2 km kıyı payı,
+// 0.01°'lik bir canvas'a bir kez çizilir; her ok noktası tek piksel okumasıyla kontrol edilir.
+const COAST_BUFFER_DEG = 0.02;
+const MASK_RES = 0.01;
+let landMask = null;
+function buildLandMask(land, west, south, east, north) {
+  if (!land?.features) return null;
+  const W = Math.ceil((east - west) / MASK_RES), H = Math.ceil((north - south) / MASK_RES);
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const g = c.getContext('2d', { willReadFrequently: true });
+  const px = lng => (lng - west) / MASK_RES, py = lat => (north - lat) / MASK_RES;
+  g.fillStyle = g.strokeStyle = '#000';
+  g.lineWidth = 2 * COAST_BUFFER_DEG / MASK_RES;
+  g.lineJoin = 'round';
+  const drawPoly = rings => {
+    g.beginPath();
+    rings.forEach(ring => ring.forEach(([lng, lat], k) =>
+      k ? g.lineTo(px(lng), py(lat)) : g.moveTo(px(lng), py(lat))));
+    g.fill('evenodd');
+    g.stroke();                       // kıyı payı
+  };
+  land.features.forEach(f => {
+    const geo = f.geometry;
+    if (!geo) return;
+    if (geo.type === 'Polygon') drawPoly(geo.coordinates);
+    else if (geo.type === 'MultiPolygon') geo.coordinates.forEach(drawPoly);
+  });
+  const alpha = g.getImageData(0, 0, W, H).data;
+  return (lat, lng) => {
+    const x = Math.floor(px(lng)), y = Math.floor(py(lat));
+    if (x < 0 || y < 0 || x >= W || y >= H) return false;
+    return alpha[(y * W + x) * 4 + 3] > 0;
+  };
+}
+
 function currentsGeoJSON(cells, step) {
   const sea = cells.filter(c => c.current_u != null && c.current_v != null
                              && !(c.salinity != null && c.salinity < 1));
@@ -463,6 +499,7 @@ function currentsGeoJSON(cells, step) {
     const tier = CURRENT_TIERS.findIndex(t => li % t.every === 0 && gi % t.every === 0);
     const speed = Math.hypot(c.current_u, c.current_v);
     if (tier < 0 || speed < 0.02) return;
+    if (landMask && landMask(c.lat, c.lng)) return;   // karada / kıyıya çok yakın
     features.push({
       type: 'Feature',
       geometry: { type: 'Point', coordinates: [c.lng, c.lat] },
@@ -476,6 +513,10 @@ function currentsGeoJSON(cells, step) {
 }
 
 async function showCurrents(cells) {
+  if (!landMask) {
+    const land = await landReady;
+    landMask = buildLandMask(land, 24.5, 34.5, 42.5, 43.0);
+  }
   const data = currentsGeoJSON(cells, GRID_STEP);
   if (!data) return;
   await mapReady;
