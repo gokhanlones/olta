@@ -14,171 +14,68 @@
   --ok:#34D399;--warn:#FCD34D;--red:#F87171;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html,body{
-  background:var(--bg);color:var(--text);
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-  min-height:100%;height:100%;
-}
+html,body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;height:100%;}
 
 /* BANNER */
-.banner{
-  height:56px;background:var(--bg);
-  border-bottom:1px solid rgba(255,255,255,.08);
-  display:flex;align-items:center;padding:0 16px;
-  position:sticky;top:0;z-index:500;
-}
-.hamburger{
-  background:none;border:none;color:var(--text);cursor:pointer;
-  padding:8px;display:flex;flex-direction:column;gap:5px;
-}
-.hamburger span{
-  display:block;width:22px;height:2px;
-  background:var(--text);border-radius:2px;
-}
-.banner-title{
-  flex:1;text-align:center;font-size:20px;
-  font-weight:900;letter-spacing:6px;
-}
+.banner{height:56px;background:var(--bg);border-bottom:1px solid rgba(255,255,255,.08);
+  display:flex;align-items:center;padding:0 16px;position:sticky;top:0;z-index:500;}
+.hamburger{background:none;border:none;color:var(--text);cursor:pointer;padding:8px;display:flex;flex-direction:column;gap:5px;}
+.hamburger span{display:block;width:22px;height:2px;background:var(--text);border-radius:2px;}
+.banner-title{flex:1;text-align:center;font-size:20px;font-weight:900;letter-spacing:6px;}
 .banner-placeholder{width:38px;}
 
 /* SIDEBAR */
-.sidebar-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.5);
-  z-index:600;display:none;opacity:0;transition:opacity .3s;
-}
+.sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;opacity:0;transition:opacity .3s;}
 .sidebar-overlay.open{display:block;opacity:1;}
-.sidebar{
-  position:fixed;top:0;left:-280px;width:280px;height:100%;
-  background:var(--bg);border-right:1px solid rgba(255,255,255,.08);
-  z-index:700;transition:left .3s ease;
-  display:flex;flex-direction:column;
-}
+.sidebar{position:fixed;top:0;left:-280px;width:280px;height:100%;background:var(--bg);
+  border-right:1px solid rgba(255,255,255,.08);z-index:300;transition:left .3s ease;display:flex;flex-direction:column;}
 .sidebar.open{left:0;}
-.sidebar-header{
-  padding:56px 20px 24px;
-  border-bottom:1px solid rgba(255,255,255,.08);
-}
+.sidebar-header{padding:56px 20px 24px;border-bottom:1px solid rgba(255,255,255,.08);}
 .sidebar-header .logo{font-size:22px;font-weight:900;letter-spacing:4px;}
-.sidebar-header .tagline{
-  font-size:11px;color:var(--blue);letter-spacing:1px;margin-top:4px;
-}
-.sidebar-user{
-  display:flex;align-items:center;gap:12px;padding:20px;
-  border-bottom:1px solid rgba(255,255,255,.08);
-}
+.sidebar-header .tagline{font-size:11px;color:var(--blue);letter-spacing:1px;margin-top:4px;}
+.sidebar-user{display:flex;align-items:center;gap:12px;padding:20px;border-bottom:1px solid rgba(255,255,255,.08);}
 .sidebar-user img{width:40px;height:40px;border-radius:50%;object-fit:cover;}
 .sidebar-user .name{font-size:14px;font-weight:600;}
 .sidebar-user .email{font-size:11px;color:var(--muted);margin-top:2px;}
 .sidebar-menu{flex:1;padding:12px 0;}
-.sidebar-item{
-  display:flex;align-items:center;padding:14px 20px;cursor:pointer;
-  font-size:15px;transition:background .15s;border:none;
-  background:none;color:var(--text);width:100%;text-align:left;
-}
+.sidebar-item{display:flex;align-items:center;padding:14px 20px;cursor:pointer;font-size:15px;
+  transition:background .15s;border:none;background:none;color:var(--text);width:100%;text-align:left;}
 .sidebar-item:hover{background:rgba(255,255,255,.06);}
 .sidebar-item.active{color:var(--blue);font-weight:700;}
 .sidebar-bottom{padding:12px 0;border-top:1px solid rgba(255,255,255,.08);}
 .sidebar-item.logout{color:#F87171;}
 
 /* BALIK SEÇİCİ */
-.fish-bar{
-  padding:10px 16px;background:var(--panel);
-  border-bottom:1px solid rgba(255,255,255,.06);
-  display:flex;align-items:center;gap:8px;overflow-x:auto;
-}
-.fish-pill{
-  background:rgba(255,255,255,.08);
-  border:1px solid rgba(255,255,255,.12);
-  color:var(--muted);border-radius:20px;padding:6px 14px;
-  font-size:.8rem;cursor:pointer;white-space:nowrap;flex-shrink:0;
-}
-.fish-pill.active{
-  background:var(--blue);border-color:var(--blue);
-  color:#fff;font-weight:600;
-}
+.fish-bar{padding:10px 16px;background:var(--panel);border-bottom:1px solid rgba(255,255,255,.06);
+  display:flex;align-items:center;gap:8px;overflow-x:auto;}
+.fish-pill{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:var(--muted);
+  border-radius:20px;padding:6px 14px;font-size:.8rem;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.fish-pill.active{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600;}
 .fish-pill:active{opacity:.75;}
 
 /* HARİTA */
-#map{
-  width:100%;height:48vh;min-height:300px;
-  position:relative;isolation:isolate;
-}
-.map-loading{
-  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  background:rgba(10,22,40,.9);color:var(--text);
-  padding:10px 18px;border-radius:10px;font-size:.85rem;
-  z-index:800;pointer-events:none;display:none;
-}
+#map{width:100%;height:48vh;min-height:260px;position:relative;}
+.map-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:rgba(10,22,40,.85);color:var(--text);padding:10px 18px;border-radius:10px;
+  font-size:.85rem;z-index:400;pointer-events:none;display:none;}
 .map-loading.show{display:block;}
 
-/* HARİTA KATMAN KONTROLLERİ */
-.map-tools{
-  position:absolute;top:12px;left:12px;z-index:450;
-  display:flex;flex-direction:column;gap:8px;
-  max-width:calc(100% - 24px);
-}
-.map-select{
-  appearance:none;background:rgba(10,22,40,.94);
-  color:var(--text);border:1px solid rgba(255,255,255,.16);
-  border-radius:10px;padding:10px 34px 10px 12px;
-  font-size:.8rem;font-weight:700;
-  box-shadow:0 6px 20px rgba(0,0,0,.25);
-  max-width:100%;
-}
-.map-select:focus{outline:2px solid var(--blue);}
-
-/* HARİTA LEJANTI */
-.map-legend{
-  position:absolute;left:12px;bottom:12px;right:auto;
-  background:rgba(10,22,40,.94);
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:10px;padding:10px 12px;z-index:450;
-  width:min(240px,calc(100% - 24px));
-  box-shadow:0 6px 20px rgba(0,0,0,.25);
-}
-.legend-title{
-  color:var(--text);font-size:.72rem;
-  font-weight:800;margin-bottom:8px;
-}
-.legend-gradient{
-  height:8px;border-radius:99px;
-  background:linear-gradient(90deg,#173b67,#267ca5,#e6c84f,#f28b35,#d94b45);
-}
-.legend-labels{
-  display:flex;justify-content:space-between;
-  color:var(--muted);font-size:.62rem;margin-top:5px;
-}
-.map-note{
-  color:var(--muted);font-size:.62rem;
-  line-height:1.35;margin-top:7px;
-}
-.map-status{
-  position:absolute;top:12px;right:12px;z-index:450;
-  max-width:46%;white-space:pre-line;
-  background:rgba(10,22,40,.9);
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:9px;padding:8px 10px;color:var(--muted);
-  font-size:.65rem;line-height:1.4;text-align:right;
-}
+/* LEJANd */
+.map-legend{position:absolute;bottom:10px;right:10px;background:rgba(10,22,40,.88);
+  border-radius:8px;padding:8px 10px;z-index:400;font-size:.65rem;color:var(--muted);}
+.legend-row{display:flex;align-items:center;gap:6px;margin-bottom:3px;}
+.legend-row:last-child{margin-bottom:0;}
+.legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
 
 /* BALIK DETAY */
-.detail-bar{
-  padding:10px 16px;background:var(--panel);
-  border-bottom:1px solid rgba(255,255,255,.06);
-  display:flex;gap:8px;overflow-x:auto;
-}
-.stat-pill{
-  background:rgba(255,255,255,.06);border-radius:8px;
-  padding:7px 10px;text-align:center;flex-shrink:0;min-width:70px;
-}
+.detail-bar{padding:10px 16px;background:var(--panel);border-bottom:1px solid rgba(255,255,255,.06);
+  display:flex;gap:8px;overflow-x:auto;}
+.stat-pill{background:rgba(255,255,255,.06);border-radius:8px;padding:7px 10px;text-align:center;flex-shrink:0;min-width:70px;}
 .stat-label{font-size:.6rem;color:var(--muted);letter-spacing:.4px;}
 .stat-val{font-size:.85rem;font-weight:700;margin-top:2px;}
 
-/* BÖLGE */
-#region-box{
-  margin:8px 16px;background:var(--panel);
-  border-radius:10px;padding:12px 14px;display:none;
-}
+/* YASAKLANAN */
+#region-box{margin:8px 16px;background:var(--panel);border-radius:10px;padding:12px 14px;display:none;}
 .region-name{font-size:.95rem;font-weight:700;margin-bottom:6px;}
 .region-row{display:flex;justify-content:space-between;gap:8px;}
 .region-label{font-size:.68rem;color:var(--muted);margin-bottom:2px;}
@@ -186,90 +83,44 @@ html,body{
 .region-val.ban{color:var(--red);}
 .region-val.ok{color:var(--ok);}
 
-/* ALT BAR */
-.bottombar{
-  position:fixed;bottom:0;left:0;right:0;height:60px;
-  background:var(--bg);border-top:1px solid rgba(255,255,255,.08);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 40px;z-index:500;
-}
-.bottom-btn{
-  background:none;border:none;color:var(--text);
-  display:flex;align-items:center;justify-content:center;cursor:pointer;padding:8px;
-}
+/* BOTTOMBAR */
+.bottombar{position:fixed;bottom:0;left:0;right:0;height:60px;background:var(--bg);
+  border-top:1px solid rgba(255,255,255,.08);display:flex;align-items:center;
+  justify-content:space-between;padding:0 40px;z-index:100;}
+.bottom-btn{background:none;border:none;color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:8px;}
 .bottom-btn svg{width:26px;height:26px;}
-.gps-btn{
-  background:var(--accent);color:#0A1628;border:none;
-  border-radius:8px;padding:8px 14px;font-size:.8rem;
-  font-weight:700;cursor:pointer;
-}
-.profile-btn img{
-  width:32px;height:32px;border-radius:50%;
-  object-fit:cover;border:2px solid var(--blue);
-}
+.gps-btn{background:var(--accent);color:#0A1628;border:none;border-radius:8px;padding:8px 14px;font-size:.8rem;font-weight:700;cursor:pointer;}
+.profile-btn img{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--blue);}
 
 /* REKLAM */
-#ad-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.85);
-  z-index:1000;display:none;flex-direction:column;
-  align-items:center;justify-content:center;padding:24px;
-}
+#ad-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;display:none;
+  flex-direction:column;align-items:center;justify-content:center;padding:24px;}
 #ad-overlay.show{display:flex;}
-.ad-box{
-  background:var(--panel);border-radius:16px;
-  width:100%;max-width:340px;overflow:hidden;
-}
-.ad-top{
-  background:var(--accent);color:#0A1628;font-size:.7rem;
-  font-weight:700;letter-spacing:1px;padding:6px 14px;text-align:right;
-}
+.ad-box{background:var(--panel);border-radius:16px;width:100%;max-width:340px;overflow:hidden;}
+.ad-top{background:var(--accent);color:#0A1628;font-size:.7rem;font-weight:700;letter-spacing:1px;padding:6px 14px;text-align:right;}
 .ad-content{padding:24px;text-align:center;}
-.ad-placeholder{
-  width:100%;height:140px;background:rgba(255,255,255,.05);
-  border-radius:10px;border:2px dashed rgba(255,255,255,.15);
-  display:flex;align-items:center;justify-content:center;
-  flex-direction:column;gap:8px;margin-bottom:16px;
-  color:var(--muted);font-size:.8rem;
-}
+.ad-placeholder{width:100%;height:140px;background:rgba(255,255,255,.05);border-radius:10px;
+  border:2px dashed rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:8px;margin-bottom:16px;color:var(--muted);font-size:.8rem;}
 .ad-placeholder span{font-size:2rem;}
-.ad-info{
-  font-size:.8rem;color:var(--muted);
-  margin-bottom:16px;line-height:1.5;
-}
+.ad-info{font-size:.8rem;color:var(--muted);margin-bottom:16px;line-height:1.5;}
 .ad-countdown{font-size:.75rem;color:var(--muted);margin-bottom:12px;}
-#ad-close-btn{
-  width:100%;background:var(--accent);color:#0A1628;
-  border:none;border-radius:10px;padding:13px;font-size:.95rem;
-  font-weight:700;cursor:pointer;opacity:.4;
-  pointer-events:none;transition:opacity .3s;
-}
+#ad-close-btn{width:100%;background:var(--accent);color:#0A1628;border:none;border-radius:10px;
+  padding:13px;font-size:.95rem;font-weight:700;cursor:pointer;opacity:.4;pointer-events:none;transition:opacity .3s;}
 #ad-close-btn.ready{opacity:1;pointer-events:all;}
 
 .leaflet-tile-pane{filter:brightness(.82) saturate(.75);}
 .leaflet-control-attribution{display:none;}
-
-@media(max-width:420px){
-  .bottombar{padding:0 22px;}
-  #map{height:50vh;min-height:280px;}
-  .map-status{max-width:42%;font-size:.6rem;}
-}
 </style>
 </head>
-
 <body>
-<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
 
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
 <div class="sidebar" id="sidebar">
-  <div class="sidebar-header">
-    <div class="logo">OLTA</div>
-    <div class="tagline">BALIKÇININ REHBERİ</div>
-  </div>
+  <div class="sidebar-header"><div class="logo">OLTA</div><div class="tagline">BALIKÇININ REHBERİ</div></div>
   <div class="sidebar-user">
     <img id="user-photo" src="" alt=""/>
-    <div>
-      <div class="name" id="user-name">...</div>
-      <div class="email" id="user-email">...</div>
-    </div>
+    <div><div class="name" id="user-name">...</div><div class="email" id="user-email">...</div></div>
   </div>
   <div class="sidebar-menu">
     <button class="sidebar-item" onclick="window.location.href='home.html'">Ana Sayfa</button>
@@ -284,43 +135,30 @@ html,body{
 </div>
 
 <div class="banner">
-  <button class="hamburger" onclick="openSidebar()" aria-label="Menüyü aç">
-    <span></span><span></span><span></span>
-  </button>
+  <button class="hamburger" onclick="openSidebar()"><span></span><span></span><span></span></button>
   <div class="banner-title">OLTA</div>
   <div class="banner-placeholder"></div>
 </div>
 
+<!-- BALIK SEÇİCİ -->
 <div class="fish-bar" id="fish-bar">
-  <span style="color:var(--muted);font-size:.8rem;flex-shrink:0;">Balık türleri yükleniyor…</span>
+  <span style="color:var(--muted);font-size:.8rem;flex-shrink:0;">⏳</span>
 </div>
 
+<!-- HARİTA -->
 <div id="map">
   <div class="map-loading" id="map-loading">🌊 Deniz verileri yükleniyor…</div>
-
-  <div class="map-tools">
-    <select class="map-select" id="map-layer" aria-label="Harita katmanı">
-      <option value="suitability">Balık çevresel uyumu</option>
-      <option value="temperature">Deniz sıcaklığı</option>
-      <option value="salinity">Tuzluluk</option>
-      <option value="chlorophyll">Klorofil-a</option>
-    </select>
-  </div>
-
-  <div class="map-status" id="map-status">Katman yükleniyor…</div>
-
   <div class="map-legend" id="legend">
-    <div class="legend-title" id="legend-title">Çevresel uyum skoru</div>
-    <div class="legend-gradient" id="legend-gradient"></div>
-    <div class="legend-labels" id="legend-labels">
-      <span>Düşük uyum</span><span>Orta</span><span>Yüksek uyum</span>
-    </div>
-    <div class="map-note" id="legend-note">
-      Balığın bulunduğunu değil, çevresel koşulların uyumunu gösterir.
-    </div>
+    <div style="font-size:.6rem;color:var(--muted);margin-bottom:5px;letter-spacing:.5px;">ÇEVRESEL UYGUNLUK</div>
+    <div class="legend-row"><div class="legend-dot" style="background:#22C55E"></div> Yüksek</div>
+    <div class="legend-row"><div class="legend-dot" style="background:#EAB308"></div> Orta</div>
+    <div class="legend-row"><div class="legend-dot" style="background:#EA580C"></div> Düşük</div>
+    <div class="legend-row"><div class="legend-dot" style="background:rgba(30,58,95,.6)"></div> Çok düşük</div>
+    <div style="font-size:.55rem;color:var(--muted);margin-top:5px;line-height:1.4;">Balık varlığını<br>göstermez</div>
   </div>
 </div>
 
+<!-- DETAY BAR (hücre seçilince görünür) -->
 <div class="detail-bar" id="detail-bar" style="display:none;">
   <div class="stat-pill"><div class="stat-label">SICAKLIK</div><div class="stat-val" id="d-sst">—</div></div>
   <div class="stat-pill"><div class="stat-label">TUZLULUK</div><div class="stat-val" id="d-sss">—</div></div>
@@ -329,23 +167,19 @@ html,body{
   <div class="stat-pill"><div class="stat-label">UYUM</div><div class="stat-val" id="d-score">—</div></div>
   <div class="stat-pill" id="pill-wave" style="display:none"><div class="stat-label">DALGA</div><div class="stat-val" id="d-wave">—</div></div>
   <div class="stat-pill" id="pill-wind" style="display:none"><div class="stat-label">RÜZGAR</div><div class="stat-val" id="d-wind">—</div></div>
-  <div class="stat-pill" id="pill-curr" style="display:none"><div class="stat-label">AKINTI</div><div class="stat-val" id="d-curr">—</div></div>
+  <div class="stat-pill" id="pill-curr" style="display:none"><div class="stat-label">AKINTILAR</div><div class="stat-val" id="d-curr">—</div></div>
 </div>
 
+<!-- BÖLGE -->
 <div id="region-box">
   <div class="region-name" id="region-name">—</div>
   <div class="region-row">
-    <div>
-      <div class="region-label">YASAK</div>
-      <div class="region-val ban" id="region-ban">—</div>
-    </div>
-    <div>
-      <div class="region-label">DURUM</div>
-      <div class="region-val" id="region-status">—</div>
-    </div>
+    <div><div class="region-label">YASAK</div><div class="region-val ban" id="region-ban">—</div></div>
+    <div><div class="region-label">DURUM</div><div class="region-val" id="region-status">—</div></div>
   </div>
 </div>
 
+<!-- REKLAM -->
 <div id="ad-overlay">
   <div class="ad-box">
     <div class="ad-top">REKLAM</div>
@@ -359,14 +193,13 @@ html,body{
 </div>
 
 <div class="bottombar">
-  <button class="bottom-btn" onclick="window.location.href='home.html'" aria-label="Ana sayfa">
+  <button class="bottom-btn" onclick="window.location.href='home.html'">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-      <polyline points="9 22 9 12 15 12 15 22"/>
+      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
     </svg>
   </button>
   <button class="gps-btn" onclick="useMyLocation()">📍 Konumum</button>
-  <button class="bottom-btn profile-btn" onclick="window.location.href='profile.html'" aria-label="Profil">
+  <button class="bottom-btn profile-btn" onclick="window.location.href='profile.html'">
     <img id="bottom-photo" src="" alt=""/>
   </button>
 </div>
@@ -378,679 +211,390 @@ import { getFirestore, doc, getDoc, collection, getDocs, query, orderBy } from "
 
 const app = initializeApp({
   apiKey:"AIzaSyCkq0NU1Ao8LMZw6WfPvQUO4F_r4-An9-c",
-  authDomain:"olta-810ae.firebaseapp.com",
-  projectId:"olta-810ae",
+  authDomain:"olta-810ae.firebaseapp.com",projectId:"olta-810ae",
   storageBucket:"olta-810ae.firebasestorage.app",
-  messagingSenderId:"142251428527",
-  appId:"1:142251428527:web:dee8776ee6cde14656225a"
+  messagingSenderId:"142251428527",appId:"1:142251428527:web:dee8776ee6cde14656225a"
 });
-
 const auth = getAuth(app);
-const db = getFirestore(app);
+const db   = getFirestore(app);
+
 const API = "https://olta-api.onrender.com";
 
-/* AUTH */
+// ── AUTH
 onAuthStateChanged(auth, u => {
-  if (!u) {
-    window.location.href = 'index.html';
-    return;
-  }
-
+  if (!u) { window.location.href='index.html'; return; }
   if (u.photoURL) {
     document.getElementById('bottom-photo').src = u.photoURL;
-    document.getElementById('user-photo').src = u.photoURL;
+    document.getElementById('user-photo').src   = u.photoURL;
   }
-
-  document.getElementById('user-name').textContent = u.displayName || '';
+  document.getElementById('user-name').textContent  = u.displayName || '';
   document.getElementById('user-email').textContent = u.email || '';
 });
-
 document.getElementById('logout-btn').addEventListener('click', async () => {
-  await signOut(auth);
-  window.location.href = 'index.html';
+  await signOut(auth); window.location.href='index.html';
 });
+window.openSidebar  = ()=>{document.getElementById('sidebar').classList.add('open');document.getElementById('overlay').classList.add('open');};
+window.closeSidebar = ()=>{document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('open');};
 
-window.openSidebar = () => {
-  document.getElementById('sidebar').classList.add('open');
-  document.getElementById('overlay').classList.add('open');
-};
+// ── HARİTA
+const map = L.map('map',{zoomControl:true}).setView([39.5,32],6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(map);
 
-window.closeSidebar = () => {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('overlay').classList.remove('open');
-};
+// ── GRID KATMANI
+let heatLayer = null;
+let cellMap   = {};  // "lat,lng" → cell detayı
+let gridData  = null;
 
-/* HARİTA */
-const map = L.map('map', {zoomControl:true}).setView([39.5,32],6);
+let GRID_STEP = 0.1; // metadata'dan güncellenir
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom:18
-}).addTo(map);
+// ── SKOR → RGBA
+function scoreToRGBA(score) {
+  if (score <= 0)  return null;
+  if (score < 25)  return `rgba(30,58,95,${(score/25*0.35).toFixed(2)})`;
+  if (score < 50)  return `rgba(234,88,12,${(0.35+score/200).toFixed(2)})`;
+  if (score < 75)  return `rgba(234,179,8,${(0.45+score/300).toFixed(2)})`;
+  return             `rgba(34,197,94,${(0.55+score/400).toFixed(2)})`;
+}
 
-/* GRID DURUMU */
+// ── CANVAS OVERLAY
 let canvasLayer = null;
 let canvasCells = [];
-let cellMap = {};
-let gridData = null;
-let currentGridCells = null;
-let currentFish = null;
-let allFish = [];
-let currentMapLayer = 'suitability';
-let GRID_STEP = 0.25;
 
-/* SABİT RENK SKALASI */
-const SCORE_STOPS = [
-  {value:0, color:[23,59,103]},
-  {value:25, color:[38,124,165]},
-  {value:50, color:[230,200,79]},
-  {value:75, color:[242,139,53]},
-  {value:100, color:[217,75,69]}
-];
-
-function colorForScore(value) {
-  if (value == null || !Number.isFinite(Number(value))) return null;
-
-  const score = Math.max(0, Math.min(100, Number(value)));
-
-  for (let i=1; i<SCORE_STOPS.length; i++) {
-    const a = SCORE_STOPS[i-1];
-    const b = SCORE_STOPS[i];
-
-    if (score <= b.value) {
-      const t = (score-a.value)/(b.value-a.value);
-      const rgb = a.color.map((c,j) =>
-        Math.round(c+(b.color[j]-c)*t)
-      );
-
-      return `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.78)`;
-    }
-  }
-
-  return 'rgba(217,75,69,0.78)';
-}
-
-function colorForValue(value, layer) {
-  if (value == null || !Number.isFinite(Number(value))) return null;
-
-  const v = Number(value);
-  let normalized;
-
-  if (layer === 'temperature') {
-    normalized = Math.max(0, Math.min(1, (v-5)/30));
-  } else if (layer === 'salinity') {
-    normalized = Math.max(0, Math.min(1, (v-20)/20));
-  } else if (layer === 'chlorophyll') {
-    normalized = Math.max(
-      0,
-      Math.min(1, Math.log1p(Math.max(0,v))/Math.log1p(10))
-    );
-  } else {
-    return null;
-  }
-
-  return colorForScore(normalized*100);
-}
-
-function getCellColor(cell) {
-  if (currentMapLayer === 'suitability') {
-    return colorForScore(cell.score);
-  }
-
-  const key = {
-    temperature:'temperature',
-    salinity:'salinity',
-    chlorophyll:'chlorophyll'
-  }[currentMapLayer];
-
-  return key ? colorForValue(cell[key],currentMapLayer) : null;
-}
-
-function updateMapLegend() {
-  const configs = {
-    suitability:{
-      title:'Çevresel uyum skoru',
-      labels:['Düşük uyum','Orta','Yüksek uyum'],
-      note:'Balığın bulunduğunu değil, çevresel koşulların uyumunu gösterir.'
-    },
-    temperature:{
-      title:'Deniz yüzeyi sıcaklığı',
-      labels:['Soğuk','Ilık','Sıcak'],
-      note:'Renkler sıcaklık aralığını gösterir; balık uygunluk skoru değildir.'
-    },
-    salinity:{
-      title:'Tuzluluk',
-      labels:['Düşük','Orta','Yüksek'],
-      note:'Tuzluluk birimi PSU’dur. Eksik verili hücreler renklendirilmez.'
-    },
-    chlorophyll:{
-      title:'Klorofil-a',
-      labels:['Düşük','Orta','Yüksek'],
-      note:'Klorofil-a doğrudan balık varlığını göstermez; besin ortamı göstergesidir.'
-    }
-  };
-
-  const c = configs[currentMapLayer];
-
-  document.getElementById('legend-title').textContent = c.title;
-  document.getElementById('legend-labels').innerHTML =
-    c.labels.map(x => `<span>${x}</span>`).join('');
-  document.getElementById('legend-note').textContent = c.note;
-
-  const step = Number(gridData?.grid_step ?? gridData?.gridStep);
-  const stepText = Number.isFinite(step) ? `${step}°` : `${GRID_STEP}°`;
-
-  document.getElementById('map-status').textContent =
-    `${c.title}\nGrid aralığı: ${stepText}`;
-}
-
-function getCellValue(cell) {
-  if (currentMapLayer === 'suitability') return cell.score;
-  if (currentMapLayer === 'temperature') return cell.temperature;
-  if (currentMapLayer === 'salinity') return cell.salinity;
-  if (currentMapLayer === 'chlorophyll') return cell.chlorophyll;
-  return null;
-}
-
-/* CANVAS KATMANI */
 const HeatCanvas = L.Layer.extend({
-  onAdd(mapInstance) {
-    this._map = mapInstance;
+  onAdd(map) {
+    this._map    = map;
     this._canvas = document.createElement('canvas');
-
     Object.assign(this._canvas.style, {
-      position:'absolute',
-      top:'0',
-      left:'0',
-      pointerEvents:'none',
-      zIndex:'400'
+      position:      'absolute',
+      top:           '0',
+      left:          '0',
+      pointerEvents: 'none',
+      zIndex:        '400',
+      opacity:       '0.82',
     });
-
-    mapInstance.getContainer().appendChild(this._canvas);
-    this._drawFn = L.Util.throttle(this._draw,40,this);
-    mapInstance.on('move zoom resize',this._drawFn,this);
+    // Overlay pane yerine map container'a ekle — transform kaymasını önler
+    map.getContainer().appendChild(this._canvas);
+    this._drawFn = L.Util.throttle(this._draw, 40, this);
+    map.on('move zoom', this._drawFn, this);
+    map.on('zoomend',   this._draw,   this);
     this._draw();
   },
-
-  onRemove(mapInstance) {
-    if (this._canvas?.parentNode) {
-      this._canvas.parentNode.removeChild(this._canvas);
-    }
-    mapInstance.off('move zoom resize',this._drawFn,this);
+  onRemove(map) {
+    map.getContainer().removeChild(this._canvas);
+    map.off('move zoom', this._drawFn, this);
+    map.off('zoomend',   this._draw,   this);
   },
-
   _draw() {
     const size = this._map.getSize();
-    const dpr = window.devicePixelRatio || 1;
-
-    this._canvas.width = Math.round(size.x*dpr);
-    this._canvas.height = Math.round(size.y*dpr);
-    this._canvas.style.width = `${size.x}px`;
-    this._canvas.style.height = `${size.y}px`;
-
+    this._canvas.width  = size.x;
+    this._canvas.height = size.y;
     const ctx = this._canvas.getContext('2d');
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    ctx.clearRect(0,0,size.x,size.y);
+    ctx.clearRect(0, 0, size.x, size.y);
+    if (!canvasCells.length) return;
 
     canvasCells.forEach(cell => {
-      const color = getCellColor(cell);
-      if (!color) return;
-
-      const half = GRID_STEP/2;
-      const nw = this._map.latLngToContainerPoint(
-        L.latLng(cell.lat+half,cell.lng-half)
+      const color = scoreToRGBA(cell.score);
+      if (!color || !cell.bounds) return;
+      // bounds alanından çiz — GRID_STEP hesabına bağımlılık yok
+      const tl = this._map.latLngToContainerPoint(
+        L.latLng(cell.bounds.north, cell.bounds.west)
       );
-      const se = this._map.latLngToContainerPoint(
-        L.latLng(cell.lat-half,cell.lng+half)
+      const br = this._map.latLngToContainerPoint(
+        L.latLng(cell.bounds.south, cell.bounds.east)
       );
-
-      const left = Math.floor(nw.x);
-      const top = Math.floor(nw.y);
-      const width = Math.ceil(se.x-nw.x)+1;
-      const height = Math.ceil(se.y-nw.y)+1;
-
+      const w = Math.max(1, Math.ceil(br.x - tl.x) + 1);
+      const h = Math.max(1, Math.ceil(br.y - tl.y) + 1);
       ctx.fillStyle = color;
-      ctx.fillRect(left,top,width,height);
+      ctx.fillRect(Math.floor(tl.x), Math.floor(tl.y), w, h);
     });
-  }
+  },
+  redraw() { this._draw(); }
 });
 
-/* GRID ÇİZİMİ */
+// ── GRİD ÇİZ
 function drawGrid(cells) {
-  if (canvasLayer) {
-    map.removeLayer(canvasLayer);
-    canvasLayer = null;
-  }
-
-  cellMap = {};
+  if (canvasLayer) { map.removeLayer(canvasLayer); canvasLayer = null; }
+  cellMap     = {};
   canvasCells = [];
 
   cells.forEach(cell => {
-    if (cell.lat == null || cell.lng == null) return;
-    if (cell.temperature == null && cell.salinity == null) return;
-    if (cell.salinity != null && Number(cell.salinity) < 1) return;
-
-    const value = getCellValue(cell);
-    if (value == null || !Number.isFinite(Number(value))) return;
-
+    if (cell.score == null) return;
+    if (cell.salinity != null && cell.salinity < 1) return; // kara filtresi
     canvasCells.push(cell);
     cellMap[`${cell.lat},${cell.lng}`] = cell;
   });
 
   canvasLayer = new HeatCanvas();
   map.addLayer(canvasLayer);
-  updateMapLegend();
 }
 
-/* HÜCRE DETAYI */
 function showCellDetail(cell) {
-  document.getElementById('d-sst').textContent =
-    cell.temperature != null ? Number(cell.temperature).toFixed(1)+'°C' : '—';
-
-  document.getElementById('d-sss').textContent =
-    cell.salinity != null ? Number(cell.salinity).toFixed(1)+' PSU' : '—';
-
-  document.getElementById('d-o2').textContent =
-    cell.oxygen_mg_l != null ? Number(cell.oxygen_mg_l).toFixed(1)+' mg/L' : '—';
-
-  document.getElementById('d-chl').textContent =
-    cell.chlorophyll != null ? Number(cell.chlorophyll).toFixed(2)+' mg/m³' : '—';
-
-  document.getElementById('d-score').textContent =
-    cell.score != null ? Math.round(cell.score)+' / 100' : '—';
-
+  document.getElementById('d-sst').textContent   = cell.temperature!=null ? cell.temperature.toFixed(1)+'°C' : '—';
+  document.getElementById('d-sss').textContent   = cell.salinity!=null    ? cell.salinity.toFixed(1)+' ppt'  : '—';
+  document.getElementById('d-o2').textContent    = cell.oxygen_mg_l!=null ? cell.oxygen_mg_l.toFixed(1)+' mg' : '—';
+  document.getElementById('d-chl').textContent   = cell.chlorophyll!=null ? cell.chlorophyll.toFixed(2)+' mg' : '—';
+  document.getElementById('d-score').textContent = cell.score!=null       ? Math.round(cell.score)+'%'        : '—';
   document.getElementById('detail-bar').style.display = 'flex';
 }
 
-/* GRID YÜKLE */
+// ── HABİTAT GRİD YÜKLE (Firestore chunks → API fallback)
 async function loadHabitatGrid(species='bluefish') {
   document.getElementById('map-loading').classList.add('show');
-
   try {
-    const metaSnap = await getDoc(doc(db,'habitat_grids',`${species}_turkey`));
-
+    // Firestore metadata
+    const metaSnap = await getDoc(doc(db, 'habitat_grids', `${species}_turkey`));
     if (metaSnap.exists()) {
-      const chunksRef = collection(db,'habitat_grids',`${species}_turkey`,'chunks');
-      const chunksQ = query(chunksRef,orderBy('index'));
+      // chunks sub-collection'dan tüm hücreleri oku
+      const chunksRef  = collection(db, 'habitat_grids', `${species}_turkey`, 'chunks');
+      const chunksQ    = query(chunksRef, orderBy('index'));
       const chunksSnap = await getDocs(chunksQ);
-
       let cells = [];
-      chunksSnap.forEach(c => {
-        cells = cells.concat(c.data().cells || []);
-      });
-
+      chunksSnap.forEach(c => { cells = cells.concat(c.data().cells || []); });
       if (cells.length) {
-        gridData = {...metaSnap.data(),cells};
-
-        const storedStep = Number(gridData.grid_step ?? gridData.gridStep);
-        if (Number.isFinite(storedStep) && storedStep > 0) {
-          GRID_STEP = storedStep;
-        }
-
+        gridData         = { ...metaSnap.data(), cells };
+        GRID_STEP        = gridData.grid?.step_degrees || 0.1;
         currentGridCells = cells;
         await loadAllFish();
-
         if (currentFish) rescoreAndDraw();
         else drawGrid(cells);
-
         document.getElementById('map-loading').classList.remove('show');
         return;
       }
     }
-
-    const response = await fetch(
-      `${API}/habitat-grid?species=${encodeURIComponent(species)}&region=turkey`,
-      {signal:AbortSignal.timeout(90000)}
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data?.detail?.message || `API hatası: ${response.status}`);
-    }
-
-    if (data.ok && Array.isArray(data.cells) && data.cells.length) {
-      gridData = data;
-
-      const apiStep = Number(data.grid_step ?? data.gridStep);
-      if (Number.isFinite(apiStep) && apiStep > 0) {
-        GRID_STEP = apiStep;
-      }
-
-      currentGridCells = data.cells;
+    // Fallback: Render API
+    const r = await fetch(`${API}/habitat-grid?species=${species}&region=turkey`,
+      {signal: AbortSignal.timeout(90000)});
+    const d = await r.json();
+    if (d.ok && d.cells?.length) {
+      gridData         = d;
+      GRID_STEP        = d.grid?.step_degrees || 0.1;
+      currentGridCells = d.cells;
       await loadAllFish();
-
       if (currentFish) rescoreAndDraw();
-      else drawGrid(data.cells);
-    } else {
-      throw new Error(data?.detail?.message || 'API geçerli grid hücresi döndürmedi.');
+      else drawGrid(d.cells);
     }
-  } catch(error) {
-    console.error('Grid yüklenemedi:',error);
-    document.getElementById('map-status').textContent =
-      'Grid yüklenemedi\nAğ bağlantısını veya API yanıtını kontrol edin.';
+  } catch(e) {
+    console.error('Grid yüklenemedi:', e);
   } finally {
     document.getElementById('map-loading').classList.remove('show');
   }
 }
 
-/* BALIK VERİSİ */
+// ── BALIK VERİSİ
+let allFish = [];
+let currentGridCells = null; // ham grid hücreleri (çevre verileri)
+let currentFish = null;
+
 async function loadAllFish() {
   if (allFish.length) return;
-
   try {
-    const snap = await getDocs(query(collection(db,'fish')));
-
-    snap.forEach(document => {
-      const fish = document.data();
-      if (fish.type === 'deniz' && fish.sstMin != null && fish.sstMax != null) {
-        allFish.push(fish);
-      }
+    const snap = await getDocs(query(collection(db, 'fish')));
+    snap.forEach(d => {
+      const f = d.data();
+      if (f.type === 'deniz' && f.sstMin != null) allFish.push(f);
     });
-
+    // Balık seçiciyi doldur
     const bar = document.getElementById('fish-bar');
     bar.innerHTML = '';
-
-    allFish.forEach((fish,index) => {
-      const button = document.createElement('button');
-      button.className = 'fish-pill';
-      button.textContent = fish.name || 'İsimsiz tür';
-      button.onclick = () => selectFish(fish,button);
-      bar.appendChild(button);
-
-      if (index === 0) {
-        button.dataset.firstFish = 'true';
-      }
+    allFish.forEach((f, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'fish-pill' + (i === 0 ? ' active' : '');
+      btn.textContent = f.name;
+      btn.onclick = () => selectFish(f, btn);
+      bar.appendChild(btn);
     });
-
+    // İlk balığı seç
     if (allFish.length && currentGridCells) {
-      const firstButton = bar.querySelector('.fish-pill');
-      if (firstButton) selectFish(allFish[0],firstButton);
-    } else if (!allFish.length) {
-      bar.textContent = 'Balık türü bulunamadı';
+      selectFish(allFish[0], bar.querySelector('.fish-pill'));
     }
-  } catch(error) {
-    console.error('Balık yüklenemedi:',error);
-    document.getElementById('fish-bar').textContent = 'Balık türleri yüklenemedi';
+  } catch(e) {
+    console.error('Balık yüklenemedi:', e);
   }
 }
 
-/* BALIK SKORU */
-function rangeScore(value,min,max) {
-  if (value == null || min == null || max == null) return null;
-
-  const v = Number(value);
-  const lo = Number(min);
-  const hi = Number(max);
-
-  if (![v,lo,hi].every(Number.isFinite) || hi <= lo) return null;
-  if (v < lo || v > hi) return 0;
-
-  const center = (lo+hi)/2;
-  const halfRange = (hi-lo)/2;
-
-  return Math.max(0,(1-Math.abs(v-center)/halfRange)*100);
+// ── BALIK SKORU (sıcaklık + tuzluluk)
+function rangeScore(val, min, max) {
+  if (val == null || min == null || max == null) return null;
+  if (val < min || val > max) return 0;
+  const center    = (min + max) / 2;
+  const halfRange = (max - min) / 2;
+  return Math.max(0, (1 - Math.abs(val - center) / halfRange) * 100);
 }
 
-function scoreFishCell(cell,fish) {
-  const temperatureScore = rangeScore(
-    cell.temperature,fish.sstMin,fish.sstMax
-  );
+function scoreFishCell(cell, fish) {
+  const sstScore = rangeScore(cell.temperature, fish.sstMin, fish.sstMax);
+  const sssScore = rangeScore(cell.salinity,    fish.sssMin, fish.sssMax);
 
-  const salinityScore = rangeScore(
-    cell.salinity,fish.sssMin,fish.sssMax
-  );
+  if (sstScore === null) return 0;
 
-  if (temperatureScore === null) return null;
-
-  if (salinityScore !== null) {
-    return Math.round(temperatureScore*.7+salinityScore*.3);
+  // Tuzluluk verisi varsa ağırlıklı ortalama (SST %70, SSS %30)
+  if (sssScore !== null) {
+    return Math.round(sstScore * 0.7 + sssScore * 0.3);
   }
+  return Math.round(sstScore);
+}
 
-  return Math.round(temperatureScore);
+// ── BALIK SEÇİCİ
+function selectFish(fish, btn) {
+  currentFish = fish;
+  document.querySelectorAll('.fish-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('detail-bar').style.display = 'none';
+  if (currentGridCells) rescoreAndDraw();
+}
+
+function rescoreAndDraw() {
+  if (!currentFish || !currentGridCells) return;
+  const scored = currentGridCells.map(cell => ({
+    ...cell,
+    score: scoreFishCell(cell, currentFish),
+    level: getLevelFromScore(scoreFishCell(cell, currentFish)),
+  }));
+  drawGrid(scored);
 }
 
 function getLevelFromScore(score) {
-  if (score == null) return 'no_data';
   if (score >= 75) return 'high';
   if (score >= 50) return 'moderate';
   if (score >= 25) return 'low';
   return 'very_low';
 }
 
-/* BALIK SEÇİMİ */
-function selectFish(fish,button) {
-  currentFish = fish;
+// Eski selectSpecies — artık kullanılmıyor ama hata vermemesi için bırak
+window.selectSpecies = function() {};
 
-  document.querySelectorAll('.fish-pill').forEach(p => {
-    p.classList.remove('active');
-  });
-
-  if (button) button.classList.add('active');
-
-  document.getElementById('detail-bar').style.display = 'none';
-
-  if (currentGridCells) rescoreAndDraw();
-}
-
-function rescoreAndDraw() {
-  if (!currentFish || !currentGridCells) return;
-
-  const scored = currentGridCells.map(cell => {
-    const score = scoreFishCell(cell,currentFish);
-    return {
-      ...cell,
-      score,
-      level:getLevelFromScore(score)
-    };
-  });
-
-  drawGrid(scored);
-}
-
-/* KATMAN SEÇİMİ */
-document.getElementById('map-layer').addEventListener('change',event => {
-  currentMapLayer = event.target.value;
-
-  if (currentGridCells) {
-    if (currentMapLayer === 'suitability' && currentFish) {
-      rescoreAndDraw();
-    } else {
-      drawGrid(currentGridCells);
-    }
-  } else {
-    updateMapLegend();
-  }
-});
-
-/* GPS */
+// ── GPS
 window.useMyLocation = function() {
   if (!navigator.geolocation) return;
-
   navigator.geolocation.getCurrentPosition(
-    position => {
-      map.setView(
-        [position.coords.latitude,position.coords.longitude],9
-      );
-    },
-    error => {
-      console.warn('Konum alınamadı:',error);
-    },
-    {enableHighAccuracy:true,timeout:10000,maximumAge:60000}
+    p => map.setView([p.coords.latitude, p.coords.longitude], 9),
+    () => {}
   );
 };
 
-/* YÖN METNİ */
-function dirText(degrees) {
-  if (degrees == null || !Number.isFinite(Number(degrees))) return '—';
-
+// ── RÜZGAR YÖNÜ METNİ
+function dirText(deg) {
+  if (deg == null) return '—';
   const dirs = ['K','KD','D','GD','G','GB','B','KB'];
-  return dirs[Math.round(Number(degrees)/45)%8];
+  return dirs[Math.round(deg / 45) % 8];
 }
 
-/* OPEN-METEO */
-async function fetchWeather(lat,lng) {
+// ── OPEN-METEO HAVA DURUMU
+async function fetchWeather(lat, lng) {
   try {
-    const marineUrl =
-      `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lng}`+
-      `&current=wave_height,wave_direction,wave_period,ocean_current_velocity,ocean_current_direction`;
+    const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lng}`
+      + `&current=wave_height,wave_direction,wave_period,ocean_current_velocity,ocean_current_direction`;
+    const rw  = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}`
+      + `&current=wind_speed_10m,wind_direction_10m&wind_speed_unit=ms`, {signal: AbortSignal.timeout(6000)});
+    const rm  = await fetch(url, {signal: AbortSignal.timeout(6000)});
+    const dw  = await rw.json();
+    const dm  = await rm.json();
+    const wc  = dw?.current || {};
+    const mc  = dm?.current || {};
 
-    const weatherUrl =
-      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}`+
-      `&current=wind_speed_10m,wind_direction_10m&wind_speed_unit=ms`;
-
-    const [weatherResponse,marineResponse] = await Promise.all([
-      fetch(weatherUrl,{signal:AbortSignal.timeout(6000)}),
-      fetch(marineUrl,{signal:AbortSignal.timeout(6000)})
-    ]);
-
-    const weatherData = await weatherResponse.json();
-    const marineData = await marineResponse.json();
-    const weather = weatherData?.current || {};
-    const marine = marineData?.current || {};
-
-    if (marine.wave_height != null) {
+    // Dalga
+    if (mc.wave_height != null) {
       document.getElementById('d-wave').textContent =
-        `${marine.wave_height} m ${dirText(marine.wave_direction)}`;
+        `${mc.wave_height}m ${dirText(mc.wave_direction)}`;
       document.getElementById('pill-wave').style.display = 'block';
     }
-
-    if (weather.wind_speed_10m != null) {
+    // Rüzgar
+    if (wc.wind_speed_10m != null) {
       document.getElementById('d-wind').textContent =
-        `${Number(weather.wind_speed_10m).toFixed(1)} m/s ${dirText(weather.wind_direction_10m)}`;
+        `${wc.wind_speed_10m.toFixed(1)}m/s ${dirText(wc.wind_direction_10m)}`;
       document.getElementById('pill-wind').style.display = 'block';
     }
-
-    if (marine.ocean_current_velocity != null) {
+    // Akıntı
+    if (mc.ocean_current_velocity != null) {
       document.getElementById('d-curr').textContent =
-        `${Number(marine.ocean_current_velocity).toFixed(2)} m/s ${dirText(marine.ocean_current_direction)}`;
+        `${mc.ocean_current_velocity.toFixed(2)}m/s ${dirText(mc.ocean_current_direction)}`;
       document.getElementById('pill-curr').style.display = 'block';
     }
-  } catch(error) {
-    console.warn('Hava/deniz verisi alınamadı:',error);
-  }
+  } catch {}
 }
 
-/* HARİTAYA TIKLA */
-map.on('click',async event => {
-  const {lat,lng} = event.latlng;
+// ── HARİTAYA TIKLA → en yakın hücre + hava durumu
+map.on('click', async e => {
+  const {lat, lng} = e.latlng;
 
-  fetchWeather(lat,lng);
+  // Hava durumunu arka planda çek
+  fetchWeather(lat, lng);
 
-  let nearest = null;
-  let nearestDistance = Infinity;
-
+  // En yakın grid hücresini bul
+  let best = null, bestDist = Infinity;
   Object.values(cellMap).forEach(cell => {
-    const distance =
-      Math.abs(Number(cell.lat)-lat)+Math.abs(Number(cell.lng)-lng);
-
-    if (distance < nearestDistance) {
-      nearestDistance = distance;
-      nearest = cell;
-    }
+    const d = Math.abs(cell.lat - lat) + Math.abs(cell.lng - lng);
+    if (d < bestDist) { bestDist = d; best = cell; }
   });
+  if (best && bestDist < 0.3) showCellDetail(best);
 
-  if (nearest && nearestDistance < GRID_STEP*1.5) {
-    showCellDetail(nearest);
-  }
-
+  // Bölge bilgisi
   try {
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=tr`
-    );
-
-    const data = await response.json();
-    const regionName = data?.address?.state;
-
-    if (!regionName) return;
-
-    const snap = await getDoc(doc(db,'regions',toId(regionName)));
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=tr`,
+      {headers:{'User-Agent':'olta-app/1.0'}});
+    const d = await r.json();
+    const name = d?.address?.state;
+    if (!name) return;
+    const snap = await getDoc(doc(db,'regions',toId(name)));
     if (!snap.exists()) return;
-
-    const region = snap.data();
-
-    document.getElementById('region-name').textContent = `📍 ${region.name}`;
-    document.getElementById('region-ban').textContent = region.banPeriod || '—';
-
-    const isBanActive = banActive(region.banPeriod);
-    const status = document.getElementById('region-status');
-
-    status.textContent = isBanActive ? '🔴 Yasak' : '🟢 Serbest';
-    status.className = 'region-val '+(isBanActive?'ban':'ok');
+    const reg = snap.data();
+    document.getElementById('region-name').textContent = `📍 ${reg.name}`;
+    document.getElementById('region-ban').textContent  = reg.banPeriod || '—';
+    const b = banActive(reg.banPeriod);
+    const el = document.getElementById('region-status');
+    el.textContent = b ? '🔴 Yasak' : '🟢 Serbest';
+    el.className   = 'region-val '+(b?'ban':'ok');
     document.getElementById('region-box').style.display = 'block';
-  } catch(error) {
-    console.warn('Bölge bilgisi alınamadı:',error);
-  }
+  } catch {}
 });
 
-/* BÖLGE YARDIMCILARI */
+// ── BÖLGE
 function toId(name) {
   return name?.toLowerCase()
     .replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ş/g,'s')
     .replace(/ı/g,'i').replace(/ö/g,'o').replace(/ç/g,'c')
     .replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
 }
-
-function banActive(period) {
-  if (!period) return false;
-
-  const months = {
-    Ocak:1,Şubat:2,Mart:3,Nisan:4,Mayıs:5,Haziran:6,
-    Temmuz:7,Ağustos:8,Eylül:9,Ekim:10,Kasım:11,Aralık:12
-  };
-
+function banActive(p) {
+  if (!p) return false;
+  const m={Ocak:1,Şubat:2,Mart:3,Nisan:4,Mayıs:5,Haziran:6,Temmuz:7,Ağustos:8,Eylül:9,Ekim:10,Kasım:11,Aralık:12};
   try {
-    const [startText,endText] = period.split(' - ');
-    const [startDay,startMonth] = startText.trim().split(' ');
-    const [endDay,endMonth] = endText.trim().split(' ');
-
-    const now = new Date();
-    const year = now.getFullYear();
-    const start = new Date(year,months[startMonth]-1,Number(startDay));
-    const end = new Date(year,months[endMonth]-1,Number(endDay));
-
-    return end < start
-      ? now >= start || now <= end
-      : now >= start && now <= end;
-  } catch {
-    return false;
-  }
+    const[ss,es]=p.split(' - ');
+    const[sd,sm]=ss.trim().split(' ');
+    const[ed,em]=es.trim().split(' ');
+    const now=new Date(),y=now.getFullYear();
+    const s=new Date(y,m[sm]-1,+sd),e=new Date(y,m[em]-1,+ed);
+    return e<s?now>=s||now<=e:now>=s&&now<=e;
+  } catch{return false;}
 }
 
-/* REKLAM */
-let adTimer = null;
 
+// ── REKLAM
+let adTimer = null;
 function showAd() {
   document.getElementById('ad-overlay').classList.add('show');
   document.getElementById('ad-close-btn').classList.remove('ready');
-
-  document.getElementById('ad-countdown').innerHTML =
-    'Kapatmak için <b id="ad-timer">10</b> saniye bekleyin';
-
-  let seconds = 10;
-
+  document.getElementById('ad-countdown').innerHTML = 'Kapatmak için <b id="ad-timer">10</b> saniye bekleyin';
+  let secs = 10;
   adTimer = setInterval(() => {
-    seconds--;
-
-    const timer = document.getElementById('ad-timer');
-    if (timer) timer.textContent = seconds;
-
-    if (seconds <= 0) {
+    secs--;
+    const el = document.getElementById('ad-timer');
+    if (el) el.textContent = secs;
+    if (secs <= 0) {
       clearInterval(adTimer);
       document.getElementById('ad-countdown').textContent = 'Devam edebilirsiniz!';
       document.getElementById('ad-close-btn').classList.add('ready');
     }
-  },1000);
+  }, 1000);
 }
-
 window.closeAd = function() {
   document.getElementById('ad-overlay').classList.remove('show');
   clearInterval(adTimer);
 };
 
-/* BAŞLAT */
-updateMapLegend();
+// ── BAŞLAT: reklam göster + arka planda grid + balıkları yükle
 showAd();
-loadHabitatGrid('bluefish');
+loadHabitatGrid('bluefish'); // grid yüklenince loadAllFish otomatik çağrılır
 </script>
 </body>
 </html>
