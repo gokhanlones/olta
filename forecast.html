@@ -48,7 +48,6 @@ body{padding-bottom:calc(72px + env(safe-area-inset-bottom));}
 
 /* BALIK SEÇİCİ */
 .fish-bar{padding:12px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;}
-.fish-title{width:100%;font-size:.65rem;color:var(--muted);letter-spacing:.5px;margin-bottom:2px;}
 .fish-pill{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:var(--muted);
   border-radius:20px;padding:7px 14px;font-size:.8rem;cursor:pointer;white-space:nowrap;}
 .fish-pill.active{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600;}
@@ -64,12 +63,13 @@ body{padding-bottom:calc(72px + env(safe-area-inset-bottom));}
 /* LEJANT — haritanın altında tek yatay geçişli bar */
 .map-legend{position:absolute;left:10px;right:10px;bottom:10px;z-index:400;pointer-events:none;
   background:rgba(10,22,40,.82);border-radius:8px;padding:6px 10px 7px;}
-.legend-title{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+.legend-title{display:flex;justify-content:center;align-items:baseline;gap:8px;
   font-size:.6rem;color:var(--muted);letter-spacing:.5px;margin-bottom:4px;}
 .legend-title .note{letter-spacing:0;opacity:.8;}
 .legend-bar{height:8px;border-radius:4px;
   background:linear-gradient(to right,#22C55E 0%,#22C55E 22%,#EAB308 50%,#EA580C 75%,rgba(30,58,95,.75) 100%);}
-.legend-scale{display:flex;justify-content:space-between;font-size:.6rem;color:var(--text);margin-top:3px;font-weight:600;}
+.legend-scale{display:grid;grid-template-columns:auto 1fr auto;align-items:baseline;gap:8px;font-size:.6rem;color:var(--text);margin-top:3px;font-weight:600;}
+.legend-fish{text-align:center;font-size:.72rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
 /* GÖSTERGELER — haritanın üstünde, 4 sütun, yatay kaydırma yok */
 .detail-bar{padding:10px 16px;background:var(--panel);border-bottom:1px solid rgba(255,255,255,.06);
@@ -94,7 +94,6 @@ body{padding-bottom:calc(72px + env(safe-area-inset-bottom));}
   justify-content:space-between;padding:0 40px;z-index:100;}
 .bottom-btn{background:none;border:none;color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:8px;}
 .bottom-btn svg{width:26px;height:26px;}
-.gps-btn{background:var(--accent);color:#0A1628;border:none;border-radius:8px;padding:8px 14px;font-size:.8rem;font-weight:700;cursor:pointer;}
 .profile-btn img{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--blue);}
 
 /* REKLAM */
@@ -161,9 +160,9 @@ body{padding-bottom:calc(72px + env(safe-area-inset-bottom));}
 <div id="map">
   <div class="map-loading" id="map-loading">🌊 Deniz verileri yükleniyor…</div>
   <div class="map-legend" id="legend">
-    <div class="legend-title"><span>ÇEVRESEL UYGUNLUK</span><span class="note">Deniz canlısı için uygun alan</span></div>
+    <div class="legend-title"><span class="note">Deniz canlısı için uygun alan</span></div>
     <div class="legend-bar"></div>
-    <div class="legend-scale"><span>100</span><span>0</span></div>
+    <div class="legend-scale"><span>100</span><span class="legend-fish" id="legend-fish"></span><span>0</span></div>
   </div>
 </div>
 
@@ -200,7 +199,6 @@ body{padding-bottom:calc(72px + env(safe-area-inset-bottom));}
       <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
     </svg>
   </button>
-  <button class="gps-btn" onclick="useMyLocation()">📍 Konumum</button>
   <button class="bottom-btn profile-btn" onclick="window.location.href='profile.html'">
     <img id="bottom-photo" src="" alt=""/>
   </button>
@@ -239,6 +237,7 @@ window.openSidebar  = ()=>{document.getElementById('sidebar').classList.add('ope
 window.closeSidebar = ()=>{document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('open');};
 
 // ── HARİTA (MapLibre GL — WebGL)
+const TURKEY_SEAS_BOUNDS = [[24.8, 34.8], [42.2, 42.9]];   // [güneybatı, kuzeydoğu]
 const map = new maplibregl.Map({
   container: 'map',
   style: {
@@ -257,7 +256,7 @@ const map = new maplibregl.Map({
         paint: { 'raster-brightness-max': 0.82, 'raster-saturation': -0.25 } }
     ]
   },
-  center: [32, 39.5], zoom: 5, maxZoom: 17,
+  bounds: TURKEY_SEAS_BOUNDS, maxZoom: 17,
   attributionControl: false,
   dragRotate: false, pitchWithRotate: false,
 });
@@ -265,7 +264,44 @@ map.touchZoomRotate.disableRotation();
 map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
 // Atıf sağ üstte: alttaki lejant barıyla çakışmasın
 map.addControl(new maplibregl.AttributionControl({ compact: true }), 'top-right');
+// Konum düğmesi: atıf ikonunun hemen altında
+map.addControl(new maplibregl.GeolocateControl({
+  positionOptions: { enableHighAccuracy: true },
+  fitBoundsOptions: { maxZoom: 9 },
+  showAccuracyCircle: false,
+}), 'top-right');
 const mapReady = new Promise(res => map.on('load', res));
+
+// ── TÜRKİYE DENİZLERİ SINIRI
+// En fazla uzaklaştırınca bölgenin tamamı sığar; daha fazla uzaklaşılamaz ve
+// bölgenin dışına kaydırılamaz. Kutunun en/boy oranı ne olursa olsun çalışır:
+// kaydırma sınırı, bölgeyi tam sığdıran görünümün kendisidir.
+function limitToTurkeySeas(jump) {
+  const [[w, s], [e, n]] = TURKEY_SEAS_BOUNDS;
+  map.setMaxBounds(null);
+  map.setMinZoom(0);
+  // Alttaki lejant barı bölgenin üstüne binmesin
+  const legendH = (document.getElementById('legend')?.offsetHeight || 0) + 14;
+  const cam = map.cameraForBounds(TURKEY_SEAS_BOUNDS, { padding: { top: 8, bottom: legendH, left: 4, right: 4 } });
+  if (!cam) return;
+  // Bu kamerada görülen alanı (haritayı oynatmadan) Mercator ile hesapla
+  const world = 512 * Math.pow(2, cam.zoom);
+  const toY = lat => (1 - Math.log(Math.tan(Math.PI/4 + lat*Math.PI/360)) / Math.PI) / 2 * world;
+  const toLat = y => (2*Math.atan(Math.exp((1 - 2*y/world) * Math.PI)) - Math.PI/2) * 180/Math.PI;
+  const c = maplibregl.LngLat.convert(cam.center);
+  const halfLng = (map.getContainer().clientWidth / 2) / world * 360;
+  const yc = toY(c.lat), hh = map.getContainer().clientHeight / 2;
+  const view = [[c.lng - halfLng, toLat(yc + hh)], [c.lng + halfLng, toLat(yc - hh)]];
+  if (jump) map.jumpTo(cam);
+  map.setMinZoom(cam.zoom);
+  map.setMaxBounds([
+    [Math.min(w, view[0][0]), Math.min(s, view[0][1])],
+    [Math.max(e, view[1][0]), Math.max(n, view[1][1])],
+  ]);
+}
+limitToTurkeySeas(true);
+// Adres çubuğu açılıp kapanınca da (yükseklik değişir) sınırı güncelle, görünümü oynatma
+map.on('resize', () => limitToTurkeySeas(false));
 
 // ── KARA MASKESİ (OSM kıyı çizgisi, ~1 km; Türkiye bölgesine kırpılmış)
 const landReady = fetch('data/land-tr.geojson')
@@ -629,7 +665,7 @@ async function loadAllFish() {
     });
     // Balık seçiciyi doldur
     const bar = document.getElementById('fish-bar');
-    bar.innerHTML = '<div class="fish-title">BALIK TÜRÜ</div>';
+    bar.innerHTML = '';
     allFish.forEach((f, i) => {
       const btn = document.createElement('button');
       btn.className = 'fish-pill' + (i === 0 ? ' active' : '');
@@ -673,6 +709,7 @@ function selectFish(fish, btn) {
   currentFish = fish;
   document.querySelectorAll('.fish-pill').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
+  document.getElementById('legend-fish').textContent = fish.name || '';
   resetCellDetail();  // skor balığa göre değişir; eski hücre değerlerini temizle
   if (currentGridCells) rescoreAndDraw();
 }
@@ -696,15 +733,6 @@ function getLevelFromScore(score) {
 
 // Eski selectSpecies — artık kullanılmıyor ama hata vermemesi için bırak
 window.selectSpecies = function() {};
-
-// ── GPS
-window.useMyLocation = function() {
-  if (!navigator.geolocation) return;
-  navigator.geolocation.getCurrentPosition(
-    p => map.flyTo({ center: [p.coords.longitude, p.coords.latitude], zoom: 8 }),
-    () => {}
-  );
-};
 
 // ── RÜZGAR YÖNÜ METNİ
 function dirText(deg) {
