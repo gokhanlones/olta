@@ -14,7 +14,8 @@
   --ok:#34D399;--warn:#FCD34D;--red:#F87171;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html,body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;height:100%;}
+html,body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100%;overflow-x:hidden;}
+body{padding-bottom:calc(72px + env(safe-area-inset-bottom));}
 
 /* BANNER */
 .banner{height:56px;background:var(--bg);border-bottom:1px solid rgba(255,255,255,.08);
@@ -46,10 +47,10 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
 .sidebar-item.logout{color:#F87171;}
 
 /* BALIK SEÇİCİ */
-.fish-bar{padding:10px 16px;background:var(--panel);border-bottom:1px solid rgba(255,255,255,.06);
-  display:flex;align-items:center;gap:8px;overflow-x:auto;}
+.fish-bar{padding:12px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;}
+.fish-title{width:100%;font-size:.65rem;color:var(--muted);letter-spacing:.5px;margin-bottom:2px;}
 .fish-pill{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:var(--muted);
-  border-radius:20px;padding:6px 14px;font-size:.8rem;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+  border-radius:20px;padding:7px 14px;font-size:.8rem;cursor:pointer;white-space:nowrap;}
 .fish-pill.active{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600;}
 .fish-pill:active{opacity:.75;}
 
@@ -60,19 +61,23 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
   font-size:.85rem;z-index:400;pointer-events:none;display:none;}
 .map-loading.show{display:block;}
 
-/* LEJANd */
-.map-legend{position:absolute;bottom:10px;right:10px;background:rgba(10,22,40,.88);
-  border-radius:8px;padding:8px 10px;z-index:400;font-size:.65rem;color:var(--muted);}
-.legend-row{display:flex;align-items:center;gap:6px;margin-bottom:3px;}
-.legend-row:last-child{margin-bottom:0;}
-.legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+/* LEJANT — haritanın altında tek yatay geçişli bar */
+.map-legend{position:absolute;left:10px;right:10px;bottom:10px;z-index:400;pointer-events:none;
+  background:rgba(10,22,40,.82);border-radius:8px;padding:6px 10px 7px;}
+.legend-title{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+  font-size:.6rem;color:var(--muted);letter-spacing:.5px;margin-bottom:4px;}
+.legend-title .note{letter-spacing:0;opacity:.8;}
+.legend-bar{height:8px;border-radius:4px;
+  background:linear-gradient(to right,#22C55E 0%,#22C55E 22%,#EAB308 50%,#EA580C 75%,rgba(30,58,95,.75) 100%);}
+.legend-scale{display:flex;justify-content:space-between;font-size:.6rem;color:var(--text);margin-top:3px;font-weight:600;}
 
-/* BALIK DETAY */
+/* GÖSTERGELER — haritanın üstünde, 4 sütun, yatay kaydırma yok */
 .detail-bar{padding:10px 16px;background:var(--panel);border-bottom:1px solid rgba(255,255,255,.06);
-  display:flex;gap:8px;overflow-x:auto;}
-.stat-pill{background:rgba(255,255,255,.06);border-radius:8px;padding:7px 10px;text-align:center;flex-shrink:0;min-width:70px;}
-.stat-label{font-size:.6rem;color:var(--muted);letter-spacing:.4px;}
-.stat-val{font-size:.85rem;font-weight:700;margin-top:2px;}
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;}
+.stat-pill{background:rgba(255,255,255,.06);border-radius:8px;padding:6px 4px;text-align:center;min-width:0;}
+.stat-label{font-size:.55rem;color:var(--muted);letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stat-val{font-size:clamp(.68rem,3.1vw,.85rem);font-weight:700;margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
 /* YASAKLANAN */
 #region-box{margin:8px 16px;background:var(--panel);border-radius:10px;padding:12px 14px;display:none;}
@@ -140,34 +145,26 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
   <div class="banner-placeholder"></div>
 </div>
 
-<!-- BALIK SEÇİCİ -->
-<div class="fish-bar" id="fish-bar">
-  <span style="color:var(--muted);font-size:.8rem;flex-shrink:0;">⏳</span>
+<!-- GÖSTERGELER (4 sütun × 2 satır) -->
+<div class="detail-bar" id="detail-bar">
+  <div class="stat-pill"><div class="stat-label">SICAKLIK</div><div class="stat-val" id="d-sst">—</div></div>
+  <div class="stat-pill"><div class="stat-label">TUZLULUK</div><div class="stat-val" id="d-sss">—</div></div>
+  <div class="stat-pill"><div class="stat-label">OKSİJEN</div><div class="stat-val" id="d-o2">—</div></div>
+  <div class="stat-pill"><div class="stat-label">KLOROFİL</div><div class="stat-val" id="d-chl">—</div></div>
+  <div class="stat-pill"><div class="stat-label">UYUM</div><div class="stat-val" id="d-score">—</div></div>
+  <div class="stat-pill"><div class="stat-label">DALGA</div><div class="stat-val" id="d-wave">—</div></div>
+  <div class="stat-pill"><div class="stat-label">RÜZGAR</div><div class="stat-val" id="d-wind">—</div></div>
+  <div class="stat-pill"><div class="stat-label">AKINTI</div><div class="stat-val" id="d-curr">—</div></div>
 </div>
 
 <!-- HARİTA -->
 <div id="map">
   <div class="map-loading" id="map-loading">🌊 Deniz verileri yükleniyor…</div>
   <div class="map-legend" id="legend">
-    <div style="font-size:.6rem;color:var(--muted);margin-bottom:5px;letter-spacing:.5px;">ÇEVRESEL UYGUNLUK</div>
-    <div class="legend-row"><div class="legend-dot" style="background:#22C55E"></div> Yüksek</div>
-    <div class="legend-row"><div class="legend-dot" style="background:#EAB308"></div> Orta</div>
-    <div class="legend-row"><div class="legend-dot" style="background:#EA580C"></div> Düşük</div>
-    <div class="legend-row"><div class="legend-dot" style="background:rgba(30,58,95,.6)"></div> Çok düşük</div>
-    <div style="font-size:.55rem;color:var(--muted);margin-top:5px;line-height:1.4;">Balık varlığını<br>göstermez</div>
+    <div class="legend-title"><span>ÇEVRESEL UYGUNLUK</span><span class="note">Balık varlığını göstermez</span></div>
+    <div class="legend-bar"></div>
+    <div class="legend-scale"><span>100</span><span>0</span></div>
   </div>
-</div>
-
-<!-- DETAY BAR (hücre seçilince görünür) -->
-<div class="detail-bar" id="detail-bar" style="display:none;">
-  <div class="stat-pill"><div class="stat-label">SICAKLIK</div><div class="stat-val" id="d-sst">—</div></div>
-  <div class="stat-pill"><div class="stat-label">TUZLULUK</div><div class="stat-val" id="d-sss">—</div></div>
-  <div class="stat-pill"><div class="stat-label">OKSİJEN</div><div class="stat-val" id="d-o2">—</div></div>
-  <div class="stat-pill"><div class="stat-label">KLOROFİL</div><div class="stat-val" id="d-chl">—</div></div>
-  <div class="stat-pill"><div class="stat-label">UYUM</div><div class="stat-val" id="d-score">—</div></div>
-  <div class="stat-pill" id="pill-wave" style="display:none"><div class="stat-label">DALGA</div><div class="stat-val" id="d-wave">—</div></div>
-  <div class="stat-pill" id="pill-wind" style="display:none"><div class="stat-label">RÜZGAR</div><div class="stat-val" id="d-wind">—</div></div>
-  <div class="stat-pill" id="pill-curr" style="display:none"><div class="stat-label">AKINTILAR</div><div class="stat-val" id="d-curr">—</div></div>
 </div>
 
 <!-- BÖLGE -->
@@ -177,6 +174,11 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
     <div><div class="region-label">YASAK</div><div class="region-val ban" id="region-ban">—</div></div>
     <div><div class="region-label">DURUM</div><div class="region-val" id="region-status">—</div></div>
   </div>
+</div>
+
+<!-- BALIK SEÇİCİ (satırlar halinde) -->
+<div class="fish-bar" id="fish-bar">
+  <span style="color:var(--muted);font-size:.8rem;">⏳</span>
 </div>
 
 <!-- REKLAM -->
@@ -256,11 +258,13 @@ const map = new maplibregl.Map({
     ]
   },
   center: [32, 39.5], zoom: 5, maxZoom: 17,
-  attributionControl: { compact: true },
+  attributionControl: false,
   dragRotate: false, pitchWithRotate: false,
 });
 map.touchZoomRotate.disableRotation();
 map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
+// Atıf sağ üstte: alttaki lejant barıyla çakışmasın
+map.addControl(new maplibregl.AttributionControl({ compact: true }), 'top-right');
 const mapReady = new Promise(res => map.on('load', res));
 
 // ── KARA MASKESİ (OSM kıyı çizgisi, ~1 km; Türkiye bölgesine kırpılmış)
@@ -433,13 +437,16 @@ async function drawGrid(cells) {
   await showHabitatImage(renderHabitatImage(gridLookup, land));
 }
 
+function resetCellDetail() {
+  ['d-sst','d-sss','d-o2','d-chl','d-score'].forEach(id => document.getElementById(id).textContent = '—');
+}
+
 function showCellDetail(cell) {
   document.getElementById('d-sst').textContent   = cell.temperature!=null ? cell.temperature.toFixed(1)+'°C' : '—';
   document.getElementById('d-sss').textContent   = cell.salinity!=null    ? cell.salinity.toFixed(1)+' ppt'  : '—';
   document.getElementById('d-o2').textContent    = cell.oxygen_mg_l!=null ? cell.oxygen_mg_l.toFixed(1)+' mg/L' : '—';
   document.getElementById('d-chl').textContent   = cell.chlorophyll!=null ? cell.chlorophyll.toFixed(2)+' mg/m³' : '—';
   document.getElementById('d-score').textContent = cell.score!=null       ? Math.round(cell.score)+'%'        : '—';
-  document.getElementById('detail-bar').style.display = 'flex';
 }
 
 // ── HABİTAT GRİD YÜKLE (Firestore chunks → API fallback)
@@ -504,7 +511,7 @@ async function loadAllFish() {
     });
     // Balık seçiciyi doldur
     const bar = document.getElementById('fish-bar');
-    bar.innerHTML = '';
+    bar.innerHTML = '<div class="fish-title">BALIK TÜRÜ</div>';
     allFish.forEach((f, i) => {
       const btn = document.createElement('button');
       btn.className = 'fish-pill' + (i === 0 ? ' active' : '');
@@ -548,7 +555,7 @@ function selectFish(fish, btn) {
   currentFish = fish;
   document.querySelectorAll('.fish-pill').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('detail-bar').style.display = 'none';
+  resetCellDetail();  // skor balığa göre değişir; eski hücre değerlerini temizle
   if (currentGridCells) rescoreAndDraw();
 }
 
@@ -589,6 +596,7 @@ function dirText(deg) {
 
 // ── OPEN-METEO HAVA DURUMU
 async function fetchWeather(lat, lng) {
+  ['d-wave','d-wind','d-curr'].forEach(id => document.getElementById(id).textContent = '…');
   try {
     const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lng}`
       + `&current=wave_height,wave_direction,wave_period,ocean_current_velocity,ocean_current_direction`;
@@ -604,21 +612,23 @@ async function fetchWeather(lat, lng) {
     if (mc.wave_height != null) {
       document.getElementById('d-wave').textContent =
         `${mc.wave_height}m ${dirText(mc.wave_direction)}`;
-      document.getElementById('pill-wave').style.display = 'block';
     }
     // Rüzgar
     if (wc.wind_speed_10m != null) {
       document.getElementById('d-wind').textContent =
         `${wc.wind_speed_10m.toFixed(1)}m/s ${dirText(wc.wind_direction_10m)}`;
-      document.getElementById('pill-wind').style.display = 'block';
     }
     // Akıntı
     if (mc.ocean_current_velocity != null) {
       document.getElementById('d-curr').textContent =
         `${mc.ocean_current_velocity.toFixed(2)}m/s ${dirText(mc.ocean_current_direction)}`;
-      document.getElementById('pill-curr').style.display = 'block';
     }
   } catch {}
+  // Gelmeyen değerler '…' olarak kalmasın
+  ['d-wave','d-wind','d-curr'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el.textContent === '…') el.textContent = '—';
+  });
 }
 
 // ── HARİTAYA TIKLA → en yakın hücre + hava durumu
