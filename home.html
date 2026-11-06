@@ -80,6 +80,12 @@
     .comment-form input { flex: 1; min-width: 0; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 18px; color: var(--white); padding: 9px 14px; font-size: 14px; outline: none; }
     .comment-form button { background: var(--blue-light); border: none; border-radius: 18px; color: var(--white); font-weight: 700; padding: 0 14px; cursor: pointer; }
     .comment-form button:disabled { opacity: .5; }
+    /* Akış içi banner reklam (standart mobil banner 320×50; şimdilik test) */
+    .ad-banner { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .ad-banner .ad-label { align-self: stretch; max-width: 320px; margin: 0 auto; width: 100%; font-size: 10px; color: #9DB4C8; letter-spacing: .5px; }
+    .ad-banner .ad-slot { width: 100%; max-width: 320px; height: 50px; border-radius: 6px; overflow: hidden;
+      background: linear-gradient(90deg, #F4A261, #E76F51); color: var(--blue-dark);
+      display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; font-weight: 800; }
     .toast { position: fixed; left: 50%; bottom: 76px; transform: translateX(-50%); background: rgba(10,22,40,0.95); border: 1px solid rgba(255,255,255,0.15); color: var(--white); font-size: 13px; padding: 9px 14px; border-radius: 10px; z-index: 150; display: none; }
     .toast.show { display: block; }
 
@@ -207,6 +213,25 @@
       clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2200);
     }
 
+    // ── AKIŞ İÇİ REKLAM: ilki 2. gönderiden sonra, sonra her 3 gönderide bir
+    const AD_FIRST_AFTER = 2;
+    const AD_EVERY       = 3;
+    function isAdSlot(i, total) {
+      const n = i + 1;                          // şimdiye kadar gösterilen gönderi sayısı
+      if (n >= total) return false;             // akışın sonuna reklam koyma
+      return n === AD_FIRST_AFTER || (n > AD_FIRST_AFTER && (n - AD_FIRST_AFTER) % AD_EVERY === 0);
+    }
+    function renderAd() {
+      // Reklam ağı bağlanınca yalnızca .ad-slot içeriği değişecek (320×50 banner)
+      const wrap = el('aside', 'ad-banner');
+      wrap.setAttribute('aria-label', 'Reklam');
+      wrap.appendChild(el('div', 'ad-label', 'Reklam'));
+      const slot = el('div', 'ad-slot');
+      slot.append(el('span', null, '📢'), el('span', null, 'Test reklamı · 320×50'));
+      wrap.appendChild(slot);
+      return wrap;
+    }
+
     async function loadFeed() {
       const feedEl = document.getElementById('feed');
       try {
@@ -220,7 +245,10 @@
           feedEl.appendChild(el('div', 'feed-empty', 'Henüz paylaşım yok. Günlük deniz verisi güncellenince ilk gönderiler burada görünecek.'));
           return;
         }
-        posts.forEach(p => feedEl.appendChild(renderPost(p)));
+        posts.forEach((p, i) => {
+          feedEl.appendChild(renderPost(p));
+          if (isAdSlot(i, posts.length)) feedEl.appendChild(renderAd());
+        });
       } catch (e) {
         console.error('Akış yüklenemedi:', e);
         feedEl.innerHTML = '';
