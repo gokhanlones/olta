@@ -3,6 +3,45 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+  /* Yeni sürüm kontrolü: GitHub Pages sayfaları tarayıcıda ~10 dk önbellekte
+     kalıyor. Önbellekteki kopya ile sunucudaki güncel kopya karşılaştırılır;
+     farklıysa sayfa bir kez yenilenir. Sürüm numarası tutmak gerekmez. */
+  (function () {
+    var CHECK_KEY = 'olta-update-checked-at', RELOAD_KEY = 'olta-update-reloaded:';
+    var busy = false;
+    function store(k, v) { try { if (v === undefined) return sessionStorage.getItem(k); sessionStorage.setItem(k, v); } catch (e) { return null; } }
+    function typing() {   // yazı yazılıyorsa yenileme (gönderi/yorum kaybolmasın)
+      var a = document.activeElement;
+      if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA')) return true;
+      var f = document.querySelectorAll('textarea, input[type=text], input:not([type])');
+      for (var i = 0; i < f.length; i++) if (f[i].value) return true;
+      return false;
+    }
+    async function check() {
+      if (busy || !window.fetch) return;
+      busy = true;
+      try {
+        var url = location.href.split('#')[0];
+        var cached = await (await fetch(url, { cache: 'force-cache' })).text();
+        var res = await fetch(url, { cache: 'reload' });   // ağdan al, önbelleği de güncelle
+        if (!res.ok) return;
+        var fresh = await res.text();
+        if (fresh === cached || typing()) return;
+        var last = +store(RELOAD_KEY + url) || 0;           // döngü koruması
+        if (Date.now() - last < 30000) return;
+        store(RELOAD_KEY + url, String(Date.now()));
+        location.reload();
+      } catch (e) { /* çevrimdışı vb.: sessizce geç */ }
+      finally { busy = false; store(CHECK_KEY, String(Date.now())); }
+    }
+    check();
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState !== 'visible') return;
+      if (Date.now() - (+store(CHECK_KEY) || 0) > 60000) check();
+    });
+  })();
+  </script>
   <title>Olta — Balıkçının Rehberi</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
