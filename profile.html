@@ -59,6 +59,17 @@
     .field input:focus { border-color: var(--blue-light); }
     .save-btn { width: 100%; background: var(--blue-light); border: none; border-radius: 10px; color: var(--white); font-size: 15px; font-weight: 700; padding: 12px; cursor: pointer; }
     .save-btn:disabled { opacity: .5; }
+    /* Etkinliğim: beğenilen / yorum yapılan gönderiler */
+    .activity-empty { color: #9DB4C8; font-size: 13px; line-height: 1.5; }
+    .activity-item { display: block; text-decoration: none; color: var(--white); background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+    .activity-item:active { background: rgba(255,255,255,0.1); }
+    .activity-meta { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: #9DB4C8; }
+    .activity-tags { display: flex; gap: 6px; flex-shrink: 0; }
+    .activity-tag { font-size: 11px; font-weight: 700; border-radius: 6px; padding: 1px 6px; }
+    .activity-tag.like { color: #F87171; background: rgba(248,113,113,0.12); }
+    .activity-tag.comment { color: #7CC4E4; background: rgba(46,134,171,0.18); }
+    .activity-text { font-size: 13.5px; line-height: 1.4; margin-top: 5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .activity-quote { font-size: 13px; color: #C9D8E4; margin-top: 6px; padding-left: 8px; border-left: 2px solid var(--blue-light); white-space: pre-wrap; word-wrap: break-word; }
     .logout-btn { width: 100%; background: none; border: 1px solid rgba(248,113,113,0.5); border-radius: 10px; color: #F87171; font-size: 15px; font-weight: 700; padding: 12px; cursor: pointer; }
     .toast { position: fixed; left: 50%; bottom: 76px; transform: translateX(-50%); background: rgba(10,22,40,0.95); border: 1px solid rgba(255,255,255,0.15); color: var(--white); font-size: 13px; padding: 9px 14px; border-radius: 10px; z-index: 150; display: none; }
     .toast.show { display: block; }
@@ -138,6 +149,11 @@
         <button class="save-btn" id="p-save" type="submit" disabled>Kaydet</button>
       </form>
 
+      <div class="profile-card">
+        <div class="section-title">ETKİNLİĞİM</div>
+        <div id="p-activity"><div class="activity-empty">Yükleniyor…</div></div>
+      </div>
+
       <button class="logout-btn" id="p-logout">Çıkış Yap</button>
     </div>
   </div>
@@ -165,7 +181,7 @@
   <script type="module">
     import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, serverTimestamp }
+    import { getFirestore, doc, getDoc, setDoc, serverTimestamp, collection, query, where, orderBy, limit, getDocs }
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const app  = initializeApp({
@@ -202,6 +218,7 @@
       $('p-name').textContent  = user.displayName || 'Balıkçı';
       $('p-email').textContent = user.email || '';
       await loadProfile();
+      loadActivity();
     });
 
     async function loadProfile() {
@@ -249,6 +266,59 @@
       }
       updateSaveState();
     });
+
+    // ── ETKİNLİĞİM: son gönderilerde beğendiklerin ve yorumların
+    // Konsolda ek dizin gerektirmesin diye son ACTIVITY_SCAN gönderi taranır.
+    const ACTIVITY_SCAN = 60;
+    const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+    const fmtDate = iso => { const [y, m, d] = (iso || '').split('-').map(Number); return y ? `${d} ${MONTHS[m - 1]}` : ''; };
+
+    async function loadActivity() {
+      const box = $('p-activity');
+      try {
+        const snap = await getDocs(query(collection(db, 'feed_posts'), orderBy('createdAt', 'desc'), limit(ACTIVITY_SCAN)));
+        const posts = [];
+        snap.forEach(d => posts.push({ id: d.id, ...d.data() }));
+        const uid = currentUser.uid;
+        const results = await Promise.all(posts.map(async p => {
+          const [like, comments] = await Promise.all([
+            getDoc(doc(db, 'feed_posts', p.id, 'likes', uid)),
+            getDocs(query(collection(db, 'feed_posts', p.id, 'comments'), where('uid', '==', uid))),
+          ]);
+          const mine = [];
+          comments.forEach(c => mine.push(c.data()));
+          mine.sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
+          return { post: p, liked: like.exists(), comments: mine };
+        }));
+        const active = results.filter(r => r.liked || r.comments.length)
+          .sort((a, b) => (b.post.date || '').localeCompare(a.post.date || '') || (a.post.order ?? 0) - (b.post.order ?? 0));
+        box.innerHTML = '';
+        if (!active.length) {
+          box.appendChild(el('div', 'activity-empty', 'Henüz beğendiğin ya da yorum yaptığın bir gönderi yok. Ana sayfadaki gönderileri beğenebilir, yorum yazabilirsin.'));
+          return;
+        }
+        active.forEach(r => box.appendChild(renderActivity(r)));
+      } catch (e) {
+        console.error('Etkinlik okunamadı:', e);
+        box.innerHTML = '';
+        box.appendChild(el('div', 'activity-empty', 'Etkinlik yüklenemedi.'));
+      }
+    }
+
+    function renderActivity({ post, liked, comments }) {
+      const a = el('a', 'activity-item');
+      a.href = `home.html#post-${encodeURIComponent(post.id)}`;
+      const meta = el('div', 'activity-meta');
+      meta.appendChild(el('span', null, [fmtDate(post.date), post.species].filter(Boolean).join(' · ')));
+      const tags = el('span', 'activity-tags');
+      if (liked) tags.appendChild(el('span', 'activity-tag like', '♥ Beğendin'));
+      if (comments.length) tags.appendChild(el('span', 'activity-tag comment', comments.length > 1 ? `${comments.length} yorum` : 'Yorum yaptın'));
+      meta.appendChild(tags);
+      a.appendChild(meta);
+      a.appendChild(el('div', 'activity-text', post.text || ''));
+      if (comments.length) a.appendChild(el('div', 'activity-quote', comments[0].text || ''));   // son yorumun
+      return a;
+    }
 
     const logout = async () => { await signOut(auth); window.location.href = 'index.html'; };
     $('logout-btn').addEventListener('click', logout);

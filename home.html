@@ -45,7 +45,7 @@
     /* ── AKIŞ ─────────────────────────────────────────── */
     .feed { display: flex; flex-direction: column; gap: 14px; max-width: 640px; margin: 0 auto; }
     .feed-empty { color: var(--gray); text-align: center; padding: 40px 16px; font-size: 14px; line-height: 1.5; }
-    .post { background: var(--blue-mid); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; overflow: hidden; }
+    .post { scroll-margin-top: 66px; background: var(--blue-mid); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; overflow: hidden; }
     .post-head { display: flex; align-items: center; gap: 10px; padding: 14px 14px 0; }
     /* OLTA logosu (açılış ekranındaki yazı logosunun küçük hali) */
     .post-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--blue-dark); border: 1.5px solid var(--blue-light); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -249,6 +249,9 @@
           feedEl.appendChild(renderPost(p));
           if (isAdSlot(i, posts.length)) feedEl.appendChild(renderAd());
         });
+        // Profildeki "Etkinliğim"den gelindiyse o gönderiye kaydır
+        const target = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)));
+        if (target) target.scrollIntoView({ block: 'start' });
       } catch (e) {
         console.error('Akış yüklenemedi:', e);
         feedEl.innerHTML = '';
@@ -258,6 +261,7 @@
 
     function renderPost(p) {
       const post = el('article', 'post');
+      post.id = 'post-' + p.id;
 
       const head = el('div', 'post-head');
       const av = el('div', 'post-avatar'); av.appendChild(el('span', null, 'OLTA'));
