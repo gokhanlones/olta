@@ -50,6 +50,10 @@
     /* OLTA logosu (açılış ekranındaki yazı logosunun küçük hali) */
     .post-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--blue-dark); border: 1.5px solid var(--blue-light); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .post-avatar span { color: var(--white); font-size: 9.5px; font-weight: 900; letter-spacing: 1.3px; padding-left: 1.3px; line-height: 1; }
+    /* Kullanıcı gönderisi: Google fotoğrafı ya da baş harf */
+    .post-avatar.user { overflow: hidden; }
+    .post-avatar.user img { width: 100%; height: 100%; object-fit: cover; }
+    .post-avatar.user span { font-size: 17px; letter-spacing: 0; padding-left: 0; }
     .post-author { font-size: 14px; font-weight: 700; }
     .post-badge { font-size: 10px; font-weight: 600; color: var(--blue-dark); background: var(--accent); border-radius: 6px; padding: 1px 6px; margin-left: 6px; vertical-align: 1px; }
     .post-meta { font-size: 12px; color: #9DB4C8; margin-top: 2px; }
@@ -203,6 +207,12 @@
     const level = s => s >= 75 ? 'high' : s >= 50 ? 'moderate' : s >= 25 ? 'low' : '';
     const spotUrl = (species, sp) => `forecast.html?tur=${encodeURIComponent(species)}&lat=${sp.lat}&lng=${sp.lng}`
       + (sp.cell_lat != null ? `&clat=${sp.cell_lat}&clng=${sp.cell_lng}` : '');
+    function fmtTs(ts) {
+      const d = ts?.toDate?.();
+      if (!d) return '';
+      const hm = d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+      return `${d.getDate()} ${MONTHS[d.getMonth()]} · ${hm}`;
+    }
     function fmtDate(iso) {
       const [y, m, d] = (iso || '').split('-').map(Number);
       return y ? `${d} ${MONTHS[m - 1]}` : '';
@@ -239,7 +249,9 @@
         const posts = [];
         snap.forEach(d => posts.push({ id: d.id, ...d.data() }));
         // Aynı gün içindeki gönderiler üretim sırasıyla
-        posts.sort((a, b) => (b.date || '').localeCompare(a.date || '') || (a.order ?? 0) - (b.order ?? 0));
+        // Yeniden eskiye; aynı anda yazılan OLTA gönderileri üretim sırasıyla
+        const ms = p => p.createdAt?.toMillis?.() ?? 0;
+        posts.sort((a, b) => ms(b) - ms(a) || (a.order ?? 0) - (b.order ?? 0));
         feedEl.innerHTML = '';
         if (!posts.length) {
           feedEl.appendChild(el('div', 'feed-empty', 'Henüz paylaşım yok. Günlük deniz verisi güncellenince ilk gönderiler burada görünecek.'));
@@ -264,12 +276,16 @@
       post.id = 'post-' + p.id;
 
       const head = el('div', 'post-head');
-      const av = el('div', 'post-avatar'); av.appendChild(el('span', null, 'OLTA'));
+      const isUser = p.type === 'user';
+      const av = el('div', 'post-avatar' + (isUser ? ' user' : ''));
+      if (!isUser) av.appendChild(el('span', null, 'OLTA'));
+      else if (p.authorPhoto) { const img = el('img'); img.alt = ''; img.src = p.authorPhoto; av.appendChild(img); }
+      else av.appendChild(el('span', null, (p.authorName || '?').trim().charAt(0).toLocaleUpperCase('tr')));
       const who = el('div');
-      const author = el('div', 'post-author', p.author?.name || 'OLTA');
-      author.appendChild(el('span', 'post-badge', 'Deniz verisi'));
+      const author = el('div', 'post-author', isUser ? (p.authorName || 'Balıkçı') : (p.author?.name || 'OLTA'));
+      if (!isUser) author.appendChild(el('span', 'post-badge', 'Deniz verisi'));
       who.appendChild(author);
-      who.appendChild(el('div', 'post-meta', [fmtDate(p.date), p.species].filter(Boolean).join(' · ')));
+      who.appendChild(el('div', 'post-meta', isUser ? fmtTs(p.createdAt) : [fmtDate(p.date), p.species].filter(Boolean).join(' · ')));
       head.append(av, who);
       post.appendChild(head);
 
@@ -400,8 +416,9 @@
     // ── PAYLAŞ: telefonun paylaşım menüsü; yoksa bağlantıyı kopyala
     async function sharePost(p) {
       const best = (p.spots || [])[0];
-      const url  = best ? new URL(spotUrl(p.species, best), location.href).href : location.href;
-      const data = { title: `OLTA · ${p.species || ''}`.trim(), text: p.text || '', url };
+      const url  = best ? new URL(spotUrl(p.species, best), location.href).href
+                        : new URL(`home.html#post-${encodeURIComponent(p.id)}`, location.href).href;
+      const data = { title: p.type === 'user' ? `OLTA · ${p.authorName || 'Balıkçı'}` : `OLTA · ${p.species || ''}`.trim(), text: p.text || '', url };
       try {
         if (navigator.share) { await navigator.share(data); return; }
         await navigator.clipboard.writeText(`${data.text}\n${url}`);

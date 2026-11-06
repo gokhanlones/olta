@@ -51,14 +51,20 @@
     .profile-name { font-size: 20px; font-weight: 800; margin-top: 6px; }
     .profile-email { font-size: 13px; color: #9DB4C8; word-break: break-all; }
     .profile-since { font-size: 12px; color: #9DB4C8; }
+    /* "hidden" özniteliği display:flex olan öğeleri de gizlesin (çift fotoğraf hatası) */
+    [hidden] { display: none !important; }
+    /* Gönderi oluştur */
+    .compose-open { width: 100%; background: var(--blue-light); border: none; border-radius: 12px; color: var(--white); font-size: 15px; font-weight: 700; padding: 13px; cursor: pointer; }
+    .compose textarea { width: 100%; min-height: 96px; resize: vertical; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14); border-radius: 10px; color: var(--white); padding: 11px 12px; font-size: 15px; font-family: inherit; line-height: 1.4; outline: none; }
+    .compose textarea:focus { border-color: var(--blue-light); }
+    .compose-foot { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+    .compose-count { flex: 1; font-size: 12px; color: #9DB4C8; }
+    .compose-count.limit { color: var(--accent); }
+    .compose-cancel { background: none; border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: var(--white); font-size: 14px; padding: 9px 14px; cursor: pointer; }
+    .compose-send { background: var(--blue-light); border: none; border-radius: 10px; color: var(--white); font-size: 14px; font-weight: 700; padding: 9px 16px; cursor: pointer; }
+    .compose-send:disabled { opacity: .5; }
+    .activity-tag.own { color: var(--accent); background: rgba(244,162,97,0.15); }
     .section-title { font-size: 11px; color: #9DB4C8; letter-spacing: 1px; font-weight: 700; margin-bottom: 12px; }
-    .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-    .field label { font-size: 13px; font-weight: 600; }
-    .field .hint { font-size: 11px; color: #9DB4C8; }
-    .field input { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14); border-radius: 10px; color: var(--white); padding: 11px 12px; font-size: 15px; outline: none; }
-    .field input:focus { border-color: var(--blue-light); }
-    .save-btn { width: 100%; background: var(--blue-light); border: none; border-radius: 10px; color: var(--white); font-size: 15px; font-weight: 700; padding: 12px; cursor: pointer; }
-    .save-btn:disabled { opacity: .5; }
     /* Etkinliğim: beğenilen / yorum yapılan gönderiler */
     .activity-empty { color: #9DB4C8; font-size: 13px; line-height: 1.5; }
     .activity-item { display: block; text-decoration: none; color: var(--white); background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
@@ -70,7 +76,6 @@
     .activity-tag.comment { color: #7CC4E4; background: rgba(46,134,171,0.18); }
     .activity-text { font-size: 13.5px; line-height: 1.4; margin-top: 5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .activity-quote { font-size: 13px; color: #C9D8E4; margin-top: 6px; padding-left: 8px; border-left: 2px solid var(--blue-light); white-space: pre-wrap; word-wrap: break-word; }
-    .logout-btn { width: 100%; background: none; border: 1px solid rgba(248,113,113,0.5); border-radius: 10px; color: #F87171; font-size: 15px; font-weight: 700; padding: 12px; cursor: pointer; }
     .toast { position: fixed; left: 50%; bottom: 76px; transform: translateX(-50%); background: rgba(10,22,40,0.95); border: 1px solid rgba(255,255,255,0.15); color: var(--white); font-size: 13px; padding: 9px 14px; border-radius: 10px; z-index: 150; display: none; }
     .toast.show { display: block; }
 
@@ -135,18 +140,15 @@
         <div class="profile-since" id="p-since"></div>
       </div>
 
-      <form class="profile-card" id="p-form">
-        <div class="section-title">BİLGİLERİM</div>
-        <div class="field">
-          <label for="p-city">Şehir</label>
-          <input id="p-city" maxlength="40" placeholder="Örn. İstanbul" autocomplete="address-level2" />
+      <button class="compose-open" id="c-open">Bir gönderi oluştur.</button>
+      <form class="profile-card compose" id="c-form" hidden>
+        <div class="section-title">YENİ GÖNDERİ</div>
+        <textarea id="c-text" maxlength="200" placeholder="Bugün nerede, ne çıktı? Deneyimini paylaş…"></textarea>
+        <div class="compose-foot">
+          <span class="compose-count" id="c-count">0 / 200</span>
+          <button type="button" class="compose-cancel" id="c-cancel">Vazgeç</button>
+          <button type="submit" class="compose-send" id="c-send" disabled>Paylaş</button>
         </div>
-        <div class="field">
-          <label for="p-license">Balıkçı belge no</label>
-          <input id="p-license" maxlength="30" placeholder="İsteğe bağlı" />
-          <span class="hint">Yalnızca sen görürsün.</span>
-        </div>
-        <button class="save-btn" id="p-save" type="submit" disabled>Kaydet</button>
       </form>
 
       <div class="profile-card">
@@ -154,7 +156,6 @@
         <div id="p-activity"><div class="activity-empty">Yükleniyor…</div></div>
       </div>
 
-      <button class="logout-btn" id="p-logout">Çıkış Yap</button>
     </div>
   </div>
   <div class="toast" id="toast"></div>
@@ -181,7 +182,7 @@
   <script type="module">
     import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, serverTimestamp, collection, query, where, orderBy, limit, getDocs }
+    import { getFirestore, doc, getDoc, addDoc, serverTimestamp, collection, query, where, orderBy, limit, getDocs }
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const app  = initializeApp({
@@ -196,7 +197,7 @@
     const db   = getFirestore(app);
     const $    = id => document.getElementById(id);
     const MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
-    let currentUser = null, saved = { city: '', licenseNo: '' };
+    let currentUser = null;
 
     function toast(msg) {
       const t = $('toast');
@@ -225,52 +226,57 @@
       try {
         const snap = await getDoc(doc(db, 'users', currentUser.uid));
         const d = snap.exists() ? snap.data() : {};
-        saved = { city: d.city || '', licenseNo: d.licenseNo || '' };
-        $('p-city').value = saved.city;
-        $('p-license').value = saved.licenseNo;
         const created = d.createdAt?.toDate?.() || (currentUser.metadata?.creationTime ? new Date(currentUser.metadata.creationTime) : null);
         if (created) $('p-since').textContent = `${MONTHS[created.getMonth()]} ${created.getFullYear()} tarihinden beri üye`;
       } catch (e) {
         console.error('Profil okunamadı:', e);
-        toast('Profil bilgileri yüklenemedi');
       }
-      updateSaveState();
     }
 
-    function current() {
-      return { city: $('p-city').value.trim(), licenseNo: $('p-license').value.trim() };
-    }
-    function updateSaveState() {
-      const c = current();
-      $('p-save').disabled = c.city === saved.city && c.licenseNo === saved.licenseNo;
-    }
-    $('p-city').addEventListener('input', updateSaveState);
-    $('p-license').addEventListener('input', updateSaveState);
-
-    $('p-form').addEventListener('submit', async (ev) => {
+    // ── GÖNDERİ OLUŞTUR (şimdilik yalnızca metin, en fazla 200 karakter)
+    const MAX_POST = 200;
+    const openCompose = show => {
+      $('c-form').hidden = !show; $('c-open').hidden = show;
+      if (show) $('c-text').focus();
+    };
+    const updateCount = () => {
+      const n = $('c-text').value.length;
+      $('c-count').textContent = `${n} / ${MAX_POST}`;
+      $('c-count').classList.toggle('limit', n >= MAX_POST);
+      $('c-send').disabled = !$('c-text').value.trim();
+    };
+    $('c-open').addEventListener('click', () => openCompose(true));
+    $('c-cancel').addEventListener('click', () => { $('c-text').value = ''; updateCount(); openCompose(false); });
+    $('c-text').addEventListener('input', updateCount);
+    $('c-form').addEventListener('submit', async ev => {
       ev.preventDefault();
-      const c = current();
-      $('p-save').disabled = true;
+      const text = $('c-text').value.trim().slice(0, MAX_POST);
+      if (!text) return;
+      $('c-send').disabled = true;
       try {
-        // Kayıt yoksa (eski hesaplar) temel alanlarla oluştur; varsa yalnızca bu alanları güncelle
-        await setDoc(doc(db, 'users', currentUser.uid), {
-          city: c.city, licenseNo: c.licenseNo,
-          displayName: currentUser.displayName || '', email: currentUser.email || '',
-          photoURL: currentUser.photoURL || '', updatedAt: serverTimestamp(),
-        }, { merge: true });
-        saved = c;
-        toast('Kaydedildi');
+        await addDoc(collection(db, 'feed_posts'), {
+          type: 'user',
+          authorUid: currentUser.uid,
+          authorName: (currentUser.displayName || 'Balıkçı').slice(0, 100),
+          authorPhoto: (currentUser.photoURL || '').slice(0, 500),
+          text,
+          createdAt: serverTimestamp(),
+        });
+        $('c-text').value = ''; updateCount(); openCompose(false);
+        toast('Gönderin paylaşıldı');
+        loadActivity();
       } catch (e) {
-        console.error('Profil kaydedilemedi:', e);
-        toast('Kaydedilemedi, tekrar deneyin');
+        console.error('Gönderi paylaşılamadı:', e);
+        toast('Gönderi paylaşılamadı');
+        updateCount();
       }
-      updateSaveState();
     });
 
     // ── ETKİNLİĞİM: son gönderilerde beğendiklerin ve yorumların
     // Konsolda ek dizin gerektirmesin diye son ACTIVITY_SCAN gönderi taranır.
     const ACTIVITY_SCAN = 60;
     const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+    const fmtTs = ts => { const d = ts?.toDate?.(); return d ? `${d.getDate()} ${MONTHS[d.getMonth()]}` : ''; };
     const fmtDate = iso => { const [y, m, d] = (iso || '').split('-').map(Number); return y ? `${d} ${MONTHS[m - 1]}` : ''; };
 
     async function loadActivity() {
@@ -288,13 +294,13 @@
           const mine = [];
           comments.forEach(c => mine.push(c.data()));
           mine.sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
-          return { post: p, liked: like.exists(), comments: mine };
+          return { post: p, liked: like.exists(), comments: mine, own: p.type === 'user' && p.authorUid === uid };
         }));
-        const active = results.filter(r => r.liked || r.comments.length)
-          .sort((a, b) => (b.post.date || '').localeCompare(a.post.date || '') || (a.post.order ?? 0) - (b.post.order ?? 0));
+        // Sorgu zaten yeniden eskiye sıralı (createdAt); sıra korunur
+        const active = results.filter(r => r.own || r.liked || r.comments.length);
         box.innerHTML = '';
         if (!active.length) {
-          box.appendChild(el('div', 'activity-empty', 'Henüz beğendiğin ya da yorum yaptığın bir gönderi yok. Ana sayfadaki gönderileri beğenebilir, yorum yazabilirsin.'));
+          box.appendChild(el('div', 'activity-empty', 'Henüz bir etkinliğin yok. Bir gönderi oluşturabilir, ana sayfadaki gönderileri beğenip yorum yazabilirsin.'));
           return;
         }
         active.forEach(r => box.appendChild(renderActivity(r)));
@@ -305,12 +311,15 @@
       }
     }
 
-    function renderActivity({ post, liked, comments }) {
+    function renderActivity({ post, liked, comments, own }) {
       const a = el('a', 'activity-item');
       a.href = `home.html#post-${encodeURIComponent(post.id)}`;
       const meta = el('div', 'activity-meta');
-      meta.appendChild(el('span', null, [fmtDate(post.date), post.species].filter(Boolean).join(' · ')));
+      const when = post.date ? fmtDate(post.date) : fmtTs(post.createdAt);
+      const what = post.type === 'user' ? (own ? 'Senin gönderin' : post.authorName) : post.species;
+      meta.appendChild(el('span', null, [when, what].filter(Boolean).join(' · ')));
       const tags = el('span', 'activity-tags');
+      if (own) tags.appendChild(el('span', 'activity-tag own', 'Gönderin'));
       if (liked) tags.appendChild(el('span', 'activity-tag like', '♥ Beğendin'));
       if (comments.length) tags.appendChild(el('span', 'activity-tag comment', comments.length > 1 ? `${comments.length} yorum` : 'Yorum yaptın'));
       meta.appendChild(tags);
@@ -322,7 +331,6 @@
 
     const logout = async () => { await signOut(auth); window.location.href = 'index.html'; };
     $('logout-btn').addEventListener('click', logout);
-    $('p-logout').addEventListener('click', logout);
 
     window.openSidebar  = () => { $('sidebar').classList.add('open'); $('overlay').classList.add('open'); };
     window.closeSidebar = () => { $('sidebar').classList.remove('open'); $('overlay').classList.remove('open'); };
