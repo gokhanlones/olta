@@ -1,7 +1,7 @@
 // OLTA gönderi kartı: ana sayfa ve profil ortak kullanır.
 // Kart görünümü, beğeni (likes/{uid}), yorumlar (comments) ve paylaşım burada.
 // Bu dosya değiştiğinde, kullanan sayfalardaki import adresinde ?v= artırılmalı.
-import { collection, query, orderBy, limit, getDocs, doc, getDoc, setDoc, deleteDoc,
+import { collection, query, orderBy, limit, getDocs, doc, getDoc, setDoc, deleteDoc, updateDoc,
          addDoc, serverTimestamp, getCountFromServer }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -27,10 +27,31 @@ function injectStyles() {
     .post-avatar.user span { font-size: 17px; letter-spacing: 0; padding-left: 0; }
     .post-author { font-size: 14px; font-weight: 700; }
     .post-head > div:nth-child(2) { flex: 1; min-width: 0; }
-    .post-delete { background: none; border: none; color: #9DB4C8; padding: 6px; margin: -6px -6px 0 0; border-radius: 8px; cursor: pointer; display: flex; }
-    .post-delete svg { width: 18px; height: 18px; }
-    .post-delete:active { background: rgba(255,255,255,0.08); color: #F87171; }
-    .post-delete:disabled { opacity: .4; }
+    .post-more { background: none; border: none; color: #9DB4C8; padding: 4px 6px; margin: -6px -6px 0 0; border-radius: 8px; cursor: pointer; display: flex; }
+    .post-more svg { width: 20px; height: 20px; }
+    .post-more:active { background: rgba(255,255,255,0.08); }
+    .post-edited { font-style: italic; }
+    /* Düzenleme alanı (kartın içinde) */
+    .post-edit { padding: 10px 14px 12px; }
+    .post-edit textarea { width: 100%; min-height: 84px; resize: vertical; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14); border-radius: 10px; color: #fff; padding: 10px 12px; font-size: 14.5px; font-family: inherit; line-height: 1.4; outline: none; }
+    .post-edit textarea:focus { border-color: #2E86AB; }
+    .post-edit-foot { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+    .post-edit-count { flex: 1; font-size: 12px; color: #9DB4C8; }
+    .post-edit-count.limit { color: #F4A261; }
+    .post-edit button { border-radius: 10px; font-size: 14px; padding: 8px 14px; cursor: pointer; }
+    .post-edit .cancel { background: none; border: 1px solid rgba(255,255,255,0.2); color: #fff; }
+    .post-edit .save { background: #2E86AB; border: none; color: #fff; font-weight: 700; }
+    .post-edit .save:disabled { opacity: .5; }
+    /* Gönderi seçenekleri: alt menünün üst hizasından yükselen liste */
+    .post-sheet-backdrop { position: fixed; left: 0; right: 0; top: 0; bottom: calc(60px + env(safe-area-inset-bottom)); background: rgba(0,0,0,0.45); z-index: 97; opacity: 0; visibility: hidden; transition: opacity .25s, visibility 0s linear .25s; }
+    .post-sheet-backdrop.open { opacity: 1; visibility: visible; transition: opacity .25s; }
+    .post-sheet { position: fixed; left: 0; right: 0; bottom: calc(60px + env(safe-area-inset-bottom)); z-index: 98; background: #0A1628; border-top: 1px solid rgba(255,255,255,0.1); border-radius: 16px 16px 0 0; padding: 8px 0 6px; transform: translateY(100%); visibility: hidden; transition: transform .25s ease, visibility 0s linear .25s; }
+    .post-sheet.open { transform: translateY(0); visibility: visible; transition: transform .25s ease; }
+    .post-sheet .grip { width: 36px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.25); margin: 2px auto 8px; }
+    .post-sheet button { display: flex; align-items: center; justify-content: center; width: 100%; background: none; border: none; color: #fff; font-size: 15.5px; padding: 14px 20px; cursor: pointer; text-align: left; }
+    .post-sheet button:active { background: rgba(255,255,255,0.06); }
+    .post-sheet button.danger { color: #F87171; }
+    .post-sheet button.cancel { color: #9DB4C8; justify-content: center; border-top: 1px solid rgba(255,255,255,0.08); margin-top: 4px; }
     .post-badge { font-size: 10px; font-weight: 600; color: var(--blue-dark); background: var(--accent); border-radius: 6px; padding: 1px 6px; margin-left: 6px; vertical-align: 1px; }
     .post-meta { font-size: 12px; color: #9DB4C8; margin-top: 2px; }
     .post-text { padding: 10px 14px 4px; font-size: 14.5px; line-height: 1.5; }
@@ -69,8 +90,8 @@ const ICON = {
   comment: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M21 12a8 8 0 01-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1121 12z"/></svg>',
   share:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>',
 };
-ICON.trash = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
-  + '<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg>';
+ICON.more  = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>';
+const MAX_POST = 200;
 const MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
@@ -102,16 +123,17 @@ export function renderPost(p) {
   const author = el('div', 'post-author', isUser ? (p.authorName || 'Balıkçı') : (p.author?.name || 'OLTA'));
   if (!isUser) author.appendChild(el('span', 'post-badge', 'Deniz verisi'));
   who.appendChild(author);
-  who.appendChild(el('div', 'post-meta', isUser ? fmtTs(p.createdAt) : [fmtDate(p.date), p.species].filter(Boolean).join(' · ')));
+  const meta = el('div', 'post-meta', isUser ? fmtTs(p.createdAt) : [fmtDate(p.date), p.species].filter(Boolean).join(' · '));
+  if (isUser && p.editedAt) meta.appendChild(el('span', 'post-edited', ' · düzenlendi'));
+  who.appendChild(meta);
   head.append(av, who);
-  // Yalnızca kendi gönderisinde: sil
+  // Yalnızca kendi gönderisinde: ⋯ → Düzenle / Sil
   if (isUser && currentUser && p.authorUid === currentUser.uid) {
-    const del = el('button', 'post-delete');
-    del.setAttribute('aria-label', 'Gönderiyi sil');
-    del.title = 'Gönderiyi sil';
-    del.innerHTML = ICON.trash;
-    del.onclick = () => deletePost(p, post, del);
-    head.appendChild(del);
+    const more = el('button', 'post-more');
+    more.setAttribute('aria-label', 'Gönderi seçenekleri');
+    more.innerHTML = ICON.more;
+    more.onclick = () => openPostSheet(p, post);
+    head.appendChild(more);
   }
   post.appendChild(head);
 
@@ -241,9 +263,8 @@ async function setupComments(p, btn, box) {
 
 // ── PAYLAŞ: telefonun paylaşım menüsü; yoksa bağlantıyı kopyala
 // ── SİL: yalnızca kendi gönderisi (kurallar da yalnızca yazarına izin verir)
-async function deletePost(p, card, btn) {
+async function deletePost(p, card) {
   if (!confirm('Bu gönderiyi silmek istiyor musun? Bu işlem geri alınamaz.')) return;
-  btn.disabled = true;
   try {
     await deleteDoc(doc(db, 'feed_posts', p.id));
     card.remove();
@@ -251,8 +272,83 @@ async function deletePost(p, card, btn) {
   } catch (e) {
     console.error('Gönderi silinemedi:', e);
     toast('Gönderi silinemedi');
-    btn.disabled = false;
   }
+}
+
+// ── SEÇENEKLER LİSTESİ (tek bir liste, sayfaya bir kez eklenir)
+let sheet = null, backdrop = null, sheetTarget = null;
+function ensureSheet() {
+  if (sheet) return;
+  backdrop = el('div', 'post-sheet-backdrop');
+  sheet = el('div', 'post-sheet');
+  sheet.setAttribute('role', 'menu');
+  sheet.appendChild(el('div', 'grip'));
+  const mk = (cls, label, fn) => {
+    const b = el('button', cls, label); b.setAttribute('role', 'menuitem');
+    b.onclick = () => { const t = sheetTarget; closePostSheet(); if (t && fn) fn(t.p, t.card); };
+    return b;
+  };
+  sheet.append(
+    mk('', 'Düzenle', startEdit),
+    mk('danger', 'Sil', deletePost),
+    mk('cancel', 'Vazgeç', null),
+  );
+  backdrop.onclick = closePostSheet;
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closePostSheet(); });
+  document.body.append(backdrop, sheet);
+}
+function openPostSheet(p, card) {
+  ensureSheet();
+  sheetTarget = { p, card };
+  backdrop.classList.add('open'); sheet.classList.add('open');
+}
+function closePostSheet() {
+  if (!sheet) return;
+  sheetTarget = null;
+  backdrop.classList.remove('open'); sheet.classList.remove('open');
+}
+
+// ── DÜZENLE: metin kartın içinde düzenlenir (en fazla 200 karakter)
+function startEdit(p, card) {
+  if (card.querySelector('.post-edit')) return;
+  const textEl = card.querySelector('.post-text');
+  const box = el('div', 'post-edit');
+  const ta = el('textarea'); ta.maxLength = MAX_POST; ta.value = p.text || '';
+  const foot = el('div', 'post-edit-foot');
+  const count = el('span', 'post-edit-count');
+  const cancel = el('button', 'cancel', 'Vazgeç'); cancel.type = 'button';
+  const save = el('button', 'save', 'Kaydet'); save.type = 'button';
+  foot.append(count, cancel, save);
+  box.append(ta, foot);
+  const update = () => {
+    count.textContent = `${ta.value.length} / ${MAX_POST}`;
+    count.classList.toggle('limit', ta.value.length >= MAX_POST);
+    const t = ta.value.trim();
+    save.disabled = !t || t === (p.text || '');
+  };
+  ta.addEventListener('input', update); update();
+  textEl.hidden = true;
+  textEl.after(box);
+  ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
+  const close = () => { box.remove(); textEl.hidden = false; };
+  cancel.onclick = close;
+  save.onclick = async () => {
+    const text = ta.value.trim().slice(0, MAX_POST);
+    save.disabled = true;
+    try {
+      await updateDoc(doc(db, 'feed_posts', p.id), { text, editedAt: serverTimestamp() });
+      p.text = text; p.editedAt = true;
+      textEl.textContent = text;
+      const meta = card.querySelector('.post-meta');
+      if (meta && !meta.querySelector('.post-edited')) meta.appendChild(el('span', 'post-edited', ' · düzenlendi'));
+      close();
+      toast('Gönderi güncellendi');
+    } catch (e) {
+      console.error('Gönderi güncellenemedi:', e);
+      toast('Gönderi güncellenemedi');
+      update();
+    }
+  };
 }
 
 async function sharePost(p) {
