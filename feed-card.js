@@ -48,8 +48,7 @@ function injectStyles() {
     .post-sheet { position: fixed; left: 0; right: 0; bottom: calc(60px + env(safe-area-inset-bottom)); z-index: 98; background: #0A1628; border-top: 1px solid rgba(255,255,255,0.1); border-radius: 16px 16px 0 0; padding: 8px 0 6px; transform: translateY(100%); visibility: hidden; transition: transform .25s ease, visibility 0s linear .25s; }
     .post-sheet.open { transform: translateY(0); visibility: visible; transition: transform .25s ease; }
     .post-sheet .grip { width: 36px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.25); margin: 2px auto 8px; }
-    .post-sheet button { display: flex; align-items: center; gap: 12px; width: 100%; background: none; border: none; color: #fff; font-size: 15.5px; padding: 14px 20px; cursor: pointer; text-align: left; }
-    .post-sheet button svg { width: 20px; height: 20px; }
+    .post-sheet button { display: flex; align-items: center; justify-content: center; width: 100%; background: none; border: none; color: #fff; font-size: 15.5px; padding: 14px 20px; cursor: pointer; text-align: left; }
     .post-sheet button:active { background: rgba(255,255,255,0.06); }
     .post-sheet button.danger { color: #F87171; }
     .post-sheet button.cancel { color: #9DB4C8; justify-content: center; border-top: 1px solid rgba(255,255,255,0.08); margin-top: 4px; }
@@ -92,9 +91,6 @@ const ICON = {
   share:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>',
 };
 ICON.more  = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>';
-ICON.edit  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>';
-ICON.trash = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
-  + '<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg>';
 const MAX_POST = 200;
 const MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 
@@ -287,16 +283,15 @@ function ensureSheet() {
   sheet = el('div', 'post-sheet');
   sheet.setAttribute('role', 'menu');
   sheet.appendChild(el('div', 'grip'));
-  const mk = (cls, icon, label, fn) => {
-    const b = el('button', cls); b.setAttribute('role', 'menuitem');
-    b.innerHTML = icon; b.appendChild(el('span', null, label));
+  const mk = (cls, label, fn) => {
+    const b = el('button', cls, label); b.setAttribute('role', 'menuitem');
     b.onclick = () => { const t = sheetTarget; closePostSheet(); if (t && fn) fn(t.p, t.card); };
     return b;
   };
   sheet.append(
-    mk('', ICON.edit, 'Düzenle', startEdit),
-    mk('danger', ICON.trash, 'Sil', deletePost),
-    mk('cancel', '', 'Vazgeç', null),
+    mk('', 'Düzenle', startEdit),
+    mk('danger', 'Sil', deletePost),
+    mk('cancel', 'Vazgeç', null),
   );
   backdrop.onclick = closePostSheet;
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closePostSheet(); });
