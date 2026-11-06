@@ -26,6 +26,11 @@ function injectStyles() {
     .post-avatar.user img { width: 100%; height: 100%; object-fit: cover; }
     .post-avatar.user span { font-size: 17px; letter-spacing: 0; padding-left: 0; }
     .post-author { font-size: 14px; font-weight: 700; }
+    .post-head > div:nth-child(2) { flex: 1; min-width: 0; }
+    .post-delete { background: none; border: none; color: #9DB4C8; padding: 6px; margin: -6px -6px 0 0; border-radius: 8px; cursor: pointer; display: flex; }
+    .post-delete svg { width: 18px; height: 18px; }
+    .post-delete:active { background: rgba(255,255,255,0.08); color: #F87171; }
+    .post-delete:disabled { opacity: .4; }
     .post-badge { font-size: 10px; font-weight: 600; color: var(--blue-dark); background: var(--accent); border-radius: 6px; padding: 1px 6px; margin-left: 6px; vertical-align: 1px; }
     .post-meta { font-size: 12px; color: #9DB4C8; margin-top: 2px; }
     .post-text { padding: 10px 14px 4px; font-size: 14.5px; line-height: 1.5; }
@@ -64,6 +69,8 @@ const ICON = {
   comment: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M21 12a8 8 0 01-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1121 12z"/></svg>',
   share:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>',
 };
+ICON.trash = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+  + '<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg>';
 const MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
@@ -97,6 +104,15 @@ export function renderPost(p) {
   who.appendChild(author);
   who.appendChild(el('div', 'post-meta', isUser ? fmtTs(p.createdAt) : [fmtDate(p.date), p.species].filter(Boolean).join(' · ')));
   head.append(av, who);
+  // Yalnızca kendi gönderisinde: sil
+  if (isUser && currentUser && p.authorUid === currentUser.uid) {
+    const del = el('button', 'post-delete');
+    del.setAttribute('aria-label', 'Gönderiyi sil');
+    del.title = 'Gönderiyi sil';
+    del.innerHTML = ICON.trash;
+    del.onclick = () => deletePost(p, post, del);
+    head.appendChild(del);
+  }
   post.appendChild(head);
 
   post.appendChild(el('p', 'post-text', p.text || ''));
@@ -224,6 +240,21 @@ async function setupComments(p, btn, box) {
 }
 
 // ── PAYLAŞ: telefonun paylaşım menüsü; yoksa bağlantıyı kopyala
+// ── SİL: yalnızca kendi gönderisi (kurallar da yalnızca yazarına izin verir)
+async function deletePost(p, card, btn) {
+  if (!confirm('Bu gönderiyi silmek istiyor musun? Bu işlem geri alınamaz.')) return;
+  btn.disabled = true;
+  try {
+    await deleteDoc(doc(db, 'feed_posts', p.id));
+    card.remove();
+    toast('Gönderi silindi');
+  } catch (e) {
+    console.error('Gönderi silinemedi:', e);
+    toast('Gönderi silinemedi');
+    btn.disabled = false;
+  }
+}
+
 async function sharePost(p) {
   const best = (p.spots || [])[0];
   const url  = best ? new URL(spotUrl(p.species, best), location.href).href
