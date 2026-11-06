@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Olta — Profil</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --blue-dark:  #0A1628;
+      --blue-mid:   #1A3A5C;
+      --blue-light: #2E86AB;
+      --accent:     #F4A261;
+      --white:      #FFFFFF;
+      --gray:       #6B7280;
+    }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--blue-dark); color: var(--white); min-height: 100vh; display: flex; flex-direction: column; }
+
+    .banner { background: var(--blue-dark); display: flex; align-items: center; padding: 0 16px; height: 56px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .hamburger { background: none; border: none; color: var(--white); cursor: pointer; padding: 8px; display: flex; flex-direction: column; gap: 5px; }
+    .hamburger span { display: block; width: 22px; height: 2px; background: var(--white); border-radius: 2px; }
+    .banner-title { flex: 1; text-align: center; font-size: 20px; font-weight: 900; letter-spacing: 6px; }
+    .banner-placeholder { width: 38px; }
+
+    .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: none; opacity: 0; transition: opacity 0.3s; }
+    .sidebar-overlay.open { display: block; opacity: 1; }
+    .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: var(--blue-dark); border-right: 1px solid rgba(255,255,255,0.08); z-index: 300; transition: left 0.3s ease; display: flex; flex-direction: column; }
+    .sidebar.open { left: 0; }
+    .sidebar-header { padding: 56px 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .sidebar-header .logo { font-size: 22px; font-weight: 900; letter-spacing: 4px; }
+    .sidebar-header .tagline { font-size: 11px; color: var(--blue-light); letter-spacing: 1px; margin-top: 4px; }
+    .sidebar-user { display: flex; align-items: center; gap: 12px; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .sidebar-user img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+    .sidebar-user .name { font-size: 14px; font-weight: 600; }
+    .sidebar-user .email { font-size: 11px; color: var(--gray); margin-top: 2px; }
+    .sidebar-menu { flex: 1; padding: 12px 0; }
+    .sidebar-item { display: flex; align-items: center; padding: 14px 20px; cursor: pointer; font-size: 15px; transition: background 0.15s; border: none; background: none; color: var(--white); width: 100%; text-align: left; }
+    .sidebar-item:hover { background: rgba(255,255,255,0.06); }
+    .sidebar-item.active { color: var(--blue-light); font-weight: 700; }
+    .sidebar-bottom { padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.08); }
+    .sidebar-item.logout { color: #F87171; }
+
+    .content { flex: 1; padding: 16px; padding-bottom: 80px; }
+
+    /* ── PROFİL ───────────────────────────────────────── */
+    .profile { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+    .profile-card { background: var(--blue-mid); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 20px 16px; }
+    .profile-head { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; }
+    .profile-head img { width: 88px; height: 88px; border-radius: 50%; object-fit: cover; border: 3px solid var(--blue-light); background: rgba(255,255,255,0.08); }
+    .profile-initial { width: 88px; height: 88px; border-radius: 50%; border: 3px solid var(--blue-light); background: var(--blue-dark); display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 900; }
+    .profile-name { font-size: 20px; font-weight: 800; margin-top: 6px; }
+    .profile-email { font-size: 13px; color: #9DB4C8; word-break: break-all; }
+    .profile-since { font-size: 12px; color: #9DB4C8; }
+    .section-title { font-size: 11px; color: #9DB4C8; letter-spacing: 1px; font-weight: 700; margin-bottom: 12px; }
+    .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .field label { font-size: 13px; font-weight: 600; }
+    .field .hint { font-size: 11px; color: #9DB4C8; }
+    .field input { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14); border-radius: 10px; color: var(--white); padding: 11px 12px; font-size: 15px; outline: none; }
+    .field input:focus { border-color: var(--blue-light); }
+    .save-btn { width: 100%; background: var(--blue-light); border: none; border-radius: 10px; color: var(--white); font-size: 15px; font-weight: 700; padding: 12px; cursor: pointer; }
+    .save-btn:disabled { opacity: .5; }
+    .logout-btn { width: 100%; background: none; border: 1px solid rgba(248,113,113,0.5); border-radius: 10px; color: #F87171; font-size: 15px; font-weight: 700; padding: 12px; cursor: pointer; }
+    .toast { position: fixed; left: 50%; bottom: 76px; transform: translateX(-50%); background: rgba(10,22,40,0.95); border: 1px solid rgba(255,255,255,0.15); color: var(--white); font-size: 13px; padding: 9px 14px; border-radius: 10px; z-index: 150; display: none; }
+    .toast.show { display: block; }
+
+
+
+    .bottombar { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: var(--blue-dark); border-top: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; z-index: 100; }
+    .bottom-btn { background: none; border: none; color: var(--white); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 8px; }
+    .bottom-btn svg { width: 26px; height: 26px; }
+    .profile-btn img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid var(--blue-light); }
+  
+    /* Alt menü: solda Tür Tahmini, ortada Ana Sayfa, sağda Profil */
+    .bottombar { display: grid; grid-template-columns: 1fr auto 1fr; }
+    .bottombar > :first-child { justify-self: start; }
+    .bottombar > :nth-child(2) { justify-self: center; }
+    .bottombar > :last-child { justify-self: end; }
+    .bottom-btn.active { color: var(--blue-light); }
+    .profile-btn.active img { border-color: var(--accent); }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">OLTA</div>
+      <div class="tagline">BALIKÇININ REHBERİ</div>
+    </div>
+    <div class="sidebar-user">
+      <img id="user-photo" src="" alt="" />
+      <div>
+        <div class="name" id="user-name">...</div>
+        <div class="email" id="user-email">...</div>
+      </div>
+    </div>
+    <div class="sidebar-menu">
+      <button class="sidebar-item" onclick="window.location.href='home.html'">Ana Sayfa</button>
+      <button class="sidebar-item" onclick="window.location.href='species.html'">Balık Türleri</button>
+      <button class="sidebar-item" onclick="window.location.href='regions.html'">Bölgeler</button>
+      <button class="sidebar-item">Ayarlar</button>
+    </div>
+    <div class="sidebar-bottom">
+      <button class="sidebar-item logout" id="logout-btn">Çıkış Yap</button>
+    </div>
+  </div>
+
+  <div class="banner">
+    <button class="hamburger" onclick="openSidebar()">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="banner-title">OLTA</div>
+    <div class="banner-placeholder"></div>
+  </div>
+
+  <div class="content">
+    <div class="profile">
+      <div class="profile-card profile-head">
+        <img id="p-photo" alt="" hidden />
+        <div class="profile-initial" id="p-initial">?</div>
+        <div class="profile-name" id="p-name">…</div>
+        <div class="profile-email" id="p-email"></div>
+        <div class="profile-since" id="p-since"></div>
+      </div>
+
+      <form class="profile-card" id="p-form">
+        <div class="section-title">BİLGİLERİM</div>
+        <div class="field">
+          <label for="p-city">Şehir</label>
+          <input id="p-city" maxlength="40" placeholder="Örn. İstanbul" autocomplete="address-level2" />
+        </div>
+        <div class="field">
+          <label for="p-license">Balıkçı belge no</label>
+          <input id="p-license" maxlength="30" placeholder="İsteğe bağlı" />
+          <span class="hint">Yalnızca sen görürsün.</span>
+        </div>
+        <button class="save-btn" id="p-save" type="submit" disabled>Kaydet</button>
+      </form>
+
+      <button class="logout-btn" id="p-logout">Çıkış Yap</button>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <div class="bottombar">
+    <button class="bottom-btn" onclick="window.location.href='forecast.html'" aria-label="Tür Tahmini">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+        <line x1="8" y1="2" x2="8" y2="18"/>
+        <line x1="16" y1="6" x2="16" y2="22"/>
+      </svg>
+    </button>
+    <button class="bottom-btn" onclick="window.location.href='home.html'" aria-label="Ana Sayfa">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+    </button>
+    <button class="bottom-btn profile-btn active" aria-label="Profil">
+      <img id="bottom-photo" src="" alt="" />
+    </button>
+  </div>
+
+  <script type="module">
+    import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, serverTimestamp }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const app  = initializeApp({
+      apiKey: "AIzaSyCkq0NU1Ao8LMZw6WfPvQUO4F_r4-An9-c",
+      authDomain: "olta-810ae.firebaseapp.com",
+      projectId: "olta-810ae",
+      storageBucket: "olta-810ae.firebasestorage.app",
+      messagingSenderId: "142251428527",
+      appId: "1:142251428527:web:dee8776ee6cde14656225a"
+    });
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+    const $    = id => document.getElementById(id);
+    const MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+    let currentUser = null, saved = { city: '', licenseNo: '' };
+
+    function toast(msg) {
+      const t = $('toast');
+      t.textContent = msg; t.classList.add('show');
+      clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = 'index.html'; return; }
+      currentUser = user;
+      $('user-name').textContent  = user.displayName || '';
+      $('user-email').textContent = user.email || '';
+      if (user.photoURL) {
+        $('user-photo').src = user.photoURL; $('bottom-photo').src = user.photoURL;
+        $('p-photo').src = user.photoURL; $('p-photo').hidden = false; $('p-initial').hidden = true;
+      } else {
+        $('p-initial').textContent = (user.displayName || user.email || '?').trim().charAt(0).toLocaleUpperCase('tr');
+      }
+      $('p-name').textContent  = user.displayName || 'Balıkçı';
+      $('p-email').textContent = user.email || '';
+      await loadProfile();
+    });
+
+    async function loadProfile() {
+      try {
+        const snap = await getDoc(doc(db, 'users', currentUser.uid));
+        const d = snap.exists() ? snap.data() : {};
+        saved = { city: d.city || '', licenseNo: d.licenseNo || '' };
+        $('p-city').value = saved.city;
+        $('p-license').value = saved.licenseNo;
+        const created = d.createdAt?.toDate?.() || (currentUser.metadata?.creationTime ? new Date(currentUser.metadata.creationTime) : null);
+        if (created) $('p-since').textContent = `${MONTHS[created.getMonth()]} ${created.getFullYear()} tarihinden beri üye`;
+      } catch (e) {
+        console.error('Profil okunamadı:', e);
+        toast('Profil bilgileri yüklenemedi');
+      }
+      updateSaveState();
+    }
+
+    function current() {
+      return { city: $('p-city').value.trim(), licenseNo: $('p-license').value.trim() };
+    }
+    function updateSaveState() {
+      const c = current();
+      $('p-save').disabled = c.city === saved.city && c.licenseNo === saved.licenseNo;
+    }
+    $('p-city').addEventListener('input', updateSaveState);
+    $('p-license').addEventListener('input', updateSaveState);
+
+    $('p-form').addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const c = current();
+      $('p-save').disabled = true;
+      try {
+        // Kayıt yoksa (eski hesaplar) temel alanlarla oluştur; varsa yalnızca bu alanları güncelle
+        await setDoc(doc(db, 'users', currentUser.uid), {
+          city: c.city, licenseNo: c.licenseNo,
+          displayName: currentUser.displayName || '', email: currentUser.email || '',
+          photoURL: currentUser.photoURL || '', updatedAt: serverTimestamp(),
+        }, { merge: true });
+        saved = c;
+        toast('Kaydedildi');
+      } catch (e) {
+        console.error('Profil kaydedilemedi:', e);
+        toast('Kaydedilemedi, tekrar deneyin');
+      }
+      updateSaveState();
+    });
+
+    const logout = async () => { await signOut(auth); window.location.href = 'index.html'; };
+    $('logout-btn').addEventListener('click', logout);
+    $('p-logout').addEventListener('click', logout);
+
+    window.openSidebar  = () => { $('sidebar').classList.add('open'); $('overlay').classList.add('open'); };
+    window.closeSidebar = () => { $('sidebar').classList.remove('open'); $('overlay').classList.remove('open'); };
+  </script>
+</body>
+</html>
