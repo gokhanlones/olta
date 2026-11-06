@@ -254,7 +254,7 @@
       if (!text) return;
       $('c-send').disabled = true;
       try {
-        await addDoc(collection(db, 'feed_posts'), {
+        const ref = await addDoc(collection(db, 'feed_posts'), {
           type: 'user',
           authorUid: currentUser.uid,
           authorName: (currentUser.displayName || 'Balıkçı').slice(0, 100),
@@ -262,9 +262,8 @@
           text,
           createdAt: serverTimestamp(),
         });
-        $('c-text').value = ''; updateCount(); openCompose(false);
-        toast('Gönderin paylaşıldı');
-        loadActivity();
+        // Ana sayfaya git ve yeni gönderiyi göster
+        window.location.href = `home.html#post-${encodeURIComponent(ref.id)}`;
       } catch (e) {
         console.error('Gönderi paylaşılamadı:', e);
         toast('Gönderi paylaşılamadı');
