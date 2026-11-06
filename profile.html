@@ -102,19 +102,14 @@
     .compose-cancel { background: none; border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: var(--white); font-size: 14px; padding: 9px 14px; cursor: pointer; }
     .compose-send { background: var(--blue-light); border: none; border-radius: 10px; color: var(--white); font-size: 14px; font-weight: 700; padding: 9px 16px; cursor: pointer; }
     .compose-send:disabled { opacity: .5; }
-    .activity-tag.own { color: var(--accent); background: rgba(244,162,97,0.15); }
+    /* Gönderilerim: ana sayfadaki kartların aynısı, bağımsız */
+    .my-posts { display: flex; flex-direction: column; gap: 14px; }
+    .my-posts-title { font-size: 11px; color: #9DB4C8; letter-spacing: 1px; font-weight: 700; margin: 6px 2px -4px; }
+    .post-context { display: flex; gap: 10px; font-size: 12px; font-weight: 700; color: #9DB4C8; margin: 0 4px -8px; }
+    .post-context .like { color: #F87171; }
+    .post-context .comment { color: #7CC4E4; }
+    .my-posts-empty { color: #9DB4C8; font-size: 13px; text-align: center; padding: 6px 0 2px; }
     .section-title { font-size: 11px; color: #9DB4C8; letter-spacing: 1px; font-weight: 700; margin-bottom: 12px; }
-    /* Etkinliğim: beğenilen / yorum yapılan gönderiler */
-    .activity-empty { color: #9DB4C8; font-size: 13px; line-height: 1.5; }
-    .activity-item { display: block; text-decoration: none; color: var(--white); background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
-    .activity-item:active { background: rgba(255,255,255,0.1); }
-    .activity-meta { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: #9DB4C8; }
-    .activity-tags { display: flex; gap: 6px; flex-shrink: 0; }
-    .activity-tag { font-size: 11px; font-weight: 700; border-radius: 6px; padding: 1px 6px; }
-    .activity-tag.like { color: #F87171; background: rgba(248,113,113,0.12); }
-    .activity-tag.comment { color: #7CC4E4; background: rgba(46,134,171,0.18); }
-    .activity-text { font-size: 13.5px; line-height: 1.4; margin-top: 5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .activity-quote { font-size: 13px; color: #C9D8E4; margin-top: 6px; padding-left: 8px; border-left: 2px solid var(--blue-light); white-space: pre-wrap; word-wrap: break-word; }
     .toast { position: fixed; left: 50%; bottom: 76px; transform: translateX(-50%); background: rgba(10,22,40,0.95); border: 1px solid rgba(255,255,255,0.15); color: var(--white); font-size: 13px; padding: 9px 14px; border-radius: 10px; z-index: 150; display: none; }
     .toast.show { display: block; }
 
@@ -190,10 +185,11 @@
         </div>
       </form>
 
-      <div class="profile-card">
-        <div class="section-title">ETKİNLİĞİM</div>
-        <div id="p-activity"><div class="activity-empty">Yükleniyor…</div></div>
-      </div>
+      <div class="my-posts-title">GÖNDERİLERİM</div>
+      <div class="my-posts" id="p-posts"><div class="my-posts-empty">Yükleniyor…</div></div>
+
+      <div class="my-posts-title">ETKİNLİĞİM</div>
+      <div class="my-posts" id="p-activity"><div class="my-posts-empty">Yükleniyor…</div></div>
 
     </div>
   </div>
@@ -223,6 +219,8 @@
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { getFirestore, doc, getDoc, addDoc, serverTimestamp, collection, query, where, orderBy, limit, getDocs }
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    // Ortak gönderi kartı (ana sayfa ile aynı). Dosya değişince ?v= artırılır.
+    import { initFeedCards, renderPost } from "./feed-card.js?v=1";
 
     const app  = initializeApp({
       apiKey: "AIzaSyCkq0NU1Ao8LMZw6WfPvQUO4F_r4-An9-c",
@@ -257,7 +255,9 @@
       }
       $('p-name').textContent  = user.displayName || 'Balıkçı';
       $('p-email').textContent = user.email || '';
+      initFeedCards({ db, user, toast });
       await loadProfile();
+      loadMyPosts();
       loadActivity();
     });
 
@@ -310,12 +310,33 @@
       }
     });
 
+    // ── GÖNDERİLERİM: kullanıcının kendi gönderileri, ana sayfadaki kartlarla
+    async function loadMyPosts() {
+      const box = $('p-posts');
+      try {
+        // Yalnızca tek alan filtresi: konsolda ek dizin gerektirmez; sıralama burada
+        const snap = await getDocs(query(collection(db, 'feed_posts'), where('authorUid', '==', currentUser.uid), limit(50)));
+        const posts = [];
+        snap.forEach(d => posts.push({ id: d.id, ...d.data() }));
+        const ms = p => p.createdAt?.toMillis?.() ?? 0;
+        posts.sort((a, b) => ms(b) - ms(a));
+        box.innerHTML = '';
+        if (!posts.length) {
+          box.appendChild(el('div', 'my-posts-empty', 'Henüz bir gönderin yok. İlk gönderini yukarıdan oluşturabilirsin.'));
+          return;
+        }
+        posts.forEach(p => box.appendChild(renderPost(p)));
+      } catch (e) {
+        console.error('Gönderiler okunamadı:', e);
+        box.innerHTML = '';
+        box.appendChild(el('div', 'my-posts-empty', 'Gönderiler yüklenemedi.'));
+      }
+    }
+
     // ── ETKİNLİĞİM: son gönderilerde beğendiklerin ve yorumların
     // Konsolda ek dizin gerektirmesin diye son ACTIVITY_SCAN gönderi taranır.
     const ACTIVITY_SCAN = 60;
     const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
-    const fmtTs = ts => { const d = ts?.toDate?.(); return d ? `${d.getDate()} ${MONTHS[d.getMonth()]}` : ''; };
-    const fmtDate = iso => { const [y, m, d] = (iso || '').split('-').map(Number); return y ? `${d} ${MONTHS[m - 1]}` : ''; };
 
     async function loadActivity() {
       const box = $('p-activity');
@@ -335,36 +356,24 @@
           return { post: p, liked: like.exists(), comments: mine, own: p.type === 'user' && p.authorUid === uid };
         }));
         // Sorgu zaten yeniden eskiye sıralı (createdAt); sıra korunur
-        const active = results.filter(r => r.own || r.liked || r.comments.length);
+        const active = results.filter(r => !r.own && (r.liked || r.comments.length));
         box.innerHTML = '';
         if (!active.length) {
-          box.appendChild(el('div', 'activity-empty', 'Henüz bir etkinliğin yok. Bir gönderi oluşturabilir, ana sayfadaki gönderileri beğenip yorum yazabilirsin.'));
+          box.appendChild(el('div', 'my-posts-empty', 'Henüz beğendiğin ya da yorum yaptığın bir gönderi yok.'));
           return;
         }
-        active.forEach(r => box.appendChild(renderActivity(r)));
+        active.forEach(r => {
+          // Kartın üstünde neden burada olduğu: beğendin / yorum yaptın
+          const ctx = el('div', 'post-context');
+          if (r.liked) ctx.appendChild(el('span', 'like', '♥ Beğendin'));
+          if (r.comments.length) ctx.appendChild(el('span', 'comment', r.comments.length > 1 ? `💬 ${r.comments.length} yorum yaptın` : '💬 Yorum yaptın'));
+          box.append(ctx, renderPost(r.post));
+        });
       } catch (e) {
         console.error('Etkinlik okunamadı:', e);
         box.innerHTML = '';
-        box.appendChild(el('div', 'activity-empty', 'Etkinlik yüklenemedi.'));
+        box.appendChild(el('div', 'my-posts-empty', 'Etkinlik yüklenemedi.'));
       }
-    }
-
-    function renderActivity({ post, liked, comments, own }) {
-      const a = el('a', 'activity-item');
-      a.href = `home.html#post-${encodeURIComponent(post.id)}`;
-      const meta = el('div', 'activity-meta');
-      const when = post.date ? fmtDate(post.date) : fmtTs(post.createdAt);
-      const what = post.type === 'user' ? (own ? 'Senin gönderin' : post.authorName) : post.species;
-      meta.appendChild(el('span', null, [when, what].filter(Boolean).join(' · ')));
-      const tags = el('span', 'activity-tags');
-      if (own) tags.appendChild(el('span', 'activity-tag own', 'Gönderin'));
-      if (liked) tags.appendChild(el('span', 'activity-tag like', '♥ Beğendin'));
-      if (comments.length) tags.appendChild(el('span', 'activity-tag comment', comments.length > 1 ? `${comments.length} yorum` : 'Yorum yaptın'));
-      meta.appendChild(tags);
-      a.appendChild(meta);
-      a.appendChild(el('div', 'activity-text', post.text || ''));
-      if (comments.length) a.appendChild(el('div', 'activity-quote', comments[0].text || ''));   // son yorumun
-      return a;
     }
 
     const logout = async () => { await signOut(auth); window.location.href = 'index.html'; };
