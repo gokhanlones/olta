@@ -7,7 +7,8 @@ import { collection, query, orderBy, limit, getDocs, doc, getDoc, setDoc, server
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const SCAN = 30;                       // son kaç akış gönderisine bakılır
-const FIRST_VISIT_DAYS = 7;            // hiç açmamış kullanıcıda son 7 günün haberleri okunmamış sayılır
+const FIRST_VISIT_DAYS = 7;
+const POLL_MS = 5 * 60 * 1000;         // sayfa açık ve ekrandayken 5 dakikada bir kontrol            // hiç açmamış kullanıcıda son 7 günün haberleri okunmamış sayılır
 const MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 const BELL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
   + '<path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>';
@@ -25,7 +26,10 @@ export function initNotifications(opts) {
   injectStyles();
   buildUi();
   refresh();
+  // Uygulamaya dönülünce hemen kontrol et
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refresh(); });
+  // Sayfa açık beklerken de yeni haberleri yakala (arka plandayken kontrol yok)
+  setInterval(() => { if (document.visibilityState === 'visible') refresh(); }, POLL_MS);
 }
 
 function injectStyles() {
