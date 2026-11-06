@@ -43,63 +43,69 @@ Kararlar ve dikkat edilecekler:
   (`202207`) 12 Ocak 2027'de kaldırıyor. `/marine` yanıtında
   `chlorophyll_source` hâlâ `blacksea_nrt_1km` mi kontrol edilmeli.
 
-## Av kaydı ve fotoğraf doğrulama (sonraya bırakıldı)
-Kaynak: "OLTA – Akıllı Av Kaydı ve Fotoğraf Doğrulama Sistemi" raporu
-(sürüm 1.0, 6 Kasım 2026). Forum önceliği nedeniyle **ayrı bir algoritmik
-katman** olarak ertelendi.
+## Deniz canlıları koleksiyonu (sonraya bırakıldı)
+Kullanıcıya özel bir koleksiyon: kullanıcı **yalnızca yakaladığı** deniz
+canlılarını kaydeder. Her kayıt o anın deniz koşullarıyla birlikte saklanır.
+Yapay zekâ ile tür tanıma ve kamera kılavuzu bu bölümün parçası.
+Kaynak rapor: "OLTA – Akıllı Av Kaydı ve Fotoğraf Doğrulama Sistemi"
+(sürüm 1.0, 6 Kasım 2026); koleksiyon olarak yeniden çerçevelendi.
 
-### Raporun amacı
-Kullanıcıların yakaladıkları balığı uygulama içi kamerayla fotoğraflayıp konum
-ve zamanla kaydetmesi; doğrulanmış kayıtlarla habitat tahmin modelinin
-geliştirilmesi. Öneriler: galeriden yükleme yok, standart yandan çekim, kamera
-rehberi ve koşullar sağlanmadan kilitli çekim butonu, GPS/zaman otomatik,
-görsel parmak izi ile mükerrer kayıt kontrolü, 0–100 güven puanı, Firebase
-koleksiyonları (`catch_records`, `catch_verifications`, `catch_reports`),
-Copernicus verisiyle eşleştirme.
+### Her kayıtta saklanacaklar
+- **Canlı:** tür (yapay zekâ önerisi + kullanıcı onayı/düzeltmesi), fotoğraf,
+  isteğe bağlı boy, ağırlık, yem, derinlik, not.
+- **Konum ve zaman:** GPS koordinatı, GPS doğruluk değeri, tarih-saat.
+- **O anın deniz verisi (sunucu kaydeder, kullanıcı değiştiremez):**
+  yüzey sıcaklığı, tuzluluk, klorofil, oksijen, akıntı hızı/yönü, karışım
+  tabakası derinliği, deniz seviyesi (olta-api `/marine`); dalga ve rüzgâr
+  (Open-Meteo); türün o noktadaki uygunluk skoru. Kayıt anında bir kez alınıp
+  kayda yazılır (sonradan yeniden hesaplanmaz).
+- Ek fikir: ay evresi, gün doğumu/batımına göre saat (balıkçılar için anlamlı).
 
-### Değerlendirmede çıkan önemli noktalar
-- **Web'de kamera/GPS bütünlüğü kanıtlanamaz.** OLTA bir web uygulaması:
-  tarayıcı kodu değiştirilebilir, sahte fotoğraf doğrudan gönderilebilir,
-  sahte konum tespit edilemez. Gerçek cihaz doğrulaması için yerel uygulama
-  gerekir (Play Integrity / App Attest). Web'de kalınırsa doğrulama yalnızca
-  sunucu tarafı kontrollere dayanır.
-- **Yapay zekâ kamera kilidi en riskli kısım.** Balık tespiti, baş/kuyruk ve
-  açı ölçümü için hazır model ve Türkiye türleri için etiketli veri yok.
-  Önce engellemeyen bir rehber (silüet + bulanıklık/ışık uyarısı); model,
-  toplanan fotoğraflarla eğitildikten sonra kilit.
-- **Aynı balığın farklı fotoğrafını tanımak** desensiz türlerde pratikte
-  mümkün değil; yalnızca aynı fotoğrafın tekrarı (perceptual hash) yakalanmalı.
-- **Tür ilk sürümde kullanıcı tarafından seçilmeli** (raporda Aşama 1 akışında
-  yapay zekâ tahmini vardı, ama otomatik tanıma Aşama 5'teydi). Fotoğrafların
-  model eğitiminde kullanımı için ayrıca izin alınmalı.
-- **Habitat modeline katkı:**
-  - Örnekleme yanlılığı: kayıtlar balığın değil balıkçının olduğu yerden gelir
-    (kıyı, Boğaz, hafta sonu); model buna göre düzeltilmeli.
-  - Kıyı boşluğu: Copernicus ızgarası ~8–10 km; kıyı avları veri olmayan
-    hücrelere düşer, en yakın geçerli deniz hücresi kullanılmalı.
-  - Kısa vadede model değiştirmek yerine **ölçmek**: "avların yüzde kaçı
-    uygunluk ≥ 50 hücrelere düşüyor?"
-- **Altyapı:** Fotoğraf için Firebase Storage (Blaze planı gerekebilir);
-  görüntü benzerlik modelleri Render'daki ücretsiz 512 MB sunucuya sığmaz.
-  Güven puanı yalnızca sunucuda hesaplanmalı, kullanıcı yazamamalı.
-- **Rapordaki eksikler:** yasak dönem / boy altı av kaydı politikası, KVKK
-  (konum ve fotoğraf kişisel veri; av noktaları varsayılan gizli), internetsiz
-  kullanım (kayıt cihazda bekleyip sonra gönderilmeli), moderasyon.
+### Koleksiyon deneyimi
+- Profilde "Koleksiyonum": yakalanan türler kart/ızgara olarak; her türün
+  ilk yakalama tarihi, adet, en büyük boy. Henüz yakalanmamış türler gri
+  (toplama hissi).
+- Kayıt ayrıntısında fotoğraf + o günün deniz koşulları + küçük harita.
+- Konum **varsayılan olarak gizli**: av noktası başkalarına gösterilmez;
+  istenirse yalnızca bölge adı paylaşılır.
 
-### Önerilen sıra (başlanırsa)
-1. Uygulama içi kamera (galeri yok), silüet rehberi, basit bulanıklık/ışık
-   uyarısı (engellemeyen), GPS + doğruluk + zaman, tür listeden, isteğe bağlı
-   boy/ağırlık/yem; Storage + `catch_records`; sıkı güvenlik kuralları.
-2. Sunucu (olta-api): aynı fotoğraf kontrolü (perceptual hash), kullanıcı başına
-   hız sınırı, konum mantık kontrolü (denizde/kıyıda mı, iki kayıt arası mümkün
-   mü), kayıt anının deniz verisi (`/marine`), güven puanı.
-3. Ölçüm sayfası: avlar ile uygunluk skorlarının karşılaştırması.
-4. Sonra: yapay zekâ kamera kilidi, otomatik tür tanıma, aynı balığı tanıma.
+### Kamera kılavuzu ve yapay zekâ tür tanıma
+- Uygulama içi kamera; yandan çekim için yarı saydam balık silüeti.
+- İlk sürümde **engellemeyen** uyarılar: bulanıklık, ışık, balık kadrajda mı.
+  Çekim butonunu kilitleme, model güvenilir hale gelince düşünülür.
+- Tür tanıma: model önerir, kullanıcı onaylar ya da listeden düzeltir.
+  Türkiye türleri için hazır etiketli veri yok; toplanan (kullanıcının
+  onayladığı) fotoğraflar zamanla eğitim verisi olur. Bunun için kullanıcıdan
+  ayrıca izin alınmalı.
+- Model tarayıcıda (ör. TensorFlow.js / ONNX) ya da ayrı bir sunucuda çalışır;
+  Render'daki ücretsiz 512 MB sunucu görüntü modeli için yetersiz.
+
+### Toplu veri değeri
+Farklı kişilerin aynı türü aynı bölgede yakalaması güçlü bir **varlık
+gözlemi** verisi oluşturur: tür × bölge × mevsim × deniz koşulu.
+Kullanım ve dikkat edilecekler:
+- Uygunluk modelini **ölçmek** için: "avların yüzde kaçı uygunluk ≥ 50
+  hücrelere düşüyor?" Zamanla tür aralıklarını (sıcaklık/tuzluluk) gerçek
+  avlarla düzeltmek.
+- **Örnekleme yanlılığı:** kayıtlar balığın değil balıkçının olduğu yerden
+  gelir (kıyı, Boğaz, hafta sonu). Kayıt olmaması balık olmadığı anlamına
+  gelmez.
+- **Kıyı boşluğu:** Copernicus ızgarası ~8–10 km; kıyı avları için en yakın
+  geçerli deniz hücresi kullanılmalı (klorofilde yapıldığı gibi).
+- **Gizlilik:** toplu gösterimler bölge düzeyinde ve anonim; tek bir
+  kullanıcının av noktası açığa çıkmamalı (KVKK; konum kişisel veri).
+- **Kalite:** koleksiyon kişisel olduğu için ağır doğrulama gerekmez, ama toplu
+  analize katılan kayıtlar için hafif kontroller yeterli: aynı fotoğrafın
+  tekrarı (perceptual hash), GPS doğruluğu, konumun denizde/kıyıda olması,
+  kullanıcı başına makul hız sınırı. Web'de kamera/konum bütünlüğü kesin
+  kanıtlanamaz; bu yüzden toplu veride tek kayıt değil çoklu gözlem esas alınır.
 
 ### Başlamadan önce karar verilecekler
-- Web'de mi kalınacak, yerel uygulama mı yapılacak?
-- Firebase Blaze planına geçilecek mi?
-- Yasak dönem ve boy altı kayıtlar için politika ne olacak?
+- Fotoğraf depolama: Firebase Storage (Blaze planı gerekebilir).
+- Yasak dönemde ya da boy altı yakalanan canlıların kaydı: kabul edilecek mi,
+  uyarı mı gösterilecek, toplu veriden mi çıkarılacak?
+- İnternetsiz kullanım: kayıt cihazda bekleyip bağlantı gelince gönderilmeli
+  (deniz verisi o zaman kayıt zamanına göre alınır).
 
 ## Geliştirici notları
 - `feed-card.js` değiştiğinde, onu içe aktaran sayfalardaki (`home.html`,
