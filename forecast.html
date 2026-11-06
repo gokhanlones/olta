@@ -299,6 +299,8 @@ body{padding-bottom:calc(72px + env(safe-area-inset-bottom));}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+// Üst banttaki zil: OLTA haber bildirimleri. Dosya değişince ?v= artırılır.
+import { initNotifications } from "./notifications.js?v=1";
 import { getFirestore, doc, getDoc, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const app = initializeApp({
@@ -314,7 +316,7 @@ const API = "https://olta-api.onrender.com";
 
 // ── AUTH
 onAuthStateChanged(auth, u => {
-  if (!u) { window.location.href='index.html'; return; }
+  if (!u) { window.location.href='index.html'; return; } initNotifications({ db, user: u });
   if (u.photoURL) {
     document.getElementById('bottom-photo').src = u.photoURL;
     document.getElementById('user-photo').src   = u.photoURL;
