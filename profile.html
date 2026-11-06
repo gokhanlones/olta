@@ -103,6 +103,10 @@
     .compose-send { background: var(--blue-light); border: none; border-radius: 10px; color: var(--white); font-size: 14px; font-weight: 700; padding: 9px 16px; cursor: pointer; }
     .compose-send:disabled { opacity: .5; }
     .activity-tag.own { color: var(--accent); background: rgba(244,162,97,0.15); }
+    /* Gönderilerim: ana sayfadaki kartların aynısı, bağımsız */
+    .my-posts { display: flex; flex-direction: column; gap: 14px; }
+    .my-posts-title { font-size: 11px; color: #9DB4C8; letter-spacing: 1px; font-weight: 700; margin: 6px 2px -4px; }
+    .my-posts-empty { color: #9DB4C8; font-size: 13px; text-align: center; padding: 6px 0 2px; }
     .section-title { font-size: 11px; color: #9DB4C8; letter-spacing: 1px; font-weight: 700; margin-bottom: 12px; }
     /* Etkinliğim: beğenilen / yorum yapılan gönderiler */
     .activity-empty { color: #9DB4C8; font-size: 13px; line-height: 1.5; }
@@ -190,6 +194,9 @@
         </div>
       </form>
 
+      <div class="my-posts-title">GÖNDERİLERİM</div>
+      <div class="my-posts" id="p-posts"><div class="my-posts-empty">Yükleniyor…</div></div>
+
       <div class="profile-card">
         <div class="section-title">ETKİNLİĞİM</div>
         <div id="p-activity"><div class="activity-empty">Yükleniyor…</div></div>
@@ -223,6 +230,8 @@
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { getFirestore, doc, getDoc, addDoc, serverTimestamp, collection, query, where, orderBy, limit, getDocs }
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    // Ortak gönderi kartı (ana sayfa ile aynı). Dosya değişince ?v= artırılır.
+    import { initFeedCards, renderPost } from "./feed-card.js?v=1";
 
     const app  = initializeApp({
       apiKey: "AIzaSyCkq0NU1Ao8LMZw6WfPvQUO4F_r4-An9-c",
@@ -257,7 +266,9 @@
       }
       $('p-name').textContent  = user.displayName || 'Balıkçı';
       $('p-email').textContent = user.email || '';
+      initFeedCards({ db, user, toast });
       await loadProfile();
+      loadMyPosts();
       loadActivity();
     });
 
@@ -310,6 +321,29 @@
       }
     });
 
+    // ── GÖNDERİLERİM: kullanıcının kendi gönderileri, ana sayfadaki kartlarla
+    async function loadMyPosts() {
+      const box = $('p-posts');
+      try {
+        // Yalnızca tek alan filtresi: konsolda ek dizin gerektirmez; sıralama burada
+        const snap = await getDocs(query(collection(db, 'feed_posts'), where('authorUid', '==', currentUser.uid), limit(50)));
+        const posts = [];
+        snap.forEach(d => posts.push({ id: d.id, ...d.data() }));
+        const ms = p => p.createdAt?.toMillis?.() ?? 0;
+        posts.sort((a, b) => ms(b) - ms(a));
+        box.innerHTML = '';
+        if (!posts.length) {
+          box.appendChild(el('div', 'my-posts-empty', 'Henüz bir gönderin yok. İlk gönderini yukarıdan oluşturabilirsin.'));
+          return;
+        }
+        posts.forEach(p => box.appendChild(renderPost(p)));
+      } catch (e) {
+        console.error('Gönderiler okunamadı:', e);
+        box.innerHTML = '';
+        box.appendChild(el('div', 'my-posts-empty', 'Gönderiler yüklenemedi.'));
+      }
+    }
+
     // ── ETKİNLİĞİM: son gönderilerde beğendiklerin ve yorumların
     // Konsolda ek dizin gerektirmesin diye son ACTIVITY_SCAN gönderi taranır.
     const ACTIVITY_SCAN = 60;
@@ -335,10 +369,10 @@
           return { post: p, liked: like.exists(), comments: mine, own: p.type === 'user' && p.authorUid === uid };
         }));
         // Sorgu zaten yeniden eskiye sıralı (createdAt); sıra korunur
-        const active = results.filter(r => r.own || r.liked || r.comments.length);
+        const active = results.filter(r => !r.own && (r.liked || r.comments.length));
         box.innerHTML = '';
         if (!active.length) {
-          box.appendChild(el('div', 'activity-empty', 'Henüz bir etkinliğin yok. Bir gönderi oluşturabilir, ana sayfadaki gönderileri beğenip yorum yazabilirsin.'));
+          box.appendChild(el('div', 'activity-empty', 'Henüz beğendiğin ya da yorum yaptığın bir gönderi yok.'));
           return;
         }
         active.forEach(r => box.appendChild(renderActivity(r)));
